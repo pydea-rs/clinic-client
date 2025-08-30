@@ -4,7 +4,7 @@ import { Message } from './Message';
 import { TypingIndicator } from './TypingIndicator';
 import { MessageInput } from './MessageInput';
 import { useChat } from '../hooks/useChat';
-import { Loader2 } from 'lucide-react';
+import { Loader2, MessageCircle } from 'lucide-react';
 
 interface ChatInterfaceProps {
   token: string;
