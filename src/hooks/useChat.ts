@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 import { Message, ChatState, ConnectionStatus } from "../types/chat";
 import { EventSourcePolyfill } from "event-source-polyfill";
 
-const API_BASE = "http://localhost:8080"; // Adjust to your NestJS server URL
+const API_BASE = import.meta.env.VITE_API_BASE ?? "/api"; // configurable base; use Vite proxy by default
 
 export const useChat = (token: string | null) => {
   const [chatState, setChatState] = useState<ChatState>({
@@ -57,12 +57,16 @@ export const useChat = (token: string | null) => {
       if (!response.ok) throw new Error("Failed to start conversation");
 
       const res = await response.json();
-      if (res.status !== 200) {
+      // Be tolerant to different response shapes
+      if (res.status && res.status !== 200) {
         throw new Error("Failed starting a conversation!");
       }
-      let { id: conversationId } = res?.data ?? {};
-      conversationId = 'conv_01K3WCMABTRFZN7Z3PD712A2QY'
-      console.warn(conversationId);
+      const conversationId: string | undefined =
+        res?.data?.id || res?.id || res?.conversationId;
+
+      if (!conversationId) {
+        throw new Error("No conversationId returned by server");
+      }
       setChatState((prev) => ({ ...prev, conversationId }));
       return conversationId;
     } catch (error) {
@@ -78,18 +82,16 @@ export const useChat = (token: string | null) => {
     (conversationId: string) => {
       if (!token || eventSourceRef.current) return;
 
-      const eventSource = new EventSourcePolyfill(
-        `${API_BASE}/ai-agents/stream/${conversationId}`,
-        // {
-        //   withCredentials: true,
-        // }
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "text/event-stream",
-          },
-        }
-      );
+      // Pass token via query param to avoid header restrictions with EventSource
+      const sseUrl = `${API_BASE}/ai-agents/stream/${conversationId}?token=${encodeURIComponent(
+        token
+      )}`;
+      const eventSource = new EventSourcePolyfill(sseUrl, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "text/event-stream",
+        },
+      });
 
       // Add authorization header (note: EventSourcePolyfill doesn't support custom headers directly)
       // You might need to pass the token as a query parameter or handle auth differently
@@ -103,35 +105,28 @@ export const useChat = (token: string | null) => {
         reconnectAttempts.current = 0;
       };
 
-      eventSource.addEventListener("message_created", (event) => {
+      (eventSource as unknown as { onmessage: (e: MessageEvent<unknown>) => void }).onmessage = (e: MessageEvent<unknown>) => {
         try {
-          const data = JSON.parse(event.data);
-          toast.success("New message received", { duration: 2000 });
-          addMessage({
-            text: data.payload?.text || "AI message received",
-            isUser: false,
-            timestamp: new Date(),
-          });
+          const type = (e as unknown as Event).type;
+          const parsed = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
+          if (type === "typing") {
+            setChatState((prev) => ({ ...prev, isTyping: true }));
+            return;
+          }
+          if (type === "message_created" || parsed?.payload?.text) {
+            toast.success("New message received", { duration: 2000 });
+            addMessage({
+              text: parsed?.payload?.text || "AI message received",
+              isUser: false,
+              timestamp: new Date(),
+            });
+          }
         } catch (error) {
-          console.error("Error parsing message:", error);
+          console.error("Error handling SSE message:", error);
         }
-      });
+      };
 
-      eventSource.addEventListener("typing", () => {
-        setChatState((prev) => ({ ...prev, isTyping: true }));
-      });
-
-      eventSource.addEventListener("error", (event) => {
-        try {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const data = JSON.parse((event as any).data);
-          toast.error(`Connection error: ${data.message}`);
-          updateConnectionStatus({ error: data.message });
-        } catch {
-          toast.error("Connection error occurred");
-          updateConnectionStatus({ error: "Connection error occurred" });
-        }
-      });
+      // Use generic onerror handler for reconnection flow
 
       eventSource.onerror = () => {
         updateConnectionStatus({ connected: false, reconnecting: true });
