@@ -23,3 +23,23 @@ export interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
 }
+
+// API Types
+export interface StartConversationResponse {
+  conversationId: string;
+}
+
+export interface SendMessageRequest {
+  conversationId: string;
+  text: string;
+}
+
+export interface SendMessageResponse {
+  success: boolean;
+  message?: string;
+}
+
+export interface ApiError {
+  message: string;
+  status?: number;
+}

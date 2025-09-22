@@ -1,9 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import toast from "react-hot-toast";
-import { Message, ChatState, ConnectionStatus } from "../types/chat";
 import { EventSourcePolyfill } from "event-source-polyfill";
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? "/api"; // configurable base; use Vite proxy by default
+import { Message, ChatState, ConnectionStatus, ApiError } from '../types/chat';
+import { ApiService } from '../services/api';
+
+const apiService = ApiService.get();
 
 export const useChat = (token: string | null) => {
   const [chatState, setChatState] = useState<ChatState>({
@@ -14,7 +17,7 @@ export const useChat = (token: string | null) => {
     isSending: false,
   });
 
-  const eventSourceRef = useRef<EventSourcePolyfill | null>(null);
+  const eventSourceRef = useRef<EventSourcePolyfill | EventSource | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttempts = useRef(0);
 
@@ -45,24 +48,8 @@ export const useChat = (token: string | null) => {
     if (!token) return;
 
     try {
-      const response = await fetch(`${API_BASE}/ai-agents/start`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({}),
-      });
-
-      if (!response.ok) throw new Error("Failed to start conversation");
-
-      const res = await response.json();
-      // Be tolerant to different response shapes
-      if (res.status && res.status !== 200) {
-        throw new Error("Failed starting a conversation!");
-      }
-      const conversationId: string | undefined =
-        res?.data?.id || res?.id || res?.conversationId;
+      const conversationId = await apiService.startConversation();
+      setChatState(prev => ({ ...prev, conversationId }));
 
       if (!conversationId) {
         throw new Error("No conversationId returned by server");
@@ -83,15 +70,22 @@ export const useChat = (token: string | null) => {
       if (!token || eventSourceRef.current) return;
 
       // Pass token via query param to avoid header restrictions with EventSource
-      const sseUrl = `${API_BASE}/ai-agents/stream/${conversationId}?token=${encodeURIComponent(
-        token
-      )}`;
-      const eventSource = new EventSourcePolyfill(sseUrl, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "text/event-stream",
-        },
-      });
+      // const sseUrl = `${API_BASE}/ai-agents/stream/${conversationId}?token=${encodeURIComponent(
+      //   token
+      // )}`;
+      // const eventSource = new EventSourcePolyfill(sseUrl, {
+        //   headers: {
+      //     Authorization: `Bearer ${token}`,
+      //     "Content-Type": "text/event-stream",
+      //   },
+      // });
+      // NOTE: Remove event-source-polyfil package if axios works fine
+      const eventSource = new EventSource(
+        apiService.getStreamUrl(conversationId),
+      {
+        withCredentials: true,
+      }
+    );
 
       // Add authorization header (note: EventSourcePolyfill doesn't support custom headers directly)
       // You might need to pass the token as a query parameter or handle auth differently
@@ -159,51 +153,125 @@ export const useChat = (token: string | null) => {
     [token, addMessage, updateConnectionStatus]
   );
 
-  const sendMessage = useCallback(
-    async (text: string) => {
-      if (!token || !chatState.conversationId || chatState.isSending) return;
+  // const sendMessage = useCallback(
+  //   async (text: string) => {
+  //     if (!token || !chatState.conversationId || chatState.isSending) return;
 
-      setChatState((prev) => ({ ...prev, isSending: true }));
+  //     setChatState((prev) => ({ ...prev, isSending: true }));
 
-      // Add user message immediately
-      addMessage({
+  //     // Add user message immediately
+  //     addMessage({
+  //       text,
+  //       isUser: true,
+  //       timestamp: new Date(),
+  //     });
+
+  //     try {
+  //       const response = await fetch(`${API_BASE}/ai-agents/message`, {
+  //         method: "POST",
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify({
+  //           conversationId: chatState.conversationId,
+  //           text,
+  //         }),
+  //       });
+
+  //       if (!response.ok) throw new Error("Failed to send message");
+
+  //       // Show typing indicator
+  //       setChatState((prev) => ({ ...prev, isTyping: true }));
+  //       toast.success("Message sent successfully", { duration: 2000 });
+  //     } catch (error) {
+  //       console.error("Error sending message:", error);
+  //       toast.error("Failed to send message. Please try again.");
+  //       addMessage({
+  //         text: "Failed to send message. Please try again.",
+  //         isUser: false,
+  //         timestamp: new Date(),
+  //       });
+  //     } finally {
+  //       setChatState((prev) => ({ ...prev, isSending: false }));
+  //     }
+  //   });
+
+  //   eventSource.addEventListener('typing', () => {
+  //     setChatState(prev => ({ ...prev, isTyping: true }));
+  //   });
+
+  //   eventSource.addEventListener('error', (event) => {
+  //     try {
+  //       const data = JSON.parse((event as any).data);
+  //       toast.error(`Connection error: ${data.message}`);
+  //       updateConnectionStatus({ error: data.message });
+  //     } catch {
+  //       toast.error('Connection error occurred');
+  //       updateConnectionStatus({ error: 'Connection error occurred' });
+  //     }
+  //   });
+
+  //   eventSource.onerror = () => {
+  //     updateConnectionStatus({ connected: false, reconnecting: true });
+  //     eventSource.close();
+  //     eventSourceRef.current = null;
+
+  //     // Exponential backoff for reconnection
+  //     const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000);
+  //     reconnectAttempts.current += 1;
+
+  //     reconnectTimeoutRef.current = setTimeout(() => {
+  //       if (reconnectAttempts.current < 5) {
+  //         connectSSE(conversationId);
+  //       } else {
+  //         toast.error('Connection failed after multiple attempts');
+  //         updateConnectionStatus({ 
+  //           connected: false, 
+  //           reconnecting: false, 
+  //           error: 'Connection failed after multiple attempts' 
+  //         });
+  //       }
+  //     }, delay);
+  //   };
+
+  //   eventSourceRef.current = eventSource;
+  // }, [token, addMessage, updateConnectionStatus]);
+
+  const sendMessage = useCallback(async (text: string) => {
+    if (!token || !chatState.conversationId || chatState.isSending) return;
+
+    setChatState(prev => ({ ...prev, isSending: true }));
+    
+    // Add user message immediately
+    addMessage({
+      text,
+      isUser: true,
+      timestamp: new Date(),
+    });
+
+    try {
+      await apiService.sendMessage({
+        conversationId: chatState.conversationId,
         text,
-        isUser: true,
+      });
+      
+      // Show typing indicator
+      setChatState(prev => ({ ...prev, isTyping: true }));
+      toast.success('Message sent successfully', { duration: 2000 });
+    } catch (error) {
+      const apiError = error as ApiError;
+      console.error('Error sending message:', apiError);
+      toast.error(apiError.message || 'Failed to send message. Please try again.');
+      addMessage({
+        text: apiError.message || 'Failed to send message. Please try again.',
+        isUser: false,
         timestamp: new Date(),
       });
-
-      try {
-        const response = await fetch(`${API_BASE}/ai-agents/message`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            conversationId: chatState.conversationId,
-            text,
-          }),
-        });
-
-        if (!response.ok) throw new Error("Failed to send message");
-
-        // Show typing indicator
-        setChatState((prev) => ({ ...prev, isTyping: true }));
-        toast.success("Message sent successfully", { duration: 2000 });
-      } catch (error) {
-        console.error("Error sending message:", error);
-        toast.error("Failed to send message. Please try again.");
-        addMessage({
-          text: "Failed to send message. Please try again.",
-          isUser: false,
-          timestamp: new Date(),
-        });
-      } finally {
-        setChatState((prev) => ({ ...prev, isSending: false }));
-      }
-    },
-    [token, chatState.conversationId, chatState.isSending, addMessage]
-  );
+    } finally {
+      setChatState(prev => ({ ...prev, isSending: false }));
+    }
+  }, [token, chatState.conversationId, chatState.isSending, addMessage]);
 
   const initializeChat = useCallback(async () => {
     if (!token) return;
