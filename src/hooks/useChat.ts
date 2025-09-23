@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import toast from "react-hot-toast";
 import { EventSourcePolyfill } from "event-source-polyfill";
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? "/api"; // configurable base; use Vite proxy by default
+// const API_BASE = import.meta.env.VITE_API_BASE ?? "/api"; // configurable base; use Vite proxy by default
 import { Message, ChatState, ConnectionStatus, ApiError } from '../types/chat';
 import { ApiService } from '../services/api';
 

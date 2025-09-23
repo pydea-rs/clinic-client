@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { AuthState } from '../types/chat';
-import { apiService } from '../services/api';
+import { ApiService } from '../services/api';
+
+const apiService = ApiService.get();
 
 export const useAuth = (): AuthState & { login: (token: string) => void; logout: () => void } => {
   const [authState, setAuthState] = useState<AuthState>({

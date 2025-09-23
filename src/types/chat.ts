@@ -26,7 +26,7 @@ export interface AuthState {
 
 // API Types
 export interface StartConversationResponse {
-  conversationId: string;
+  id: string;
 }
 
 export interface SendMessageRequest {

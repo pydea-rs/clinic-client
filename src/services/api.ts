@@ -7,7 +7,7 @@ import {
 } from '../types/chat';
 
 export class ApiService {
-  private api: AxiosInstance;
+  private api!: AxiosInstance;
   private static instance: ApiService;
 
   public static get() {
@@ -65,12 +65,19 @@ export class ApiService {
 
   async startConversation(): Promise<string> {
       const response: AxiosResponse<StartConversationResponse> = await this.api.post('/ai-agents/start');
-      return response.data.conversationId;
+      console.log(response.data);
+      if(!response.data.contents?.id) {
+        throw Error('Something went wrong while starting the conversation! Please try again...')
+      }
+      return response.data.contents?.id;
   }
 
   async sendMessage(data: SendMessageRequest): Promise<SendMessageResponse> {
       const response: AxiosResponse<SendMessageResponse> = await this.api.post('/ai-agents/message', data);
-      return response.data;
+      if(!response.data.contents) {
+        throw Error('Something went wrong while sending the message! Please try again...')
+      }
+      return response.data.contents;
 
   }
 
