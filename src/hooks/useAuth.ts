@@ -1,47 +1,65 @@
 import { useState, useEffect } from 'react';
-import { AuthState } from '../types/chat';
+import { AuthState, User } from '../types/chat';
 import { ApiService } from '../services/api';
 
 const apiService = ApiService.get();
 
-export const useAuth = (): AuthState & { login: (token: string) => void; logout: () => void } => {
+export const useAuth = (): AuthState & {
+  initializing: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  register: (payload: { name?: string; email: string; password: string }) => Promise<void>;
+  logout: () => Promise<void>;
+} => {
   const [authState, setAuthState] = useState<AuthState>({
-    token: null,
+    user: null,
     isAuthenticated: false,
   });
+  const [initializing, setInitializing] = useState(true);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('jwt_token');
-    if (storedToken) {
-      apiService.setAuthToken(storedToken);
-      setAuthState({
-        token: storedToken,
-        isAuthenticated: true,
-      });
-    }
+    const bootstrap = async () => {
+      try {
+        const me = await apiService.me<User>();
+        if (me) {
+          setAuthState({ user: me, isAuthenticated: true });
+        } else {
+          setAuthState({ user: null, isAuthenticated: false });
+        }
+      } catch {
+        setAuthState({ user: null, isAuthenticated: false });
+      } finally {
+        setInitializing(false);
+      }
+    };
+    bootstrap();
   }, []);
 
-  const login = (token: string) => {
-    localStorage.setItem('jwt_token', token);
-    apiService.setAuthToken(token);
-    setAuthState({
-      token,
-      isAuthenticated: true,
-    });
+  const login = async (email: string, password: string) => {
+    await apiService.login({ email, password });
+    const me = await apiService.me<User>();
+    setAuthState({ user: me ?? null, isAuthenticated: !!me });
   };
 
-  const logout = () => {
-    localStorage.removeItem('jwt_token');
-    apiService.clearAuthToken();
-    setAuthState({
-      token: null,
-      isAuthenticated: false,
-    });
+  const register = async (payload: { name?: string; email: string; password: string }) => {
+    await apiService.register(payload);
+    // Optionally auto-login after register depending on server behavior
+    const me = await apiService.me<User>();
+    setAuthState({ user: me ?? null, isAuthenticated: !!me });
+  };
+
+  const logout = async () => {
+    try {
+      await apiService.logout();
+    } finally {
+      setAuthState({ user: null, isAuthenticated: false });
+    }
   };
 
   return {
     ...authState,
+    initializing,
     login,
+    register,
     logout,
   };
 };

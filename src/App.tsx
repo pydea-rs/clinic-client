@@ -5,15 +5,15 @@ import { ChatInterface } from './components/ChatInterface';
 import { useAuth } from './hooks/useAuth';
 
 function App() {
-  const { isAuthenticated, token, login, logout } = useAuth();
+  const { isAuthenticated, initializing, login, register, logout } = useAuth();
 
   return (
     <>
       <ToastProvider />
-      {!isAuthenticated || !token ? (
-        <AuthForm onLogin={login} />
+      {!isAuthenticated ? (
+        <AuthForm onLogin={login} onRegister={register} initializing={initializing} />
       ) : (
-        <ChatInterface token={token} onLogout={logout} />
+        <ChatInterface onLogout={logout} />
       )}
     </>
   );

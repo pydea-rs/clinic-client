@@ -7,11 +7,10 @@ import { useChat } from '../hooks/useChat';
 import { Loader2, MessageCircle } from 'lucide-react';
 
 interface ChatInterfaceProps {
-  token: string;
-  onLogout: () => void;
+  onLogout: () => Promise<void>;
 }
 
-export const ChatInterface: React.FC<ChatInterfaceProps> = ({ token, onLogout }) => {
+export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onLogout }) => {
   const {
     messages,
     connectionStatus,
@@ -20,7 +19,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ token, onLogout })
     conversationId,
     initializeChat,
     sendMessage,
-  } = useChat(token);
+  } = useChat();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -58,7 +57,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ token, onLogout })
         <ChatHeader
           connectionStatus={connectionStatus}
           onRetry={initializeChat}
-          onLogout={onLogout}
+          onLogout={() => { void onLogout(); }}
         />
 
         <div className="flex-1 overflow-y-auto bg-gradient-to-b from-white to-gray-50 custom-scrollbar">
