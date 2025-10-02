@@ -22,7 +22,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
         </div>
         <div>
           <h1 className="font-bold text-gray-900 text-lg">AI Assistant</h1>
-          <p className="text-sm text-gray-500 font-medium">Powered by Botpress</p>
+          <p className="text-sm text-gray-500 font-medium">Powered by Ai-Clinic</p>
         </div>
       </div>
       
