@@ -15,7 +15,7 @@ export const TypingIndicator: React.FC = () => {
             <div className="w-2 h-2 bg-blue-400 rounded-full typing-dot"></div>
             <div className="w-2 h-2 bg-blue-400 rounded-full typing-dot"></div>
           </div>
-          <span className="text-xs text-gray-500 ml-2 font-medium animate-pulse-slow">AI is typing...</span>
+          <span className="text-xs text-gray-500 ml-2 font-medium animate-pulse-slow">Thinking...</span>
         </div>
       </div>
     </div>

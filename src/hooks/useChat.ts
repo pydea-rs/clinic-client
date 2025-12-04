@@ -21,6 +21,8 @@ export const useChat = () => {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttempts = useRef(0);
   const lastMessageTimeRef = useRef<Date>(new Date());
+  const lastUserMessageRef = useRef<string | null>(null);
+  const lastUserMessageAtRef = useRef<number>(0);
 
   const updateConnectionStatus = useCallback(
     (status: Partial<ConnectionStatus>) => {
@@ -137,14 +139,28 @@ export const useChat = () => {
           const messageData = JSON.parse(e.data as string);
           console.log("[SSE] Processing message_created:", messageData);
 
-          if (messageData?.isBot === false) {
-            console.log("[SSE] Skipping user-originated message", messageData.id);
-            return;
-          }
-
           const text = extractMessageText(messageData?.payload);
 
           if (text) {
+            const now = Date.now();
+
+            // Heuristically skip echo of the last user message that the client already added
+            const isLikelyUserEcho =
+              messageData?.isUser === true ||
+              messageData?.authorType === "user" ||
+              messageData?.direction === "incoming" ||
+              (lastUserMessageRef.current &&
+                text === lastUserMessageRef.current &&
+                now - lastUserMessageAtRef.current < 5000);
+
+            if (isLikelyUserEcho || messageData?.isBot === false) {
+              console.log(
+                "[SSE] Skipping user-originated/echo message",
+                messageData.id
+              );
+              return;
+            }
+
             console.log(
               "[SSE] Adding AI message:",
               text,
@@ -175,6 +191,74 @@ export const useChat = () => {
             e.data
           );
           setChatState((prev) => ({ ...prev, isTyping: false }));
+        }
+      });
+
+      // Streaming / incremental updates to an existing bot message
+      eventSource.addEventListener("message_updated", (e: MessageEvent) => {
+        console.log("[SSE] 'message_updated' event received:", e.data);
+        try {
+          const messageData = JSON.parse(e.data as string);
+          const text = extractMessageText(messageData?.payload);
+
+          if (!text) {
+            console.warn(
+              "[SSE] message_updated event but no text found:",
+              messageData
+            );
+            return;
+          }
+
+          setChatState((prev) => {
+            const index = prev.messages.findIndex(
+              (m) => m.id === messageData.id
+            );
+
+            // If we don't yet have this message in state, treat it as a new bot message
+            if (index === -1) {
+              return {
+                ...prev,
+                isTyping: false,
+                messages: [
+                  ...prev.messages,
+                  {
+                    id: messageData.id,
+                    text,
+                    isUser: false,
+                    timestamp: new Date(
+                      messageData.updatedAt ||
+                        messageData.createdAt ||
+                        new Date()
+                    ),
+                  },
+                ],
+              };
+            }
+
+            const updatedMessages = [...prev.messages];
+            updatedMessages[index] = {
+              ...updatedMessages[index],
+              text,
+              timestamp: new Date(
+                messageData.updatedAt ||
+                  messageData.createdAt ||
+                  new Date()
+              ),
+            };
+
+            return {
+              ...prev,
+              isTyping: false,
+              messages: updatedMessages,
+            };
+          });
+        } catch (error) {
+          console.error(
+            "[SSE] Error parsing 'message_updated' event:",
+            error,
+            "Raw data:",
+            e.data
+          );
         }
       });
 
@@ -258,6 +342,10 @@ export const useChat = () => {
         isUser: true,
         timestamp: new Date(),
       });
+
+      // Track last user message so we can ignore its echo from the SSE stream
+      lastUserMessageRef.current = text;
+      lastUserMessageAtRef.current = Date.now();
 
       try {
         console.log("[Chat] Sending message:", {
