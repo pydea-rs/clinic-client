@@ -19,7 +19,6 @@ export const useChat = () => {
   const eventSourceRef = useRef<EventSource | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const pollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttempts = useRef(0);
   const lastMessageTimeRef = useRef<Date>(new Date());
 
@@ -76,73 +75,24 @@ export const useChat = () => {
     }
   }, [updateConnectionStatus]);
 
-  const stopPolling = useCallback(() => {
-    if (pollingTimeoutRef.current) {
-      clearTimeout(pollingTimeoutRef.current);
-      pollingTimeoutRef.current = null;
-      console.log("[Polling] Stopped polling");
-    }
+  const extractMessageText = useCallback((payload: any): string | null => {
+    if (!payload) return null;
+    if (typeof payload.text === "string") return payload.text;
+    if (typeof payload.markdown === "string") return payload.markdown;
+    if (typeof payload.title === "string") return payload.title;
+    if (typeof payload.audioUrl === "string") return payload.audioUrl;
+    if (typeof payload.fileUrl === "string") return payload.fileUrl;
+    return null;
   }, []);
-
-  const pollForMessages = useCallback(async () => {
-    if (!chatState.conversationId) return;
-
-    try {
-      console.log("[Polling] Checking for new messages...");
-      const response = await apiService
-        .getAxiosInstance()
-        .get(`/ai-agents/poll/${chatState.conversationId}`);
-
-      const newMessages = response.data?.contents || [];
-      console.log("[Polling] Found messages:", newMessages);
-
-      // Filter out messages that are already in our chat state by ID
-      const existingMessageIds = new Set(chatState.messages.map((m) => m.id));
-
-      newMessages.forEach((msg: any) => {
-        if (msg.payload?.text && !existingMessageIds.has(msg.id)) {
-          console.log(
-            "[Polling] Adding new polled message:",
-            msg.payload.text,
-            "ID:",
-            msg.id
-          );
-          addMessage({
-            id: msg.id, // Use the actual Botpress message ID
-            text: msg.payload.text,
-            isUser: false,
-            timestamp: new Date(msg.createdAt),
-          });
-          // Stop polling once we get a response
-          stopPolling();
-        }
-      });
-    } catch (error) {
-      console.error("[Polling] Error:", error);
-    }
-  }, [chatState.conversationId, chatState.messages, addMessage, stopPolling]);
-
-  const startPolling = useCallback(() => {
-    if (pollingTimeoutRef.current) return; // Already polling
-
-    const poll = () => {
-      pollForMessages();
-      pollingTimeoutRef.current = setTimeout(poll, 3000); // Poll every 3 seconds
-    };
-
-    poll();
-    console.log("[Polling] Started polling for messages");
-  }, [pollForMessages]);
 
   const connectSSE = useCallback(
     (conversationId: string) => {
       if (eventSourceRef.current) return;
 
       // Use cookie-based auth; EventSource should send cookies automatically (set by server on login)
-      const eventSource = new EventSource(
-        apiService.getStreamUrl(conversationId),
-        { withCredentials: true }
-      );
+      const eventSource = new EventSource(apiService.getStreamUrl(conversationId), {
+        withCredentials: true,
+      } as EventSourceInit);
 
       eventSource.onopen = () => {
         console.log("[SSE] Connection opened");
@@ -154,97 +104,104 @@ export const useChat = () => {
         reconnectAttempts.current = 0;
       };
 
-      eventSource.onmessage = (e: MessageEvent) => {
-        console.log("[SSE] Raw event received:", {
-          type: e.type,
-          data: e.data,
-          lastEventId: e.lastEventId,
-          origin: e.origin,
-        });
+      /**
+       * NOTE:
+       * The server sends **named** SSE events using the `event:` field:
+       *   - `event: connected`
+       *   - `event: message_created`
+       *   - `event: error`
+       * with the JSON payload on the `data:` line.
+       *
+       * Named events are NOT delivered to `onmessage`; we must use
+       * `addEventListener('<event-name>', handler)` for each one.
+       */
 
+      // Connection confirmation event
+      eventSource.addEventListener("connected", (e: MessageEvent) => {
+        console.log("[SSE] 'connected' event received:", e.data);
         try {
-          // Skip heartbeat messages
-          if (e.data.startsWith(": keepalive")) {
-            console.log("[SSE] Heartbeat received");
+          const parsed = JSON.parse(e.data as string);
+          console.log(
+            "[SSE] Connection confirmed for conversation:",
+            parsed?.conversationId
+          );
+        } catch (error) {
+          console.error("[SSE] Failed to parse 'connected' event:", error);
+        }
+      });
+
+      // New message from Botpress
+      eventSource.addEventListener("message_created", (e: MessageEvent) => {
+        console.log("[SSE] 'message_created' event received:", e.data);
+        try {
+          const messageData = JSON.parse(e.data as string);
+          console.log("[SSE] Processing message_created:", messageData);
+
+          if (messageData?.isBot === false) {
+            console.log("[SSE] Skipping user-originated message", messageData.id);
             return;
           }
 
-          const parsed = JSON.parse(e.data);
-          console.log("[SSE] Parsed message:", {
-            type: parsed.type,
-            data: parsed.data,
-            fullParsed: parsed,
-          });
+          const text = extractMessageText(messageData?.payload);
 
-          // Handle connection confirmation
-          if (parsed.type === "connected") {
+          if (text) {
             console.log(
-              "[SSE] Connection confirmed for conversation:",
-              parsed.data?.conversationId
+              "[SSE] Adding AI message:",
+              text,
+              "ID:",
+              messageData.id
             );
-            return;
-          }
-
-          // Handle message_created events
-          if (parsed.type === "message_created") {
-            const messageData = parsed.data;
-            console.log("[SSE] Processing message_created:", messageData);
-
-            if (messageData?.payload?.text) {
-              console.log(
-                "[SSE] Adding AI message:",
-                messageData.payload.text,
-                "ID:",
-                messageData.id
-              );
-              toast.success("New message received", {
-                duration: 2000,
-              });
-              addMessage({
-                id: messageData.id, // Use the actual Botpress message ID
-                text: messageData.payload.text,
-                isUser: false,
-                timestamp: new Date(messageData.createdAt || new Date()),
-              });
-              // Stop polling since we got the message via SSE
-              stopPolling();
-            } else {
-              console.warn(
-                "[SSE] Message created but no text found:",
-                messageData
-              );
-              // Still stop typing even if no text
-              setChatState((prev) => ({ ...prev, isTyping: false }));
-            }
-          }
-
-          // Handle error events
-          if (parsed.type === "error") {
-            console.error("[SSE] Error received:", parsed.data);
+            toast.success("New message received", {
+              duration: 2000,
+            });
+            addMessage({
+              id: messageData.id, // Use the actual Botpress message ID
+              text,
+              isUser: false,
+              timestamp: new Date(messageData.createdAt || new Date()),
+            });
+          } else {
+            console.warn(
+              "[SSE] message_created event but no text found:",
+              messageData
+            );
             setChatState((prev) => ({ ...prev, isTyping: false }));
-            toast.error("AI service error: " + parsed.data?.message);
-          }
-
-          // Handle any other events
-          if (
-            !["connected", "message_created", "error"].includes(parsed.type)
-          ) {
-            console.log("[SSE] Unknown event type:", parsed.type, parsed);
           }
         } catch (error) {
           console.error(
-            "[SSE] Error parsing message:",
+            "[SSE] Error parsing 'message_created' event:",
             error,
             "Raw data:",
             e.data
           );
-          // If we can't parse the message, stop typing to prevent getting stuck
           setChatState((prev) => ({ ...prev, isTyping: false }));
         }
+      });
+
+      // AI / Botpress level error event
+      eventSource.addEventListener("error", (e: MessageEvent) => {
+        console.error("[SSE] 'error' event received:", e.data);
+        try {
+          const parsed = JSON.parse(e.data as string);
+          setChatState((prev) => ({ ...prev, isTyping: false }));
+          toast.error("AI service error: " + (parsed?.message ?? "Unknown"));
+        } catch (error) {
+          console.error(
+            "[SSE] Failed to parse 'error' event:",
+            error,
+            "Raw data:",
+            e.data
+          );
+          setChatState((prev) => ({ ...prev, isTyping: false }));
+        }
+      });
+
+      // Fallback handler for any unnamed/default events (not expected with current server)
+      eventSource.onmessage = (e: MessageEvent) => {
+        console.log("[SSE] Default message event received:", e.data);
       };
 
-      // Use generic onerror handler for reconnection flow
-
+      // Network / transport-level error handler for reconnection flow
       eventSource.onerror = (error) => {
         console.error("[SSE] Connection error:", error);
         console.log("[SSE] EventSource readyState:", eventSource.readyState);
@@ -286,7 +243,7 @@ export const useChat = () => {
 
       eventSourceRef.current = eventSource;
     },
-    [addMessage, updateConnectionStatus, stopPolling]
+    [addMessage, updateConnectionStatus, extractMessageText]
   );
 
   const sendMessage = useCallback(
@@ -332,11 +289,7 @@ export const useChat = () => {
             "[Chat] Typing timeout reached - stopping typing indicator"
           );
           toast.error("No response received from AI");
-          stopPolling();
         }, 30000); // 30 seconds timeout
-
-        // Start polling for messages as a workaround for SSE issues
-        startPolling();
 
         toast.success("Message sent successfully", { duration: 2000 });
       } catch (error) {
@@ -354,13 +307,7 @@ export const useChat = () => {
         setChatState((prev) => ({ ...prev, isSending: false }));
       }
     },
-    [
-      chatState.conversationId,
-      chatState.isSending,
-      addMessage,
-      startPolling,
-      stopPolling,
-    ]
+    [chatState.conversationId, chatState.isSending, addMessage]
   );
 
   const initializeChat = useCallback(async () => {
@@ -383,9 +330,8 @@ export const useChat = () => {
       clearTimeout(typingTimeoutRef.current);
       typingTimeoutRef.current = null;
     }
-    stopPolling();
     updateConnectionStatus({ connected: false, reconnecting: false });
-  }, [updateConnectionStatus, stopPolling]);
+  }, [updateConnectionStatus]);
 
   useEffect(() => {
     return () => {
@@ -398,7 +344,5 @@ export const useChat = () => {
     initializeChat,
     sendMessage,
     disconnect,
-    startPolling,
-    stopPolling,
   };
 };
