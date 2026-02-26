@@ -1,7 +1,7 @@
 import React from 'react';
 import { MessageCircle, LogOut } from 'lucide-react';
 import { ConnectionStatus } from './ConnectionStatus';
-import { ConnectionStatus as ConnectionStatusType } from '../types/chat';
+import { ConnectionStatus as ConnectionStatusType } from '../../../lib/types/chat';
 
 interface ChatHeaderProps {
   connectionStatus: ConnectionStatusType;

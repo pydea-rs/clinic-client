@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { AuthState, User } from '../types/chat';
-import { ApiService } from '../services/api';
+import { AuthState, User } from '../../../lib/types/chat';
+import { ApiService } from '../../../api/client';
 
 const apiService = ApiService.get();
 

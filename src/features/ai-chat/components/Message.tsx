@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Message as MessageType } from '../types/chat';
+import { Message as MessageType } from '../../../lib/types/chat';
 import { User, Bot } from 'lucide-react';
 
 interface MessageProps {

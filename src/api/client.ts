@@ -4,7 +4,7 @@ import {
     SendMessageRequest,
     SendMessageResponse,
     ApiError,
-} from "../types/chat";
+} from "../lib/types/chat";
 
 export class ApiService {
     private api!: AxiosInstance;

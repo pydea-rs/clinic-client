@@ -1,6 +1,6 @@
 import React from 'react';
 import { Wifi, WifiOff, RotateCw } from 'lucide-react';
-import { ConnectionStatus as ConnectionStatusType } from '../types/chat';
+import { ConnectionStatus as ConnectionStatusType } from '../../../lib/types/chat';
 
 interface ConnectionStatusProps {
   status: ConnectionStatusType;
