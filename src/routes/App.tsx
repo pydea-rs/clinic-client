@@ -5,6 +5,8 @@ import { AuthForm } from '../features/auth/components/AuthForm';
 import { ChatInterface } from '../features/ai-chat/components/ChatInterface';
 import { useAuth } from '../features/auth/hooks/useAuth';
 import { AuthGuard, PatientGuard, DoctorGuard, AdminGuard } from '../lib/guards/route-guards';
+import { DebugPage } from '../features/debug/DebugPage';
+import { Shell } from '../components/Shell';
 
 // Placeholder components for unsupported modules
 const CallsPlaceholder = () => (
@@ -62,20 +64,23 @@ function App() {
           {/* AI Chat (public if not authenticated, protected if authenticated) */}
           <Route path="/ai" element={isAuthenticated ? <ChatInterface onLogout={logout} /> : <Navigate to="/auth" replace />} />
           
+          {/* Protected routes with Shell */}
+          <Route path="/" element={<Shell><div className="p-8">Home (TBD)</div></Shell>} />
+          
           {/* Patient routes */}
-          <Route path="/patient/*" element={<PatientGuard><div className="p-8">Patient Dashboard (TBD)</div></PatientGuard>} />
+          <Route path="/patient/*" element={<PatientGuard><Shell><div className="p-8">Patient Dashboard (TBD)</div></Shell></PatientGuard>} />
           
           {/* Doctor routes */}
-          <Route path="/doctor/*" element={<DoctorGuard><div className="p-8">Doctor Dashboard (TBD)</div></DoctorGuard>} />
+          <Route path="/doctor/*" element={<DoctorGuard><Shell><div className="p-8">Doctor Dashboard (TBD)</div></Shell></DoctorGuard>} />
           
           {/* Admin routes */}
-          <Route path="/admin/*" element={<AdminGuard><div className="p-8">Admin Dashboard (TBD)</div></AdminGuard>} />
+          <Route path="/admin/*" element={<AdminGuard><Shell><div className="p-8">Admin Dashboard (TBD)</div></Shell></AdminGuard>} />
           
           {/* Chat routes */}
-          <Route path="/chat/*" element={<AuthGuard><div className="p-8">Chat (TBD)</div></AuthGuard>} />
+          <Route path="/chat/*" element={<AuthGuard><Shell><div className="p-8">Chat (TBD)</div></Shell></AuthGuard>} />
           
           {/* Debug routes */}
-          <Route path="/debug/*" element={<AuthGuard><div className="p-8">Debug Tools (TBD)</div></AuthGuard>} />
+          <Route path="/debug/*" element={<AuthGuard><DebugPage /></AuthGuard>} />
           
           {/* Unsupported modules placeholders */}
           <Route path="/calls" element={<CallsPlaceholder />} />
