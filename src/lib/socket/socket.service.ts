@@ -1,44 +1,33 @@
-import { io, Socket } from 'socket.io-client';
-
-interface SocketServiceOptions {
-  namespace?: string;
-  withCredentials?: boolean;
-}
+import io, { Socket } from 'socket.io-client';
 
 class SocketService {
   private socket: Socket | null = null;
-  private namespace: string;
-  private withCredentials: boolean;
-
-  constructor(options: SocketServiceOptions = {}) {
-    this.namespace = options.namespace || '/chat';
-    this.withCredentials = options.withCredentials ?? true;
-  }
+  private baseUrl: string = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
   connect(): Socket {
-    if (this.socket) {
+    if (this.socket?.connected) {
       return this.socket;
     }
 
-    const baseUrl = import.meta.env.VITE_WS_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
-    const url = `${baseUrl}${this.namespace}`;
-
-    this.socket = io(url, {
-      withCredentials: this.withCredentials,
-      transports: ['websocket', 'polling'],
+    this.socket = io(this.baseUrl, {
+      namespace: '/chat',
+      withCredentials: true,
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: 5,
     });
 
-    // Connection handlers
     this.socket.on('connect', () => {
-      console.log('[WS] Connected to', this.namespace);
+      console.log('[Socket] Connected to chat namespace');
     });
 
-    this.socket.on('disconnect', (reason) => {
-      console.log('[WS] Disconnected from', this.namespace, 'reason:', reason);
+    this.socket.on('disconnect', () => {
+      console.log('[Socket] Disconnected from chat namespace');
     });
 
-    this.socket.on('connect_error', (error) => {
-      console.error('[WS] Connection error:', error);
+    this.socket.on('error', (error) => {
+      console.error('[Socket] Error:', error);
     });
 
     return this.socket;
@@ -55,40 +44,29 @@ class SocketService {
     return this.socket;
   }
 
-  // Join a chat room
-  joinRoom(room: string): void {
-    this.socket?.emit('chat:join', { room });
+  isConnected(): boolean {
+    return this.socket?.connected ?? false;
   }
 
-  // Leave a chat room
-  leaveRoom(room: string): void {
-    this.socket?.emit('chat:leave', { room });
+  emit(event: string, data?: any): void {
+    if (this.socket?.connected) {
+      this.socket.emit(event, data);
+    } else {
+      console.warn(`[Socket] Cannot emit '${event}' - socket not connected`);
+    }
   }
 
-  // Send a message
-  sendMessage(chatId: string, content: string, type: 'TEXT' | 'IMAGE' | 'FILE' | 'AUDIO' | 'VIDEO' | 'SYSTEM' = 'TEXT'): void {
-    this.socket?.emit('chat:message', { chatId, content, type });
+  on(event: string, callback: (...args: any[]) => void): void {
+    if (this.socket) {
+      this.socket.on(event, callback);
+    }
   }
 
-  // Send typing indicator
-  sendTyping(chatId: string, isTyping: boolean): void {
-    this.socket?.emit('chat:typing', { chatId, isTyping });
-  }
-
-  // Mark message as read
-  markAsRead(chatId: string, messageId: number): void {
-    this.socket?.emit('chat:read', { chatId, messageId });
-  }
-
-  // Edit a message
-  editMessage(chatId: string, messageId: number, content: string): void {
-    this.socket?.emit('chat:edit', { chatId, messageId, content });
-  }
-
-  // Delete a message
-  deleteMessage(chatId: string, messageId: number): void {
-    this.socket?.emit('chat:delete', { chatId, messageId });
+  off(event: string, callback?: (...args: any[]) => void): void {
+    if (this.socket) {
+      this.socket.off(event, callback);
+    }
   }
 }
 
-export const socketService = new SocketService({ namespace: '/chat' });
+export const socketService = new SocketService();

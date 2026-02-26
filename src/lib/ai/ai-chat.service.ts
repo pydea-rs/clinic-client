@@ -1,42 +1,34 @@
-import { ApiService } from '../api/client';
+import { apiClient, getApiBaseUrl } from './client';
 
 export class AiChatService {
-  private apiService: ApiService;
-
-  constructor() {
-    this.apiService = ApiService.get();
-  }
-
   // Start a new conversation
   async startConversation(): Promise<string> {
-    return await this.apiService.startConversation();
+    const response = await apiClient.post('/ai-agents/start', {});
+    return response.data.conversationId;
   }
 
   // Send a message
   async sendMessage(conversationId: string, text: string): Promise<any> {
-    return await this.apiService.sendMessage({ conversationId, text });
+    const response = await apiClient.post('/ai-agents/message', {
+      conversationId,
+      text,
+    });
+    return response.data;
   }
 
   // Get messages for a conversation (polling fallback)
   async getMessages(conversationId: string): Promise<any[]> {
-    const response = await this.apiService.getAxiosInstance().get(`/ai-agents/messages/${conversationId}`);
+    const response = await apiClient.get(`/ai-agents/messages/${conversationId}`);
     return response.data;
   }
 
   // Get stream URL for SSE
   getStreamUrl(conversationId: string): string {
-    return this.apiService.getStreamUrl(conversationId);
-  }
-
-  // Set base URL
-  setBaseURL(baseURL: string): void {
-    this.apiService.setBaseURL(baseURL);
-  }
-
-  // Get base URL
-  getBaseURL(): string {
-    return this.apiService.getBaseURL();
+    const baseUrl = getApiBaseUrl();
+    return `${baseUrl}/ai-agents/stream/${conversationId}`;
   }
 }
+
+export const aiChatService = new AiChatService();
 
 export const aiChatService = new AiChatService();

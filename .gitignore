@@ -23,3 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 .env
+AUDIT_REPORT.md
+BUG_AUDIT_AND_FIXES.md
+FIXES_APPLIED.md

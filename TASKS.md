@@ -24,6 +24,8 @@
 | C-04 | Create client task list from PRD | ✅ | C-03 | This file (`client/TASKS.md`). |
 | C-05 | Define out-of-scope placeholder strategy | ✅ | C-02 | Implemented placeholder components for calls/notifications/payment/nurse modules. |
 
+**Phase 0 Status: ✅ 6/6 COMPLETE**
+
 ---
 
 ## Phase 1 — M1 Foundation & Routing
@@ -36,15 +38,17 @@
 | C-11 | Reorganize folder structure by domain | ✅ | C-10 | Add `api/`, `routes/`, `features/`, `stores/`, `lib/`, `components/`, `styles/`. |
 | C-12 | Build shared axios API client | ✅ | C-10 | `withCredentials: true`, base URL via env, timeout, typed methods. |
 | C-13 | Add envelope unwrapping interceptor | ✅ | C-12 | Normalize `{ status, message, contents }` to usable client data. |
-| C-14 | Add normalized error model | 🆕 | C-12 | Parse backend error envelope (`status`, `message`, `path`, `timestamp`). |
+| C-14 | Add normalized error model | ✅ | C-12 | Parse backend error envelope (`status`, `message`, `path`, `timestamp`). |
 | C-15 | Introduce React Query provider + defaults | ✅ | C-10 | Caching, retries, stale time, global error hooks. |
-| C-16 | Create auth/session Zustand store | 🆕 | C-10 | Current user, role flags, auth state, session bootstrap state. |
-| C-17 | Create diagnostics store | 🆕 | C-12 | Request log events, SSE/WS status, debug toggle. |
-| C-18 | Implement app router + route groups | 🆕 | C-11 | Public/patient/doctor/admin/chat/debug route trees. |
-| C-19 | Implement route guards by role | 🆕 | C-16 | `AuthGuard`, `PatientGuard`, `DoctorGuard`, `AdminGuard`, `SuperAdminGuard` behavior. |
-| C-20 | Build shared app shell + role-aware nav | 🆕 | C-18 | Top nav + sidebar + quick role context switch indicators. |
-| C-21 | Apply visual system + tokens | 🆕 | C-20 | Typography, color tokens, spacing, status badges, animation primitives. |
-| C-22 | Mobile responsive layout pass (foundation) | 🆕 | C-20 | Validate shell and primary nav on common breakpoints. |
+| C-16 | Create auth/session Zustand store | ✅ | C-10 | Current user, role flags, auth state, session bootstrap state. |
+| C-17 | Create diagnostics store | ✅ | C-12 | Request log events, SSE/WS status, debug toggle. |
+| C-18 | Implement app router + route groups | ✅ | C-11 | Public/patient/doctor/admin/chat/debug route trees. |
+| C-19 | Implement route guards by role | ✅ | C-16 | `AuthGuard`, `PatientGuard`, `DoctorGuard`, `AdminGuard`, `SuperAdminGuard` behavior. |
+| C-20 | Build shared app shell + role-aware nav | ✅ | C-18 | Top nav + sidebar + quick role context switch indicators. |
+| C-21 | Apply visual system + tokens | ✅ | C-20 | Typography, color tokens, spacing, status badges, animation primitives. |
+| C-22 | Mobile responsive layout pass (foundation) | ✅ | C-20 | Validate shell and primary nav on common breakpoints. |
+
+**Phase 1 Status: ✅ 13/13 COMPLETE**
 
 ---
 
@@ -54,17 +58,19 @@
 
 | # | Task | Status | Depends On | Details |
 |---|------|--------|------------|---------|
-| C-30 | Refactor auth API module | 🆕 | C-12 | Implement typed wrappers for `/auth/login`, `/auth/register`, `/auth/logout`, `/user`. |
-| C-31 | Update register payload mapping | 🆕 | C-30 | Use `firstname`, `lastname`, `email`, `password`, optional `role` (PATIENT/DOCTOR). |
-| C-32 | Rebuild auth form with schema validation | 🆕 | C-30 | Use React Hook Form + Zod; map backend validation errors cleanly. |
-| C-33 | Session bootstrap + rehydrate on load | 🆕 | C-16 | `GET /user` on app start, role-aware redirect and guard readiness. |
-| C-34 | Logout/session-expired handling | 🆕 | C-33 | Clear store, redirect, show controlled toast/state. |
-| C-35 | Extract AI chat transport service | 🆕 | C-12 | Centralize `start`, `send`, `messages`, `stream` contract handling. |
-| C-36 | Upgrade SSE event handling | 🔧 | C-35 | Support `connected`, `message_created`, `message_updated`, `soap_ready`, `error`. |
-| C-37 | Add AI chat reconnection controls | 🆕 | C-36 | Manual reconnect + backoff state visibility + retry count. |
-| C-38 | Add polling fallback flow | 🆕 | C-35 | Use `/ai-agents/messages/:conversationId` when SSE unavailable. |
-| C-39 | Show SOAP-ready events in AI UI | 🆕 | C-36 | Display SOAP generated event with `soapId` + action link. |
-| C-40 | AI diagnostics panel | 🆕 | C-37 | Event timeline, raw payload preview, stream status. |
+| C-30 | Refactor auth API module | ✅ | C-12 | Implement typed wrappers for `/auth/login`, `/auth/register`, `/auth/logout`, `/user`. |
+| C-31 | Update register payload mapping | ✅ | C-30 | Use `firstname`, `lastname`, `email`, `password`, optional `role` (PATIENT/DOCTOR). |
+| C-32 | Rebuild auth form with schema validation | ✅ | C-30 | Use React Hook Form + Zod; map backend validation errors cleanly. |
+| C-33 | Session bootstrap + rehydrate on load | ✅ | C-16 | `GET /user` on app start, role-aware redirect and guard readiness. |
+| C-34 | Logout/session-expired handling | ✅ | C-33 | Clear store, redirect, show controlled toast/state. |
+| C-35 | Extract AI chat transport service | ✅ | C-12 | Centralize `start`, `send`, `messages`, `stream` contract handling. |
+| C-36 | Upgrade SSE event handling | ✅ | C-35 | Support `connected`, `message_created`, `message_updated`, `soap_ready`, `error`. |
+| C-37 | Add AI chat reconnection controls | ✅ | C-36 | Manual reconnect + backoff state visibility + retry count. |
+| C-38 | Add polling fallback flow | ✅ | C-35 | Use `/ai-agents/messages/:conversationId` when SSE unavailable. |
+| C-39 | Show SOAP-ready events in AI UI | ✅ | C-36 | Display SOAP generated event with `soapId` + action link. |
+| C-40 | AI diagnostics panel | ✅ | C-37 | Event timeline, raw payload preview, stream status. |
+
+**Phase 2 Status: ✅ 11/11 COMPLETE**
 
 ---
 
@@ -243,15 +249,15 @@
 
 | Category | Total | ✅ Done | 🔧 Partial | 🆕 New |
 |----------|-------|---------|------------|--------|
-| Phase 0 Baseline | 6 | 5 | 0 | 1 |
-| Phase 1 Foundation | 13 | 4 | 0 | 9 |
-| Phase 2 Auth + AI | 11 | 0 | 1 | 10 |
+| Phase 0 Baseline | 6 | 6 | 0 | 0 |
+| Phase 1 Foundation | 13 | 13 | 0 | 0 |
+| Phase 2 Auth + AI | 11 | 11 | 0 | 0 |
 | Phase 3 Core Panels | 38 | 0 | 0 | 38 |
 | Phase 4 Admin | 8 | 0 | 0 | 8 |
 | Phase 5 Chat Realtime | 12 | 0 | 0 | 12 |
 | Phase 6 QA Tooling | 8 | 0 | 0 | 8 |
 | Phase 7 Quality | 8 | 0 | 0 | 8 |
-| **TOTAL** | **104** | **9** | **1** | **94** |
+| **TOTAL** | **104** | **30** | **0** | **74** |
 
 ---
 

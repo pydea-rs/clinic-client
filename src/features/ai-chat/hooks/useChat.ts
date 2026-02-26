@@ -3,9 +3,7 @@ import toast from "react-hot-toast";
 
 // const API_BASE = import.meta.env.VITE_API_BASE ?? "/api"; // configurable base; use Vite proxy by default
 import { Message, ChatState, ConnectionStatus, ApiError } from "../../../lib/types/chat";
-import { ApiService } from "../../../api/client";
-
-const apiService = ApiService.get();
+import { aiChatService } from "../../../lib/ai/ai-chat.service";
 
 export const useChat = () => {
   const [chatState, setChatState] = useState<ChatState>({
@@ -60,7 +58,7 @@ export const useChat = () => {
 
   const startConversation = useCallback(async () => {
     try {
-      const conversationId = await apiService.startConversation();
+      const conversationId = await aiChatService.startConversation();
       setChatState((prev) => ({ ...prev, conversationId }));
 
       if (!conversationId) {
@@ -92,7 +90,7 @@ export const useChat = () => {
       if (eventSourceRef.current) return;
 
       // Use cookie-based auth; EventSource should send cookies automatically (set by server on login)
-      const eventSource = new EventSource(apiService.getStreamUrl(conversationId), {
+      const eventSource = new EventSource(aiChatService.getStreamUrl(conversationId), {
         withCredentials: true,
       } as EventSourceInit);
 
@@ -353,10 +351,10 @@ export const useChat = () => {
           text,
         });
 
-        await apiService.sendMessage({
-          conversationId: chatState.conversationId,
-          text,
-        });
+        await aiChatService.sendMessage(
+          chatState.conversationId,
+          text
+        );
 
         console.log(
           "[Chat] Message sent successfully, showing typing indicator"

@@ -92,9 +92,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onLogout }) => {
         </div>
 
         <MessageInput
-          onSendMessage={sendMessage}
+          onSend={sendMessage}
           disabled={!connectionStatus.connected}
-          isSending={isSending}
         />
       </div>
     </div>
