@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ToastProvider } from '../components/Toast';
 import { AuthForm } from '../features/auth/components/AuthForm';
 import { ChatInterface } from '../features/ai-chat/components/ChatInterface';
@@ -18,8 +18,18 @@ import { DoctorDocumentsPage } from '../features/doctor/DoctorDocumentsPage';
 import { DoctorListPage } from '../features/doctor/DoctorListPage';
 import { DoctorProfilePage } from '../features/doctor/DoctorProfilePage';
 import { ConsultationCreatePage } from '../features/consultation/ConsultationCreatePage';
+import { ConsultationListPage } from '../features/consultation/ConsultationListPage';
+import { ConsultationDetailPage } from '../features/consultation/ConsultationDetailPage';
 import { SchedulingPage } from '../features/scheduling/SchedulingPage';
+import { AvailabilityPanel } from '../features/scheduling/AvailabilityPanel';
+import { SlotDurationsPanel } from '../features/scheduling/SlotDurationsPanel';
+import { ExceptionsPanel } from '../features/scheduling/ExceptionsPanel';
+import { SlotExplorer } from '../features/scheduling/SlotExplorer';
+import { BookingPage } from '../features/scheduling/BookingPage';
+import { AppointmentsPage } from '../features/scheduling/AppointmentsPage';
 import { ReviewCreatePage } from '../features/review/ReviewCreatePage';
+import { ReviewFeedPage } from '../features/review/ReviewFeedPage';
+import { RatingWidget } from '../features/review/RatingWidget';
 import { AdminDashboardPage } from '../features/admin/AdminDashboardPage';
 import { AdminUserManagementPage } from '../features/admin/AdminUserManagementPage';
 import { AdminDoctorVerificationPage } from '../features/admin/AdminDoctorVerificationPage';
@@ -100,8 +110,23 @@ function App() {
           <Route path="/doctor/documents" element={<DoctorGuard><Shell><DoctorDocumentsPage /></Shell></DoctorGuard>} />
           <Route path="/doctor/consultations" element={<DoctorGuard><Shell><PatientConsultationsListPage /></Shell></DoctorGuard>} />
           <Route path="/doctor/scheduling" element={<DoctorGuard><Shell><SchedulingPage /></Shell></DoctorGuard>} />
+          <Route path="/doctor/scheduling/availability" element={<DoctorGuard><Shell><AvailabilityPanel /></Shell></DoctorGuard>} />
+          <Route path="/doctor/scheduling/durations" element={<DoctorGuard><Shell><SlotDurationsPanel /></Shell></DoctorGuard>} />
+          <Route path="/doctor/scheduling/exceptions" element={<DoctorGuard><Shell><ExceptionsPanel /></Shell></DoctorGuard>} />
           <Route path="/doctor/chat" element={<DoctorGuard><Shell><ChatListPage /></Shell></DoctorGuard>} />
           <Route path="/doctor/settings" element={<DoctorGuard><Shell><Shell>Settings Coming Soon</Shell></Shell></DoctorGuard>} />
+          
+          {/* Consultation routes */}
+          <Route path="/consultations" element={<AuthGuard><Shell><ConsultationListPage /></Shell></AuthGuard>} />
+          <Route path="/consultation/:id" element={<AuthGuard><Shell><ConsultationDetailPage /></Shell></AuthGuard>} />
+          
+          {/* Scheduling routes */}
+          <Route path="/slots/:doctorId" element={<SlotExplorer />} />
+          <Route path="/booking/:doctorId" element={<BookingPage />} />
+          <Route path="/appointments" element={<AuthGuard><Shell><AppointmentsPage /></Shell></AuthGuard>} />
+          
+          {/* Review routes */}
+          <Route path="/doctor/:id/reviews" element={<ReviewFeedPage />} />
           
           {/* Admin routes */}
           <Route path="/admin" element={<AdminGuard><Shell><AdminDashboardPage /></Shell></AdminGuard>} />

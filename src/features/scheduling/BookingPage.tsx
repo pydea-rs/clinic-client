@@ -1,30 +1,33 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { schedulingApi } from '../../api/scheduling.api';
-import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 export const BookingPage: React.FC = () => {
   const { doctorId } = useParams<{ doctorId: string }>();
   const navigate = useNavigate();
-  const locationState = useLocationState();
+  const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     doctorId: Number(doctorId),
-    dateTime: locationState?.slot || '',
-    durationMinutes: locationState?.duration || 30,
+    dateTime: '',
+    durationMinutes: 30,
     consultationId: '',
   });
 
-  const useLocationState = () => {
-    const location = window.location as any;
-    return location.state || {};
-  };
-
   useEffect(() => {
-    if (!locationState?.slot) {
+    const state = location.state as any;
+    if (!state?.slot) {
       navigate(`/slots/${doctorId}`);
+      return;
     }
-  }, [locationState, doctorId, navigate]);
+    setFormData({
+      doctorId: Number(doctorId),
+      dateTime: state.slot,
+      durationMinutes: state.duration || 30,
+      consultationId: '',
+    });
+  }, [location.state, doctorId, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +43,7 @@ export const BookingPage: React.FC = () => {
     }
   };
 
-  if (!locationState?.slot) {
+  if (!formData.dateTime) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
