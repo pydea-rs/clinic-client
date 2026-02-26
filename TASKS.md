@@ -34,7 +34,7 @@
 |---|------|--------|------------|---------|
 | C-10 | Install core frontend deps | ✅ | C-01 | Add `react-router-dom`, `@tanstack/react-query`, `zustand`, `socket.io-client`, `react-hook-form`, `zod`. |
 | C-11 | Reorganize folder structure by domain | ✅ | C-10 | Add `api/`, `routes/`, `features/`, `stores/`, `lib/`, `components/`, `styles/`. |
-| C-12 | Build shared axios API client | 🆕 | C-10 | `withCredentials: true`, base URL via env, timeout, typed methods. |
+| C-12 | Build shared axios API client | ✅ | C-10 | `withCredentials: true`, base URL via env, timeout, typed methods. |
 | C-13 | Add envelope unwrapping interceptor | 🆕 | C-12 | Normalize `{ status, message, contents }` to usable client data. |
 | C-14 | Add normalized error model | 🆕 | C-12 | Parse backend error envelope (`status`, `message`, `path`, `timestamp`). |
 | C-15 | Introduce React Query provider + defaults | 🆕 | C-10 | Caching, retries, stale time, global error hooks. |
@@ -244,14 +244,14 @@
 | Category | Total | ✅ Done | 🔧 Partial | 🆕 New |
 |----------|-------|---------|------------|--------|
 | Phase 0 Baseline | 6 | 5 | 0 | 1 |
-| Phase 1 Foundation | 13 | 2 | 0 | 11 |
+| Phase 1 Foundation | 13 | 3 | 0 | 10 |
 | Phase 2 Auth + AI | 11 | 0 | 1 | 10 |
 | Phase 3 Core Panels | 38 | 0 | 0 | 38 |
 | Phase 4 Admin | 8 | 0 | 0 | 8 |
 | Phase 5 Chat Realtime | 12 | 0 | 0 | 12 |
 | Phase 6 QA Tooling | 8 | 0 | 0 | 8 |
 | Phase 7 Quality | 8 | 0 | 0 | 8 |
-| **TOTAL** | **104** | **7** | **1** | **96** |
+| **TOTAL** | **104** | **8** | **1** | **95** |
 
 ---
 

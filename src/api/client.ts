@@ -1,14 +1,21 @@
-import axios, { AxiosInstance, AxiosResponse, AxiosError } from "axios";
+import { AxiosInstance, AxiosResponse, AxiosError } from "axios";
 import {
     StartConversationResponse,
     SendMessageRequest,
     SendMessageResponse,
     ApiError,
 } from "../lib/types/chat";
+import {
+    apiClient,
+    buildApiUrl,
+    getApiBaseUrl,
+    setApiBaseUrl,
+} from "./http-client";
 
 export class ApiService {
     private api!: AxiosInstance;
     private static instance: ApiService;
+    private static interceptorRegistered = false;
 
     public static get() {
         if (ApiService.instance) {
@@ -17,40 +24,37 @@ export class ApiService {
         return new ApiService();
     }
 
-    private constructor(private baseURL: string = "http://localhost:8080") {
+    private constructor(private baseURL: string = getApiBaseUrl()) {
         if (ApiService.instance) {
             return ApiService.instance;
         }
-        this.api = axios.create({
-            baseURL: this.baseURL,
-            timeout: 10000,
-            headers: {
-                "Content-Type": "application/json",
-            },
-            withCredentials: true,
-        });
+        this.api = apiClient;
 
-        // Response interceptor for error handling
-        this.api.interceptors.response.use(
-            (response) => response,
-            (error: AxiosError) => {
-                const apiError: ApiError = {
-                    message: error.message || "An error occurred",
-                    status: error.response?.status,
-                };
+        if (!ApiService.interceptorRegistered) {
+            // Response interceptor for error handling
+            this.api.interceptors.response.use(
+                (response) => response,
+                (error: AxiosError) => {
+                    const apiError: ApiError = {
+                        message: error.message || "An error occurred",
+                        status: error.response?.status,
+                    };
 
-                if (
-                    error.response?.data &&
-                    typeof error.response.data === "object"
-                ) {
-                    const data = error.response.data as any;
-                    apiError.message =
-                        data.message || data.error || apiError.message;
-                }
+                    if (
+                        error.response?.data &&
+                        typeof error.response.data === "object"
+                    ) {
+                        const data = error.response.data as any;
+                        apiError.message =
+                            data.message || data.error || apiError.message;
+                    }
 
-                return Promise.reject(apiError);
-            }
-        );
+                    return Promise.reject(apiError);
+                },
+            );
+            ApiService.interceptorRegistered = true;
+        }
+
         ApiService.instance = this;
     }
 
@@ -102,16 +106,16 @@ export class ApiService {
     }
 
     getStreamUrl(conversationId: string): string {
-        return `${this.baseURL}/ai-agents/stream/${conversationId}`;
+        return buildApiUrl(`/ai-agents/stream/${conversationId}`);
     }
 
     setBaseURL(baseURL: string): void {
-        this.baseURL = baseURL;
-        this.api.defaults.baseURL = baseURL;
+        setApiBaseUrl(baseURL);
+        this.baseURL = getApiBaseUrl();
     }
 
     getBaseURL(): string {
-        return this.baseURL;
+        return getApiBaseUrl();
     }
 
     getAxiosInstance(): AxiosInstance {
