@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { consultationApi } from '../../api/consultation.api';
 import { useAuthStore } from '../../lib/stores/auth.store';
 import { Link } from 'react-router-dom';
@@ -11,11 +11,7 @@ export const ConsultationListPage: React.FC = () => {
   const [total, setTotal] = useState(0);
   const { user } = useAuthStore();
 
-  useEffect(() => {
-    loadConsultations();
-  }, [page]);
-
-  const loadConsultations = async () => {
+  const loadConsultations = useCallback(async () => {
     try {
       const data = await consultationApi.getConsultations(page, 10);
       setConsultations(data.consultations || []);
@@ -25,7 +21,11 @@ export const ConsultationListPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page]);
+
+  useEffect(() => {
+    loadConsultations();
+  }, [loadConsultations]);
 
   const getStatusColor = (status: string) => {
     switch (status) {

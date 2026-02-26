@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { consultationApi } from '../../api/consultation.api';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../../lib/stores/auth.store';
@@ -16,22 +16,21 @@ export const ConsultationDetailPage: React.FC = () => {
   const [showCompletionForm, setShowCompletionForm] = useState(false);
   const { user } = useAuthStore();
 
-  useEffect(() => {
-    if (id) {
-      loadConsultation();
-    }
-  }, [id]);
-
-  const loadConsultation = async () => {
+  const loadConsultation = useCallback(async () => {
+    if (!id) return;
     try {
-      const data = await consultationApi.getConsultationById(id!);
+      const data = await consultationApi.getConsultationById(id);
       setConsultation(data);
     } catch (error: any) {
       toast.error(error.message || 'Failed to load consultation');
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    loadConsultation();
+  }, [loadConsultation]);
 
   const handleDecide = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { schedulingApi } from '../../api/scheduling.api';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -13,14 +13,7 @@ export const SlotExplorer: React.FC = () => {
   const [selectedDuration, setSelectedDuration] = useState<number>(30);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (doctorId) {
-      loadSlots();
-      loadDurations();
-    }
-  }, [doctorId, selectedDate, selectedDuration]);
-
-  const loadSlots = async () => {
+  const loadSlots = useCallback(async () => {
     try {
       const data = await schedulingApi.getDoctorSlots(Number(doctorId), {
         startDate: selectedDate,
@@ -33,16 +26,23 @@ export const SlotExplorer: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [doctorId, selectedDate, selectedDuration]);
 
-  const loadDurations = async () => {
+  const loadDurations = useCallback(async () => {
     try {
       const data = await schedulingApi.getDoctorDurations(Number(doctorId));
       setDurations(data);
     } catch (error: any) {
       toast.error(error.message || 'Failed to load durations');
     }
-  };
+  }, [doctorId]);
+
+  useEffect(() => {
+    if (doctorId) {
+      loadSlots();
+      loadDurations();
+    }
+  }, [doctorId, loadSlots, loadDurations]);
 
   const handleBook = () => {
     if (selectedSlot) {

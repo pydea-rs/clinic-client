@@ -95,7 +95,9 @@ export const useChat = () => {
       } as EventSourceInit);
 
       eventSource.onopen = () => {
-        console.log("[SSE] Connection opened");
+        if (import.meta.env.DEV) {
+          console.log("[SSE] Connection opened");
+        }
         updateConnectionStatus({
           connected: true,
           error: undefined,
@@ -118,13 +120,17 @@ export const useChat = () => {
 
       // Connection confirmation event
       eventSource.addEventListener("connected", (e: MessageEvent) => {
-        console.log("[SSE] 'connected' event received:", e.data);
+        if (import.meta.env.DEV) {
+          console.log("[SSE] 'connected' event received:", e.data);
+        }
         try {
           const parsed = JSON.parse(e.data as string);
-          console.log(
-            "[SSE] Connection confirmed for conversation:",
-            parsed?.conversationId
-          );
+          if (import.meta.env.DEV) {
+            console.log(
+              "[SSE] Connection confirmed for conversation:",
+              parsed?.conversationId
+            );
+          }
         } catch (error) {
           console.error("[SSE] Failed to parse 'connected' event:", error);
         }
@@ -132,10 +138,14 @@ export const useChat = () => {
 
       // New message from Botpress
       eventSource.addEventListener("message_created", (e: MessageEvent) => {
-        console.log("[SSE] 'message_created' event received:", e.data);
+        if (import.meta.env.DEV) {
+          console.log("[SSE] 'message_created' event received:", e.data);
+        }
         try {
           const messageData = JSON.parse(e.data as string);
-          console.log("[SSE] Processing message_created:", messageData);
+          if (import.meta.env.DEV) {
+            console.log("[SSE] Processing message_created:", messageData);
+          }
 
           const text = extractMessageText(messageData?.payload);
 
@@ -152,19 +162,23 @@ export const useChat = () => {
                 now - lastUserMessageAtRef.current < 5000);
 
             if (isLikelyUserEcho || messageData?.isBot === false) {
-              console.log(
-                "[SSE] Skipping user-originated/echo message",
-                messageData.id
-              );
+              if (import.meta.env.DEV) {
+                console.log(
+                  "[SSE] Skipping user-originated/echo message",
+                  messageData.id
+                );
+              }
               return;
             }
 
-            console.log(
-              "[SSE] Adding AI message:",
-              text,
-              "ID:",
-              messageData.id
-            );
+            if (import.meta.env.DEV) {
+              console.log(
+                "[SSE] Adding AI message:",
+                text,
+                "ID:",
+                messageData.id
+              );
+            }
             toast.success("New message received", {
               duration: 2000,
             });
@@ -175,10 +189,12 @@ export const useChat = () => {
               timestamp: new Date(messageData.createdAt || new Date()),
             });
           } else {
-            console.warn(
-              "[SSE] message_created event but no text found:",
-              messageData
-            );
+            if (import.meta.env.DEV) {
+              console.warn(
+                "[SSE] message_created event but no text found:",
+                messageData
+              );
+            }
             setChatState((prev) => ({ ...prev, isTyping: false }));
           }
         } catch (error) {
@@ -194,16 +210,20 @@ export const useChat = () => {
 
       // Streaming / incremental updates to an existing bot message
       eventSource.addEventListener("message_updated", (e: MessageEvent) => {
-        console.log("[SSE] 'message_updated' event received:", e.data);
+        if (import.meta.env.DEV) {
+          console.log("[SSE] 'message_updated' event received:", e.data);
+        }
         try {
           const messageData = JSON.parse(e.data as string);
           const text = extractMessageText(messageData?.payload);
 
           if (!text) {
-            console.warn(
-              "[SSE] message_updated event but no text found:",
-              messageData
-            );
+            if (import.meta.env.DEV) {
+              console.warn(
+                "[SSE] message_updated event but no text found:",
+                messageData
+              );
+            }
             return;
           }
 
@@ -262,7 +282,9 @@ export const useChat = () => {
 
       // AI / Botpress level error event
       eventSource.addEventListener("error", (e: MessageEvent) => {
-        console.error("[SSE] 'error' event received:", e.data);
+        if (import.meta.env.DEV) {
+          console.error("[SSE] 'error' event received:", e.data);
+        }
         try {
           const parsed = JSON.parse(e.data as string);
           setChatState((prev) => ({ ...prev, isTyping: false }));
@@ -280,13 +302,17 @@ export const useChat = () => {
 
       // Fallback handler for any unnamed/default events (not expected with current server)
       eventSource.onmessage = (e: MessageEvent) => {
-        console.log("[SSE] Default message event received:", e.data);
+        if (import.meta.env.DEV) {
+          console.log("[SSE] Default message event received:", e.data);
+        }
       };
 
       // Network / transport-level error handler for reconnection flow
       eventSource.onerror = (error) => {
         console.error("[SSE] Connection error:", error);
-        console.log("[SSE] EventSource readyState:", eventSource.readyState);
+        if (import.meta.env.DEV) {
+          console.log("[SSE] EventSource readyState:", eventSource.readyState);
+        }
 
         updateConnectionStatus({
           connected: false,
@@ -305,9 +331,11 @@ export const useChat = () => {
         );
         reconnectAttempts.current += 1;
 
-        console.log(
-          `[SSE] Reconnecting in ${delay}ms (attempt ${reconnectAttempts.current})`
-        );
+        if (import.meta.env.DEV) {
+          console.log(
+            `[SSE] Reconnecting in ${delay}ms (attempt ${reconnectAttempts.current})`
+          );
+        }
 
         reconnectTimeoutRef.current = setTimeout(() => {
           if (reconnectAttempts.current < 5) {
@@ -346,19 +374,23 @@ export const useChat = () => {
       lastUserMessageAtRef.current = Date.now();
 
       try {
-        console.log("[Chat] Sending message:", {
-          conversationId: chatState.conversationId,
-          text,
-        });
+        if (import.meta.env.DEV) {
+          console.log("[Chat] Sending message:", {
+            conversationId: chatState.conversationId,
+            text,
+          });
+        }
 
         await aiChatService.sendMessage(
           chatState.conversationId,
           text
         );
 
-        console.log(
-          "[Chat] Message sent successfully, showing typing indicator"
-        );
+        if (import.meta.env.DEV) {
+          console.log(
+            "[Chat] Message sent successfully, showing typing indicator"
+          );
+        }
 
         // Show typing indicator with timeout fallback
         setChatState((prev) => ({ ...prev, isTyping: true }));
@@ -371,9 +403,11 @@ export const useChat = () => {
         // Set a fallback timeout to stop typing if no response comes
         typingTimeoutRef.current = setTimeout(() => {
           setChatState((prev) => ({ ...prev, isTyping: false }));
-          console.warn(
-            "[Chat] Typing timeout reached - stopping typing indicator"
-          );
+          if (import.meta.env.DEV) {
+            console.warn(
+              "[Chat] Typing timeout reached - stopping typing indicator"
+            );
+          }
           toast.error("No response received from AI");
         }, 30000); // 30 seconds timeout
 

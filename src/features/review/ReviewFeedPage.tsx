@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { reviewApi } from '../../api/review.api';
 import { useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -10,13 +10,8 @@ export const ReviewFeedPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
 
-  useEffect(() => {
-    if (doctorId) {
-      loadReviews();
-    }
-  }, [doctorId, page]);
-
-  const loadReviews = async () => {
+  const loadReviews = useCallback(async () => {
+    if (!doctorId) return;
     try {
       const data = await reviewApi.getDoctorReviews(Number(doctorId), page, 10);
       setReviews(data.reviews || []);
@@ -26,7 +21,11 @@ export const ReviewFeedPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [doctorId, page]);
+
+  useEffect(() => {
+    loadReviews();
+  }, [loadReviews]);
 
   const getStarRating = (rating: number) => {
     return '★'.repeat(rating) + '☆'.repeat(5 - rating);

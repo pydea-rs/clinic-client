@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { chatApi } from '../../api/chat.api';
 import { socketService } from '../../lib/socket/socket.service';
@@ -145,13 +145,13 @@ export const ChatRoomPage: React.FC = () => {
       socket.off('user:online', handleUserOnline);
       socket.off('user:offline', handleUserOffline);
     };
-  }, [id, user?.id]);
+  }, [id, user?.id, loadChatAndMessages]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  const loadChatAndMessages = async () => {
+  const loadChatAndMessages = useCallback(async () => {
     if (!id) return;
     
     try {
@@ -168,7 +168,7 @@ export const ChatRoomPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

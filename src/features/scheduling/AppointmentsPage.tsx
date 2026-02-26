@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { schedulingApi } from '../../api/scheduling.api';
 import { useAuthStore } from '../../lib/stores/auth.store';
 import toast from 'react-hot-toast';
@@ -10,11 +10,7 @@ export const AppointmentsPage: React.FC = () => {
   const [total, setTotal] = useState(0);
   const { user } = useAuthStore();
 
-  useEffect(() => {
-    loadAppointments();
-  }, [page]);
-
-  const loadAppointments = async () => {
+  const loadAppointments = useCallback(async () => {
     try {
       const data = await schedulingApi.getAppointments(page, 10);
       setAppointments(data.appointments || []);
@@ -24,7 +20,11 @@ export const AppointmentsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page]);
+
+  useEffect(() => {
+    loadAppointments();
+  }, [loadAppointments]);
 
   const handleCancel = async (id: number) => {
     if (!window.confirm('Are you sure you want to cancel this appointment?')) {

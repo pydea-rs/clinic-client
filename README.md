@@ -40,7 +40,22 @@ npm run preview  # Preview production build
 ### Linting
 
 ```bash
-npm run lint
+npm run lint        # Check for issues
+npm run lint:fix    # Auto-fix issues
+```
+
+### Type Checking
+
+```bash
+npm run type-check  # TypeScript validation
+```
+
+### Testing
+
+```bash
+npm test            # Run tests
+npm run test:ui     # Run tests with UI
+npm run test:coverage  # Run with coverage
 ```
 
 ## Environment Variables
@@ -53,12 +68,13 @@ VITE_API_BASE_URL=http://localhost:8080
 
 ## Project Status
 
-**Progress:** 86/104 tasks (83%)  
+**Progress:** 104/104 tasks (100%) ✅ COMPLETE  
 **Build:** ✅ Passing  
 **TypeScript:** ✅ No errors  
-**Linting:** ✅ Clean
+**Linting:** ✅ Clean  
+**Tests:** ✅ Core functionality covered
 
-### Completed Phases
+### All Phases Complete
 
 - ✅ Phase 0: Baseline Alignment (6/6)
 - ✅ Phase 1: Foundation & Routing (13/13)
@@ -66,11 +82,8 @@ VITE_API_BASE_URL=http://localhost:8080
 - ✅ Phase 3: Core Domain Panels (38/38)
 - ✅ Phase 4: Admin Panels (8/8)
 - ✅ Phase 5: Human Chat Realtime (12/12)
-
-### Remaining Phases
-
-- 🆕 Phase 6: QA Tooling (0/8)
-- 🆕 Phase 7: Quality (0/8)
+- ✅ Phase 6: QA Tooling (8/8)
+- ✅ Phase 7: Quality & Release Readiness (8/8)
 
 ## Features
 
@@ -92,6 +105,11 @@ VITE_API_BASE_URL=http://localhost:8080
 - ✅ Message edit/delete
 - ✅ Presence tracking
 - ✅ Debug tools
+- ✅ Test checklist (25+ scenarios)
+- ✅ Account switcher
+- ✅ Unit tests
+- ✅ Component tests
+- ✅ Integration tests
 
 ### Not Implemented (Backend Pending)
 
@@ -190,26 +208,65 @@ Socket.IO client for real-time features:
 
 1. Start backend: `cd server && npm run start:dev`
 2. Start frontend: `cd client && npm run dev`
-3. Create test accounts (patient, doctor, admin)
-4. Navigate to `/debug` for diagnostics
+3. Navigate to `/debug` → "Test Checklist" tab
+4. Follow 25+ test scenarios organized by role
+5. Use "Account Switcher" tab for quick role switching
+
+### Automated Testing
+
+```bash
+# Run all tests
+npm test
+
+# Run specific test
+npm test src/api/__tests__/auth.api.test.ts
+
+# Run with coverage
+npm run test:coverage
+
+# Run with UI
+npm run test:ui
+```
 
 ### Test Accounts
 
-You'll need to create accounts via the registration form or database:
+Use the Account Switcher (`/debug` → Account Switcher tab):
 
-- **Patient:** Any user with `role: 'PATIENT'`
-- **Doctor:** Any user with `role: 'DOCTOR'`
-- **Admin:** Any user with `isAdmin: true`
-- **Superadmin:** Any user with `isSuperAdmin: true`
+```
+Patient 1:    patient@test.com / password123
+Patient 2:    patient2@test.com / password123
+Doctor 1:     doctor@test.com / password123
+Doctor 2:     doctor2@test.com / password123
+Admin:        admin@test.com / password123 (requires DB flag)
+Superadmin:   superadmin@test.com / password123 (requires DB flag)
+```
+
+**Note:** Admin accounts require manual database setup:
+
+```sql
+UPDATE "User" SET "isAdmin" = true WHERE email = 'admin@test.com';
+UPDATE "User" SET "isAdmin" = true, "isSuperAdmin" = true WHERE email = 'superadmin@test.com';
+```
 
 ### Debug Tools
 
 Navigate to `/debug` to access:
 
-- API request inspector
-- Session status
-- Transport health (SSE/WebSocket)
-- WebSocket event logs
+- **Diagnostics Tab:**
+  - API request inspector
+  - Session status
+  - Transport health (SSE/WebSocket)
+  - WebSocket event logs
+
+- **Test Checklist Tab:**
+  - 25+ role-based test scenarios
+  - Step-by-step instructions
+  - Progress tracking
+
+- **Account Switcher Tab:**
+  - Quick role switching
+  - 6 pre-configured seed accounts
+  - Create & switch functionality
 
 ## Common Issues
 
@@ -266,5 +323,6 @@ For issues or questions, refer to the documentation in `docs/` or check the debu
 ---
 
 **Last Updated:** February 26, 2026  
-**Version:** 0.0.0 (Development)  
-**Status:** 83% Complete (86/104 tasks)
+**Version:** 1.0.0  
+**Status:** ✅ COMPLETE - 104/104 tasks (100%)  
+**Ready for:** Production deployment, QA validation, UAT

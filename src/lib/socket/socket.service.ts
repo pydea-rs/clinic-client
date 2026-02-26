@@ -42,24 +42,32 @@ class SocketService {
     });
 
     this.socket.on('connect', () => {
-      console.log('[Socket] Connected to chat namespace');
+      if (import.meta.env.DEV) {
+        console.log('[Socket] Connected to chat namespace');
+      }
       this.updateStatus({ connected: true, reconnecting: false, reconnectAttempts: 0 });
       this.logEvent('receive', 'connect');
     });
 
     this.socket.on('disconnect', (reason) => {
-      console.log('[Socket] Disconnected from chat namespace:', reason);
+      if (import.meta.env.DEV) {
+        console.log('[Socket] Disconnected from chat namespace:', reason);
+      }
       this.updateStatus({ connected: false, reconnecting: false, reconnectAttempts: 0 });
       this.logEvent('receive', 'disconnect', { reason });
     });
 
     this.socket.on('reconnect_attempt', (attempt) => {
-      console.log('[Socket] Reconnection attempt:', attempt);
+      if (import.meta.env.DEV) {
+        console.log('[Socket] Reconnection attempt:', attempt);
+      }
       this.updateStatus({ connected: false, reconnecting: true, reconnectAttempts: attempt });
     });
 
     this.socket.on('reconnect', (attempt) => {
-      console.log('[Socket] Reconnected after', attempt, 'attempts');
+      if (import.meta.env.DEV) {
+        console.log('[Socket] Reconnected after', attempt, 'attempts');
+      }
       this.updateStatus({ connected: true, reconnecting: false, reconnectAttempts: 0 });
       this.logEvent('receive', 'reconnect', { attempt });
     });
@@ -171,7 +179,9 @@ class SocketService {
       this.socket.emit(event, data);
       this.logEvent('emit', event, data);
     } else {
-      console.warn(`[Socket] Cannot emit '${event}' - socket not connected`);
+      if (import.meta.env.DEV) {
+        console.warn(`[Socket] Cannot emit '${event}' - socket not connected`);
+      }
     }
   }
 
