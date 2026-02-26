@@ -79,7 +79,12 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response): AxiosResponse => {
     const latency = Date.now() - (response.config as any).__requestStart;
-    console.log(`[API] ${response.config.method?.toUpperCase()} ${response.config.url} - ${response.status} (${latency}ms)`);
+    
+    // Only log in development
+    if (import.meta.env.DEV) {
+      console.log(`[API] ${response.config.method?.toUpperCase()} ${response.config.url} - ${response.status} (${latency}ms)`);
+    }
+    
     return response;
   }
 );

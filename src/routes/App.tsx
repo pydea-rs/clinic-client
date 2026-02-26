@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ToastProvider } from '../components/Toast';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import { AuthForm } from '../features/auth/components/AuthForm';
 import { ChatInterface } from '../features/ai-chat/components/ChatInterface';
 import { useAuth } from '../features/auth/hooks/useAuth';
@@ -82,7 +83,7 @@ function App() {
   }
 
   return (
-    <>
+    <ErrorBoundary>
       <ToastProvider />
       <BrowserRouter>
         <Routes>
@@ -114,7 +115,7 @@ function App() {
           <Route path="/doctor/scheduling/durations" element={<DoctorGuard><Shell><SlotDurationsPanel /></Shell></DoctorGuard>} />
           <Route path="/doctor/scheduling/exceptions" element={<DoctorGuard><Shell><ExceptionsPanel /></Shell></DoctorGuard>} />
           <Route path="/doctor/chat" element={<DoctorGuard><Shell><ChatListPage /></Shell></DoctorGuard>} />
-          <Route path="/doctor/settings" element={<DoctorGuard><Shell><Shell>Settings Coming Soon</Shell></Shell></DoctorGuard>} />
+          <Route path="/doctor/settings" element={<DoctorGuard><Shell><div className="p-6 text-center text-gray-500">Settings Coming Soon</div></Shell></DoctorGuard>} />
           
           {/* Consultation routes */}
           <Route path="/consultations" element={<AuthGuard><Shell><ConsultationListPage /></Shell></AuthGuard>} />
@@ -151,7 +152,7 @@ function App() {
           <Route path="*" element={<div className="flex items-center justify-center min-h-screen">404 - Not Found</div>} />
         </Routes>
       </BrowserRouter>
-    </>
+    </ErrorBoundary>
   );
 }
 

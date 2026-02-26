@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-interface RequestLogEntry {
+export interface RequestLogEntry {
   id: string;
   timestamp: string;
   method: string;
@@ -28,6 +28,7 @@ interface DiagnosticsState {
   setLastSseEvent: (event: string) => void;
   setLastWsEvent: (event: string) => void;
   toggleRawEnvelope: () => void;
+  setDebugMode: (enabled: boolean) => void;
   toggleDebugMode: () => void;
 }
 
@@ -53,5 +54,6 @@ export const useDiagnosticsStore = create<DiagnosticsState>((set, get) => ({
   setLastWsEvent: (event) => set({ lastWsEvent: event }),
   
   toggleRawEnvelope: () => set((state) => ({ showRawEnvelope: !state.showRawEnvelope })),
+  setDebugMode: (enabled) => set({ debugMode: enabled }),
   toggleDebugMode: () => set((state) => ({ debugMode: !state.debugMode })),
 }));
