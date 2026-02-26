@@ -22,7 +22,7 @@
 | C-02 | Align scope to completed backend phases only | ✅ | — | Include server features through B-70; exclude calls/notifications/payment/nurse. |
 | C-03 | Create client PRD | ✅ | C-01 | `client/PRD.md` created and aligned to backend current state. |
 | C-04 | Create client task list from PRD | ✅ | C-03 | This file (`client/TASKS.md`). |
-| C-05 | Define out-of-scope placeholder strategy | 🆕 | C-02 | Show explicit "Not available in current backend" screens for unsupported modules. |
+| C-05 | Define out-of-scope placeholder strategy | ✅ | C-02 | Implemented placeholder components for calls/notifications/payment/nurse modules. |
 
 ---
 

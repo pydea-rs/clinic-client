@@ -7,6 +7,20 @@ import { useAuth } from '../features/auth/hooks/useAuth';
 import { AuthGuard, PatientGuard, DoctorGuard, AdminGuard } from '../lib/guards/route-guards';
 import { DebugPage } from '../features/debug/DebugPage';
 import { Shell } from '../components/Shell';
+import { PatientProfilePage } from '../features/patient/PatientProfilePage';
+import { PatientConsultationsPage } from '../features/patient/PatientConsultationsPage';
+import { SOAPDetailPage } from '../features/patient/SOAPDetailPage';
+import { DoctorListPage } from '../features/doctor/DoctorListPage';
+import { DoctorProfilePage } from '../features/doctor/DoctorProfilePage';
+import { ConsultationCreatePage } from '../features/consultation/ConsultationCreatePage';
+import { SchedulingPage } from '../features/scheduling/SchedulingPage';
+import { ReviewCreatePage } from '../features/review/ReviewCreatePage';
+import { AdminDashboardPage } from '../features/admin/AdminDashboardPage';
+import { AdminUserManagementPage } from '../features/admin/AdminUserManagementPage';
+import { AdminDoctorVerificationPage } from '../features/admin/AdminDoctorVerificationPage';
+import { AdminReviewModerationPage } from '../features/admin/AdminReviewModerationPage';
+import { ChatListPage } from '../features/chat/ChatListPage';
+import { ChatRoomPage } from '../features/chat/ChatRoomPage';
 
 // Placeholder components for unsupported modules
 const CallsPlaceholder = () => (
@@ -61,23 +75,30 @@ function App() {
           <Route path="/" element={<Navigate to={isAuthenticated ? '/ai' : '/auth'} replace />} />
           <Route path="/auth" element={!isAuthenticated ? <AuthForm onLogin={login} onRegister={register} /> : <Navigate to="/ai" replace />} />
           
-          {/* AI Chat (public if not authenticated, protected if authenticated) */}
+          {/* AI Chat */}
           <Route path="/ai" element={isAuthenticated ? <ChatInterface onLogout={logout} /> : <Navigate to="/auth" replace />} />
           
-          {/* Protected routes with Shell */}
-          <Route path="/" element={<Shell><div className="p-8">Home (TBD)</div></Shell>} />
-          
           {/* Patient routes */}
-          <Route path="/patient/*" element={<PatientGuard><Shell><div className="p-8">Patient Dashboard (TBD)</div></Shell></PatientGuard>} />
+          <Route path="/patient/profile" element={<PatientGuard><Shell><PatientProfilePage /></Shell></PatientGuard>} />
+          <Route path="/patient/consultations" element={<PatientGuard><Shell><PatientConsultationsPage /></Shell></PatientGuard>} />
+          <Route path="/patient/consultations/create" element={<PatientGuard><Shell><ConsultationCreatePage /></Shell></PatientGuard>} />
+          <Route path="/soap/:id" element={<PatientGuard><Shell><SOAPDetailPage /></Shell></PatientGuard>} />
           
           {/* Doctor routes */}
-          <Route path="/doctor/*" element={<DoctorGuard><Shell><div className="p-8">Doctor Dashboard (TBD)</div></Shell></DoctorGuard>} />
+          <Route path="/doctors" element={<DoctorListPage />} />
+          <Route path="/doctor/:id" element={<DoctorProfilePage />} />
+          <Route path="/doctor/:id/review" element={<PatientGuard><Shell><ReviewCreatePage doctorId={0} consultationId="" /></Shell></PatientGuard>} />
+          <Route path="/doctor/:id/scheduling" element={<DoctorGuard><Shell><SchedulingPage /></Shell></DoctorGuard>} />
           
           {/* Admin routes */}
-          <Route path="/admin/*" element={<AdminGuard><Shell><div className="p-8">Admin Dashboard (TBD)</div></Shell></AdminGuard>} />
+          <Route path="/admin" element={<AdminGuard><Shell><AdminDashboardPage /></Shell></AdminGuard>} />
+          <Route path="/admin/users" element={<AdminGuard><Shell><AdminUserManagementPage /></Shell></AdminGuard>} />
+          <Route path="/admin/verifications" element={<AdminGuard><Shell><AdminDoctorVerificationPage /></Shell></AdminGuard>} />
+          <Route path="/admin/reviews" element={<AdminGuard><Shell><AdminReviewModerationPage /></Shell></AdminGuard>} />
           
           {/* Chat routes */}
-          <Route path="/chat/*" element={<AuthGuard><Shell><div className="p-8">Chat (TBD)</div></Shell></AuthGuard>} />
+          <Route path="/chat" element={<AuthGuard><Shell><ChatListPage /></Shell></AuthGuard>} />
+          <Route path="/chat/:id" element={<AuthGuard><Shell><ChatRoomPage /></Shell></AuthGuard>} />
           
           {/* Debug routes */}
           <Route path="/debug/*" element={<AuthGuard><DebugPage /></AuthGuard>} />

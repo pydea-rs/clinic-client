@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { PatientProfileForm } from './components/PatientProfileForm';
 import { patientApi } from '../../api/patient.api';
-import { useAuthStore } from '../../lib/stores/auth.store';
 
 export const PatientProfilePage: React.FC = () => {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuthStore();
 
   useEffect(() => {
     const loadProfile = async () => {

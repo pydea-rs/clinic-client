@@ -1,22 +1,18 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { patientApi } from '../../../api/patient.api';
 import toast from 'react-hot-toast';
 
-const schema = z.object({
-  location: z.string().optional(),
-  visitMethods: z.array(z.string()).optional(),
-  bio: z.string().optional(),
-  medicalHistory: z.array(z.string()).optional(),
-  allergies: z.array(z.string()).optional(),
-  medications: z.array(z.string()).optional(),
-  surgeries: z.array(z.string()).optional(),
-  familyHistory: z.array(z.string()).optional(),
-});
-
-type FormData = z.infer<typeof schema>;
+interface FormData {
+  location?: string;
+  visitMethods?: string[];
+  bio?: string;
+  medicalHistory?: string[];
+  allergies?: string[];
+  medications?: string[];
+  surgeries?: string[];
+  familyHistory?: string[];
+}
 
 interface PatientProfileFormProps {
   initialData?: any;
@@ -34,7 +30,6 @@ export const PatientProfileForm: React.FC<PatientProfileFormProps> = ({
     setValue,
     watch,
   } = useForm<FormData>({
-    resolver: zodResolver(schema),
     defaultValues: initialData || {
       medicalHistory: [],
       allergies: [],
