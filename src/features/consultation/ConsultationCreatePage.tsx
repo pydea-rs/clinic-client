@@ -18,11 +18,11 @@ export const ConsultationCreatePage: React.FC = () => {
     const loadData = async () => {
       try {
         const [doctorsData, soapsData] = await Promise.all([
-          doctorApi.list(),
-          patientApi.getSoaps(),
+          doctorApi.getDoctors(),
+          patientApi.getSOAPs(),
         ]);
-        setDoctors(doctorsData.data || []);
-        setSoaps(soapsData.data || []);
+        setDoctors(doctorsData.doctors || []);
+        setSoaps(soapsData.soaps || []);
       } catch (error) {
         console.error('Failed to load data:', error);
       } finally {

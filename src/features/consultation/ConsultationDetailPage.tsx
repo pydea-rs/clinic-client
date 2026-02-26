@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { consultationApi } from '../../api/consultation.api';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useAuthStore } from '../../lib/stores/auth.store';
 import toast from 'react-hot-toast';
 
 export const ConsultationDetailPage: React.FC = () => {
@@ -10,44 +11,64 @@ export const ConsultationDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [deciding, setDeciding] = useState(false);
   const [completing, setCompleting] = useState(false);
-  const [canceling, setCanceling] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [showDecisionForm, setShowDecisionForm] = useState(false);
+  const [showCompletionForm, setShowCompletionForm] = useState(false);
+  const { user } = useAuthStore();
 
   useEffect(() => {
-    const loadConsultation = async () => {
-      if (!id) return;
-      try {
-        const data = await consultationApi.getById(id);
-        setConsultation(data);
-      } catch (error) {
-        console.error('Failed to load consultation:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadConsultation();
+    if (id) {
+      loadConsultation();
+    }
   }, [id]);
 
-  const handleDecide = async (doctorDecision: 'ASYNC' | 'ONLINE' | 'IN_PERSON', visitMethod?: string) => {
-    setDeciding(true);
+  const loadConsultation = async () => {
     try {
-      await consultationApi.decide(id!, { doctorDecision, visitMethod });
-      toast.success('Decision recorded');
-      const data = await consultationApi.getById(id!);
+      const data = await consultationApi.getConsultationById(id!);
       setConsultation(data);
     } catch (error: any) {
-      toast.error(error.message || 'Failed to record decision');
+      toast.error(error.message || 'Failed to load consultation');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDecide = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!id) return;
+
+    const formData = new FormData(e.target as HTMLFormElement);
+    const doctorDecision = formData.get('doctorDecision') as 'ASYNC' | 'ONLINE' | 'IN_PERSON';
+    const visitMethod = formData.get('visitMethod') as 'CHAT' | 'VOICE_CALL' | 'VIDEO_CALL' | 'ON_SITE';
+
+    setDeciding(true);
+    try {
+      await consultationApi.decide(id, { doctorDecision, visitMethod });
+      toast.success('Consultation decided successfully');
+      setShowDecisionForm(false);
+      loadConsultation();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to decide consultation');
     } finally {
       setDeciding(false);
     }
   };
 
-  const handleComplete = async (notes?: string, summary?: string, followUpNeeded?: boolean) => {
+  const handleComplete = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!id) return;
+
+    const formData = new FormData(e.target as HTMLFormElement);
+    const notes = formData.get('notes') as string;
+    const summary = formData.get('summary') as string;
+    const followUpNeeded = formData.get('followUpNeeded') === 'true';
+
     setCompleting(true);
     try {
-      await consultationApi.complete(id!, { notes, summary, followUpNeeded });
-      toast.success('Consultation completed');
-      const data = await consultationApi.getById(id!);
-      setConsultation(data);
+      await consultationApi.complete(id, { notes, summary, followUpNeeded });
+      toast.success('Consultation completed successfully');
+      setShowCompletionForm(false);
+      loadConsultation();
     } catch (error: any) {
       toast.error(error.message || 'Failed to complete consultation');
     } finally {
@@ -55,18 +76,37 @@ export const ConsultationDetailPage: React.FC = () => {
     }
   };
 
-  const handleCancel = async (reason?: string) => {
-    setCanceling(true);
+  const handleCancel = async () => {
+    if (!id) return;
+
+    if (!window.confirm('Are you sure you want to cancel this consultation?')) {
+      return;
+    }
+
+    setCancelling(true);
     try {
-      await consultationApi.cancel(id!, reason);
-      toast.success('Consultation cancelled');
-      navigate('/patient/consultations');
+      await consultationApi.cancel(id);
+      toast.success('Consultation cancelled successfully');
+      navigate('/consultations');
     } catch (error: any) {
       toast.error(error.message || 'Failed to cancel consultation');
     } finally {
-      setCanceling(false);
+      setCancelling(false);
     }
   };
+
+  const canDecide = user?.role === 'DOCTOR' && consultation?.status === 'PENDING_DOCTOR_REVIEW';
+  const canComplete = user?.role === 'DOCTOR' && consultation?.status === 'DOCTOR_DECIDED';
+  const canCancel = (user?.role === 'PATIENT' || user?.role === 'DOCTOR') && 
+    ['CREATED', 'PENDING_DOCTOR_REVIEW', 'DOCTOR_DECIDED'].includes(consultation?.status);
+
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
+
+  if (!consultation) {
+    return <div className="flex items-center justify-center min-h-screen">Consultation not found</div>;
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -82,27 +122,34 @@ export const ConsultationDetailPage: React.FC = () => {
     }
   };
 
-  if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
-  }
-
-  if (!consultation) {
-    return <div className="flex items-center justify-center min-h-screen">Consultation not found</div>;
-  }
-
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Consultation Details</h1>
-      
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Consultation Details</h1>
+        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(consultation.status)}`}>
+          {consultation.status.replace('_', ' ')}
+        </span>
+      </div>
+
       <div className="bg-white rounded-lg shadow p-6 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-bold">Consultation #{consultation.id.substring(0, 8)}...</h2>
-          <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(consultation.status)}`}>
-            {consultation.status.replace('_', ' ')}
-          </span>
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <span className="text-gray-500">Consultation ID:</span>
+            <p className="font-medium">{consultation.id}</p>
+          </div>
+          <div>
+            <span className="text-gray-500">Created:</span>
+            <p className="font-medium">{new Date(consultation.createdAt).toLocaleString()}</p>
+          </div>
+          {consultation.updatedAt && (
+            <div>
+              <span className="text-gray-500">Updated:</span>
+              <p className="font-medium">{new Date(consultation.updatedAt).toLocaleString()}</p>
+            </div>
+          )}
         </div>
-        
-        <div className="grid grid-cols-2 gap-4 mb-6">
+
+        <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <span className="text-gray-500">Patient:</span>
             <p className="font-medium">{consultation.patientId}</p>
@@ -111,128 +158,193 @@ export const ConsultationDetailPage: React.FC = () => {
             <span className="text-gray-500">Doctor:</span>
             <p className="font-medium">{consultation.doctorId}</p>
           </div>
-          <div>
-            <span className="text-gray-500">SOAP:</span>
-            <p className="font-medium">{consultation.soapId || 'N/A'}</p>
-          </div>
-          <div>
-            <span className="text-gray-500">Decision:</span>
-            <p className="font-medium">{consultation.doctorDecision || 'Pending'}</p>
-          </div>
-          <div>
-            <span className="text-gray-500">Method:</span>
-            <p className="font-medium">{consultation.visitMethod || 'N/A'}</p>
-          </div>
-          <div>
-            <span className="text-gray-500">Follow-up:</span>
-            <p className="font-medium">{consultation.followUpNeeded ? 'Yes' : 'No'}</p>
-          </div>
         </div>
-        
+
+        {consultation.soapId && (
+          <div className="mb-4">
+            <span className="text-gray-500">SOAP ID:</span>
+            <p className="font-medium">{consultation.soapId}</p>
+          </div>
+        )}
+
+        {consultation.doctorDecision && (
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <span className="text-gray-500">Doctor Decision:</span>
+              <p className="font-medium">{consultation.doctorDecision}</p>
+            </div>
+            <div>
+              <span className="text-gray-500">Visit Method:</span>
+              <p className="font-medium">{consultation.visitMethod}</p>
+            </div>
+          </div>
+        )}
+
         {consultation.notes && (
           <div className="mb-4">
             <span className="text-gray-500">Notes:</span>
-            <p className="text-gray-700">{consultation.notes}</p>
+            <p className="font-medium">{consultation.notes}</p>
           </div>
         )}
-        
+
         {consultation.summary && (
           <div className="mb-4">
             <span className="text-gray-500">Summary:</span>
-            <p className="text-gray-700">{consultation.summary}</p>
+            <p className="font-medium">{consultation.summary}</p>
           </div>
         )}
+
+        <div className="mb-4">
+          <span className="text-gray-500">Follow-up Needed:</span>
+          <p className="font-medium">{consultation.followUpNeeded ? 'Yes' : 'No'}</p>
+        </div>
       </div>
 
-      {/* Doctor Actions */}
-      {consultation.status === 'PENDING_DOCTOR_REVIEW' && (
+      {/* Doctor Decision Panel */}
+      {canDecide && (
         <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h3 className="font-bold mb-4">Doctor Decision</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <h2 className="text-xl font-bold mb-4">Decision Panel</h2>
+          
+          {showDecisionForm ? (
+            <form onSubmit={handleDecide} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Decision</label>
+                <select name="doctorDecision" className="w-full px-4 py-2 border rounded-lg" required>
+                  <option value="">Select decision</option>
+                  <option value="ASYNC">Async (Chat)</option>
+                  <option value="ONLINE">Online (Video/Audio)</option>
+                  <option value="IN_PERSON">In Person</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Visit Method</label>
+                <select name="visitMethod" className="w-full px-4 py-2 border rounded-lg" required>
+                  <option value="">Select method</option>
+                  <option value="CHAT">Chat</option>
+                  <option value="VOICE_CALL">Voice Call</option>
+                  <option value="VIDEO_CALL">Video Call</option>
+                  <option value="ON_SITE">On Site</option>
+                </select>
+              </div>
+
+              <div className="flex space-x-2">
+                <button
+                  type="submit"
+                  disabled={deciding}
+                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:bg-blue-300"
+                >
+                  {deciding ? 'Submitting...' : 'Submit Decision'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowDecisionForm(false)}
+                  className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          ) : (
             <button
-              onClick={() => handleDecide('ASYNC')}
-              disabled={deciding}
-              className="p-4 border rounded-lg hover:border-blue-500 hover:bg-blue-50 disabled:opacity-50"
+              onClick={() => setShowDecisionForm(true)}
+              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
             >
-              <h4 className="font-medium">Async Response</h4>
-              <p className="text-sm text-gray-500">Send diagnosis via text/audio/video message</p>
+              Make Decision
             </button>
-            <button
-              onClick={() => handleDecide('ONLINE', 'CHAT')}
-              disabled={deciding}
-              className="p-4 border rounded-lg hover:border-blue-500 hover:bg-blue-50 disabled:opacity-50"
-            >
-              <h4 className="font-medium">Online Chat</h4>
-              <p className="text-sm text-gray-500">Live text chat consultation</p>
-            </button>
-            <button
-              onClick={() => handleDecide('ONLINE', 'VIDEO_CALL')}
-              disabled={deciding}
-              className="p-4 border rounded-lg hover:border-blue-500 hover:bg-blue-50 disabled:opacity-50"
-            >
-              <h4 className="font-medium">Video Call</h4>
-              <p className="text-sm text-gray-500">Live video consultation</p>
-            </button>
-            <button
-              onClick={() => handleDecide('IN_PERSON')}
-              disabled={deciding}
-              className="p-4 border rounded-lg hover:border-blue-500 hover:bg-blue-50 disabled:opacity-50"
-            >
-              <h4 className="font-medium">In-Person Visit</h4>
-              <p className="text-sm text-gray-500">Schedule physical visit</p>
-            </button>
-          </div>
+          )}
         </div>
       )}
 
-      {/* Completion Form */}
-      {consultation.status === 'DOCTOR_DECIDED' && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="font-bold mb-4">Complete Consultation</h3>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
-              <textarea
-                className="w-full px-4 py-2 border rounded-lg"
-                rows={3}
-                placeholder="Consultation notes"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Summary</label>
-              <textarea
-                className="w-full px-4 py-2 border rounded-lg"
-                rows={3}
-                placeholder="Post-consultation summary"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <input type="checkbox" id="followUp" className="rounded" />
-              <label htmlFor="followUp" className="text-sm text-gray-700">Follow-up needed</label>
-            </div>
+      {/* Doctor Completion Panel */}
+      {canComplete && (
+        <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <h2 className="text-xl font-bold mb-4">Completion Panel</h2>
+          
+          {showCompletionForm ? (
+            <form onSubmit={handleComplete} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+                <textarea
+                  name="notes"
+                  className="w-full px-4 py-2 border rounded-lg"
+                  rows={3}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Summary</label>
+                <textarea
+                  name="summary"
+                  className="w-full px-4 py-2 border rounded-lg"
+                  rows={3}
+                />
+              </div>
+
+              <div>
+                <label className="flex items-center space-x-2">
+                  <input type="checkbox" name="followUpNeeded" className="rounded" defaultChecked={false} />
+                  <span className="text-gray-700">Follow-up Needed</span>
+                </label>
+              </div>
+
+              <div className="flex space-x-2">
+                <button
+                  type="submit"
+                  disabled={completing}
+                  className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 disabled:bg-green-300"
+                >
+                  {completing ? 'Completing...' : 'Complete Consultation'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowCompletionForm(false)}
+                  className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          ) : (
             <button
-              onClick={() => handleComplete()}
-              disabled={completing}
-              className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 disabled:bg-green-300"
+              onClick={() => setShowCompletionForm(true)}
+              className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700"
             >
-              {completing ? 'Completing...' : 'Complete Consultation'}
+              Complete Consultation
             </button>
-          </div>
+          )}
         </div>
       )}
 
       {/* Cancel Button */}
-      {['CREATED', 'PENDING_DOCTOR_REVIEW', 'DOCTOR_DECIDED', 'PENDING_PAYMENT', 'PAYMENT_CONFIRMED', 'IN_PROGRESS'].includes(consultation.status) && (
-        <div className="mt-6">
+      {canCancel && (
+        <div className="bg-white rounded-lg shadow p-6 mb-6">
           <button
-            onClick={() => handleCancel('No reason provided')}
-            disabled={canceling}
+            onClick={handleCancel}
+            disabled={cancelling}
             className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 disabled:bg-red-300"
           >
-            {canceling ? 'Cancelling...' : 'Cancel Consultation'}
+            {cancelling ? 'Cancelling...' : 'Cancel Consultation'}
           </button>
         </div>
       )}
+
+      <div className="flex space-x-4">
+        <button
+          onClick={() => navigate(-1)}
+          className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+        >
+          Back
+        </button>
+        {user?.role === 'PATIENT' && (
+          <button
+            onClick={() => navigate('/patient/consultations')}
+            className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+          >
+            My Consultations
+          </button>
+        )}
+      </div>
     </div>
   );
 };
