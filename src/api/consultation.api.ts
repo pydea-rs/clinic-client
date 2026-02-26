@@ -1,51 +1,72 @@
 import { apiClient } from '../lib/api/client';
-import { Consultation } from '../lib/types/api';
 
-// Consultation API Adapter
+export interface Consultation {
+  id: string;
+  patientId: string;
+  doctorId: string;
+  soapId?: string;
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'COMPLETED' | 'CANCELLED';
+  doctorDecision?: 'ACCEPT' | 'REJECT';
+  visitMethod?: string;
+  notes?: string;
+  summary?: string;
+  followUpNeeded?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateConsultationPayload {
+  doctorId: string;
+  soapId?: string;
+}
+
+export interface DoctorDecisionPayload {
+  doctorDecision: 'ACCEPT' | 'REJECT';
+  visitMethod?: string;
+}
+
+export interface CompleteConsultationPayload {
+  notes?: string;
+  summary?: string;
+  followUpNeeded?: boolean;
+}
+
 export const consultationApi = {
   // Create consultation
-  create: async (payload: {
-    doctorId: number;
-    soapId?: string;
-  }): Promise<Consultation> => {
+  create: async (payload: CreateConsultationPayload): Promise<Consultation> => {
     const response = await apiClient.post('/consultation', payload);
     return response.data;
   },
 
-  // List consultations (role-aware)
-  list: async (params?: { page?: number; limit?: number; status?: string }): Promise<{ data: Consultation[]; total: number }> => {
-    const response = await apiClient.get('/consultation', { params });
+  // Get consultation by ID
+  getById: async (consultationId: string): Promise<Consultation> => {
+    const response = await apiClient.get(`/consultation/${consultationId}`);
     return response.data;
   },
 
-  // Get single consultation
-  getById: async (id: string): Promise<Consultation> => {
-    const response = await apiClient.get(`/consultation/${id}`);
+  // Get all consultations (role-aware)
+  getAll: async (page?: number, limit?: number): Promise<{ consultations: Consultation[]; total: number }> => {
+    const response = await apiClient.get('/consultation', {
+      params: { page, limit },
+    });
     return response.data;
   },
 
-  // Doctor decides consultation mode
-  decide: async (id: string, payload: {
-    doctorDecision: 'ASYNC' | 'ONLINE' | 'IN_PERSON';
-    visitMethod?: 'CHAT' | 'VOICE_CALL' | 'VIDEO_CALL' | 'ON_SITE';
-  }): Promise<Consultation> => {
-    const response = await apiClient.patch(`/consultation/${id}/decide`, payload);
+  // Doctor decision on consultation
+  decide: async (consultationId: string, payload: DoctorDecisionPayload): Promise<Consultation> => {
+    const response = await apiClient.post(`/consultation/${consultationId}/decide`, payload);
     return response.data;
   },
 
   // Complete consultation
-  complete: async (id: string, payload: {
-    notes?: string;
-    summary?: string;
-    followUpNeeded?: boolean;
-  }): Promise<Consultation> => {
-    const response = await apiClient.patch(`/consultation/${id}/complete`, payload);
+  complete: async (consultationId: string, payload: CompleteConsultationPayload): Promise<Consultation> => {
+    const response = await apiClient.post(`/consultation/${consultationId}/complete`, payload);
     return response.data;
   },
 
   // Cancel consultation
-  cancel: async (id: string, reason?: string): Promise<Consultation> => {
-    const response = await apiClient.patch(`/consultation/${id}/cancel`, { reason });
+  cancel: async (consultationId: string): Promise<Consultation> => {
+    const response = await apiClient.post(`/consultation/${consultationId}/cancel`, {});
     return response.data;
   },
 };

@@ -1,171 +1,235 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { doctorApi } from '../../api/doctor.api';
 import { Link } from 'react-router-dom';
+import { Loader2, MapPin, Star, Search } from 'lucide-react';
 
 export const DoctorListPage: React.FC = () => {
-  const [doctors, setDoctors] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({
-    specialty: '',
-    visitMethod: '',
-    location: '',
-    name: '',
+  const [page, setPage] = useState(1);
+  const [specialty, setSpecialty] = useState('');
+  const [visitMethod, setVisitMethod] = useState('');
+  const [location, setLocation] = useState('');
+  const [search, setSearch] = useState('');
+  const limit = 12;
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['doctors', page, specialty, visitMethod, location, search],
+    queryFn: () =>
+      doctorApi.getDoctors({
+        page,
+        limit,
+        specialty: specialty || undefined,
+        visitMethod: visitMethod || undefined,
+        location: location || undefined,
+        search: search || undefined,
+      }),
   });
 
-  useEffect(() => {
-    const loadDoctors = async () => {
-      try {
-        const data = await doctorApi.list();
-        setDoctors(data.data || []);
-      } catch (error) {
-        console.error('Failed to load doctors:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadDoctors();
-  }, []);
-
-  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFilters(prev => ({ ...prev, [name]: value }));
-  };
-
-  const filteredDoctors = doctors.filter(doctor => {
-    if (filters.specialty && !doctor.specialty.includes(filters.specialty)) return false;
-    if (filters.visitMethod && !doctor.visitMethods?.includes(filters.visitMethod)) return false;
-    if (filters.location && !doctor.location?.toLowerCase().includes(filters.location.toLowerCase())) return false;
-    if (filters.name && !(`${doctor.user?.firstname} ${doctor.user?.lastname}`.toLowerCase().includes(filters.name.toLowerCase()))) return false;
-    return true;
-  });
-
-  if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
-  }
+  const totalPages = data ? Math.ceil(data.total / limit) : 1;
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Find a Doctor</h1>
-      
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Specialty</label>
-            <select
-              name="specialty"
-              value={filters.specialty}
-              onChange={handleFilterChange}
-              className="w-full px-4 py-2 border rounded-lg"
-            >
-              <option value="">All</option>
-              <option value="CARDIOLOGY">Cardiology</option>
-              <option value="DERMATOLOGY">Dermatology</option>
-              <option value="ENT">ENT</option>
-              <option value="GASTROENTEROLOGY">Gastroenterology</option>
-              <option value="GYNECOLOGY">Gynecology</option>
-              <option value="NEUROLOGY">Neurology</option>
-              <option value="ONCOLOGY">Oncology</option>
-              <option value="ORTHOPEDICS">Orthopedics</option>
-              <option value="PEDIATRICS">Pediatrics</option>
-              <option value="PSYCHIATRY">Psychiatry</option>
-              <option value="UROLOGY">Urology</option>
-              <option value="GENERAL">General</option>
-            </select>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Visit Method</label>
-            <select
-              name="visitMethod"
-              value={filters.visitMethod}
-              onChange={handleFilterChange}
-              className="w-full px-4 py-2 border rounded-lg"
-            >
-              <option value="">All</option>
-              <option value="CHAT">Chat</option>
-              <option value="VOICE_CALL">Voice Call</option>
-              <option value="VIDEO_CALL">Video Call</option>
-              <option value="ON_SITE">On-site</option>
-            </select>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
-            <input
-              type="text"
-              name="location"
-              value={filters.location}
-              onChange={handleFilterChange}
-              className="w-full px-4 py-2 border rounded-lg"
-              placeholder="Search by location"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
-            <input
-              type="text"
-              name="name"
-              value={filters.name}
-              onChange={handleFilterChange}
-              className="w-full px-4 py-2 border rounded-lg"
-              placeholder="Search by name"
-            />
-          </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-12">
+        <div className="max-w-6xl mx-auto px-6">
+          <h1 className="text-4xl font-bold mb-4">Find a Doctor</h1>
+          <p className="text-blue-100 text-lg">Browse our network of verified healthcare professionals</p>
         </div>
       </div>
 
-      {/* Doctors List */}
-      {filteredDoctors.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-500">No doctors found matching your criteria</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredDoctors.map((doctor) => (
-            <div key={doctor.id} className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-                  <span className="text-2xl font-bold text-blue-600">
-                    {doctor.user?.firstname?.[0]}{doctor.user?.lastname?.[0]}
-                  </span>
-                </div>
-                <div>
-                  <h3 className="font-bold text-lg">{doctor.user?.firstname} {doctor.user?.lastname}</h3>
-                  <p className="text-sm text-gray-500">{doctor.specialty}</p>
-                </div>
+      <div className="max-w-6xl mx-auto px-6 py-8">
+        {/* Filters */}
+        <div className="bg-white rounded-lg shadow p-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
+              <div className="relative">
+                <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPage(1);
+                  }}
+                  placeholder="Doctor name..."
+                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
               </div>
-              
-              <div className="space-y-2 text-sm">
-                {doctor.location && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-500">📍</span>
-                    <span>{doctor.location}</span>
-                  </div>
-                )}
-                {doctor.clinicLocation && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-500">🏥</span>
-                    <span>{doctor.clinicLocation}</span>
-                  </div>
-                )}
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-500">📞</span>
-                  <span>{doctor.visitMethods?.join(', ')}</span>
-                </div>
-              </div>
-              
-              <Link
-                to={`/doctor/${doctor.id}`}
-                className="mt-4 block w-full bg-blue-600 text-white py-2 rounded-lg text-center hover:bg-blue-700"
-              >
-                View Profile
-              </Link>
             </div>
-          ))}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Specialty</label>
+              <input
+                type="text"
+                value={specialty}
+                onChange={(e) => {
+                  setSpecialty(e.target.value);
+                  setPage(1);
+                }}
+                placeholder="e.g., Cardiology"
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Visit Method</label>
+              <select
+                value={visitMethod}
+                onChange={(e) => {
+                  setVisitMethod(e.target.value);
+                  setPage(1);
+                }}
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">All Methods</option>
+                <option value="In-Person">In-Person</option>
+                <option value="Video Call">Video Call</option>
+                <option value="Phone">Phone</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+              <input
+                type="text"
+                value={location}
+                onChange={(e) => {
+                  setLocation(e.target.value);
+                  setPage(1);
+                }}
+                placeholder="City or area..."
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div className="flex items-end">
+              <button
+                onClick={() => {
+                  setSearch('');
+                  setSpecialty('');
+                  setVisitMethod('');
+                  setLocation('');
+                  setPage(1);
+                }}
+                className="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
         </div>
-      )}
+
+        {/* Results */}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          </div>
+        ) : (
+          <>
+            <div className="mb-6 text-sm text-gray-600">
+              Found {data?.total || 0} doctor{data?.total !== 1 ? 's' : ''}
+            </div>
+
+            {data?.doctors.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-600 text-lg">No doctors found matching your criteria</p>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                  {data?.doctors.map((doctor) => (
+                    <Link
+                      key={doctor.id}
+                      to={`/doctor/${doctor.id}`}
+                      className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow overflow-hidden"
+                    >
+                      <div className="p-6">
+                        <div className="flex items-start justify-between mb-4">
+                          <div>
+                            <h3 className="font-bold text-lg text-gray-900">Dr. {doctor.specialty}</h3>
+                            <p className="text-sm text-gray-600">{doctor.specialty}</p>
+                          </div>
+                          {doctor.isVerified && (
+                            <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">
+                              Verified
+                            </span>
+                          )}
+                        </div>
+
+                        {doctor.clinicLocation && (
+                          <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                            <MapPin className="w-4 h-4" />
+                            {doctor.clinicLocation}
+                          </div>
+                        )}
+
+                        {doctor.rating !== undefined && (
+                          <div className="flex items-center gap-2 mb-4">
+                            <div className="flex items-center gap-1">
+                              {[...Array(5)].map((_, i) => (
+                                <Star
+                                  key={i}
+                                  className={`w-4 h-4 ${
+                                    i < Math.round(doctor.rating || 0)
+                                      ? 'fill-yellow-400 text-yellow-400'
+                                      : 'text-gray-300'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            <span className="text-sm text-gray-600">
+                              {doctor.rating?.toFixed(1)} ({doctor.totalReviews || 0} reviews)
+                            </span>
+                          </div>
+                        )}
+
+                        {doctor.bio && (
+                          <p className="text-sm text-gray-600 line-clamp-2 mb-4">{doctor.bio}</p>
+                        )}
+
+                        {doctor.visitMethods && doctor.visitMethods.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {doctor.visitMethods.slice(0, 2).map((method) => (
+                              <span
+                                key={method}
+                                className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded"
+                              >
+                                {method}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                <div className="flex items-center justify-center gap-4">
+                  <button
+                    onClick={() => setPage(Math.max(1, page - 1))}
+                    disabled={page === 1}
+                    className="px-4 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-sm text-gray-600">
+                    Page {page} of {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setPage(Math.min(totalPages, page + 1))}
+                    disabled={page === totalPages}
+                    className="px-4 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
+                </div>
+              </>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 };

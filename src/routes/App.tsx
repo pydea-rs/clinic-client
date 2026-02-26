@@ -15,6 +15,8 @@ import { SOAPDetailPage } from '../features/patient/SOAPDetailPage';
 import { UserDetailPage } from '../features/patient/UserDetailPage';
 import { DoctorWorkspacePage } from '../features/doctor/DoctorWorkspacePage';
 import { DoctorDocumentsPage } from '../features/doctor/DoctorDocumentsPage';
+import { DoctorListPage } from '../features/doctor/DoctorListPage';
+import { DoctorProfilePage } from '../features/doctor/DoctorProfilePage';
 import { ConsultationCreatePage } from '../features/consultation/ConsultationCreatePage';
 import { SchedulingPage } from '../features/scheduling/SchedulingPage';
 import { ReviewCreatePage } from '../features/review/ReviewCreatePage';
@@ -96,7 +98,7 @@ function App() {
           <Route path="/doctor/workspace" element={<DoctorGuard><Shell><DoctorWorkspacePage /></Shell></DoctorGuard>} />
           <Route path="/doctor/profile" element={<DoctorGuard><Shell><DoctorProfilePage /></Shell></DoctorGuard>} />
           <Route path="/doctor/documents" element={<DoctorGuard><Shell><DoctorDocumentsPage /></Shell></DoctorGuard>} />
-          <Route path="/doctor/consultations" element={<DoctorGuard><Shell><PatientConsultationsPage /></Shell></DoctorGuard>} />
+          <Route path="/doctor/consultations" element={<DoctorGuard><Shell><PatientConsultationsListPage /></Shell></DoctorGuard>} />
           <Route path="/doctor/scheduling" element={<DoctorGuard><Shell><SchedulingPage /></Shell></DoctorGuard>} />
           <Route path="/doctor/chat" element={<DoctorGuard><Shell><ChatListPage /></Shell></DoctorGuard>} />
           <Route path="/doctor/settings" element={<DoctorGuard><Shell><Shell>Settings Coming Soon</Shell></Shell></DoctorGuard>} />
