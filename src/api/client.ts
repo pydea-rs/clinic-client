@@ -45,8 +45,16 @@ export class ApiService {
                         typeof error.response.data === "object"
                     ) {
                         const data = error.response.data as any;
-                        apiError.message =
-                            data.message || data.error || apiError.message;
+                        apiError.message = data.message || data.error || apiError.message;
+                        if (typeof data.path === 'string') {
+                            apiError.path = data.path;
+                        }
+                        if (typeof data.timestamp === 'string') {
+                            apiError.timestamp = data.timestamp;
+                        }
+                        if (typeof data.status === 'number') {
+                            apiError.status = data.status;
+                        }
                     }
 
                     return Promise.reject(apiError);
@@ -72,10 +80,8 @@ export class ApiService {
     }
 
     async me<TUser = any>(): Promise<TUser> {
-        const response: AxiosResponse<any> = await this.api.get("/user", {
-            withCredentials: true,
-        });
-        return (response.data as any).contents as TUser;
+        const response: AxiosResponse<TUser> = await this.api.get("/user");
+        return response.data;
     }
 
     async logout(): Promise<void> {
@@ -86,12 +92,12 @@ export class ApiService {
         const response: AxiosResponse<StartConversationResponse> =
             await this.api.post("/ai-agents/start");
 
-        if (!(response.data as any).contents?.id) {
+        if (!(response.data as any)?.id) {
             throw Error(
                 "Something went wrong while starting the conversation! Please try again..."
             );
         }
-        return (response.data as any).contents?.id;
+        return (response.data as any).id;
     }
 
     async sendMessage(data: SendMessageRequest): Promise<SendMessageResponse> {
@@ -102,7 +108,7 @@ export class ApiService {
         //         "Something went wrong while sending the message! Please try again..."
         //     );
         // }
-        return (response.data as any).contents;
+        return response.data;
     }
 
     getStreamUrl(conversationId: string): string {

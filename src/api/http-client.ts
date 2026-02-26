@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from "axios";
+import axios, { AxiosInstance, AxiosResponse } from "axios";
 
 const DEFAULT_API_BASE_URL = "http://localhost:8080";
 const DEFAULT_TIMEOUT_MS = 10000;
@@ -19,6 +19,27 @@ export const apiClient: AxiosInstance = axios.create({
     withCredentials: true,
 });
 
+const hasContentsEnvelope = (
+    data: unknown,
+): data is { contents: unknown } => {
+    return (
+        typeof data === "object" &&
+        data !== null &&
+        Object.prototype.hasOwnProperty.call(data, "contents")
+    );
+};
+
+apiClient.interceptors.response.use((response: AxiosResponse) => {
+    if (!hasContentsEnvelope(response.data)) {
+        return response;
+    }
+
+    return {
+        ...response,
+        data: response.data.contents,
+    };
+});
+
 export const getApiBaseUrl = (): string => apiBaseUrl;
 
 export const setApiBaseUrl = (baseUrl: string): void => {
@@ -30,4 +51,3 @@ export const buildApiUrl = (path: string): string => {
     const normalizedPath = path.startsWith("/") ? path : `/${path}`;
     return `${apiBaseUrl}${normalizedPath}`;
 };
-
