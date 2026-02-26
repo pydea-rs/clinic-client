@@ -1,63 +1,76 @@
 import { useState, useEffect } from 'react';
-import { AuthState, User } from '../../../lib/types/chat';
-import { ApiService } from '../../../api/client';
+import { useAuthStore } from '../../../lib/stores/auth.store';
+import { authApi } from '../../../api/auth.api';
 
-const apiService = ApiService.get();
-
-export const useAuth = (): AuthState & {
+export const useAuth = (): {
+  user: any;
+  isAuthenticated: boolean;
   initializing: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (payload: { name?: string; email: string; password: string }) => Promise<void>;
+  register: (payload: { firstname: string; lastname?: string; email: string; password: string; role?: string }) => Promise<void>;
   logout: () => Promise<void>;
 } => {
-  const [authState, setAuthState] = useState<AuthState>({
-    user: null,
-    isAuthenticated: false,
-  });
-  const [initializing, setInitializing] = useState(true);
+  const { user, isAuthenticated, initializing, setUser, setAuthenticated, setInitializing, clearAuth } = useAuthStore();
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const bootstrap = async () => {
+      setInitializing(true);
       try {
-        const me = await apiService.me<User>();
+        const me = await authApi.me();
         if (me) {
-          setAuthState({ user: me, isAuthenticated: true });
+          setUser(me);
+          setAuthenticated(true);
         } else {
-          setAuthState({ user: null, isAuthenticated: false });
+          clearAuth();
         }
       } catch {
-        setAuthState({ user: null, isAuthenticated: false });
+        clearAuth();
       } finally {
         setInitializing(false);
       }
     };
     bootstrap();
-  }, []);
+  }, [setUser, setAuthenticated, setInitializing, clearAuth]);
 
   const login = async (email: string, password: string) => {
-    await apiService.login({ email, password });
-    const me = await apiService.me<User>();
-    setAuthState({ user: me ?? null, isAuthenticated: !!me });
+    setIsLoading(true);
+    try {
+      await authApi.login(email, password);
+      const me = await authApi.me();
+      setUser(me);
+      setAuthenticated(true);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const register = async (payload: { name?: string; email: string; password: string }) => {
-    await apiService.register(payload);
-    // Optionally auto-login after register depending on server behavior
-    const me = await apiService.me<User>();
-    setAuthState({ user: me ?? null, isAuthenticated: !!me });
+  const register = async (payload: { firstname: string; lastname?: string; email: string; password: string; role?: string }) => {
+    setIsLoading(true);
+    try {
+      await authApi.register(payload);
+      const me = await authApi.me();
+      setUser(me);
+      setAuthenticated(true);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const logout = async () => {
+    setIsLoading(true);
     try {
-      await apiService.logout();
+      await authApi.logout();
     } finally {
-      setAuthState({ user: null, isAuthenticated: false });
+      clearAuth();
+      setIsLoading(false);
     }
   };
 
   return {
-    ...authState,
-    initializing,
+    user,
+    isAuthenticated,
+    initializing: initializing || isLoading,
     login,
     register,
     logout,

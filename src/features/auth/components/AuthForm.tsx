@@ -9,7 +9,7 @@ interface AuthFormProps {
         lastname?: string;
         email: string;
         password: string;
-        role: string;
+        role?: "PATIENT" | "DOCTOR";
     }) => Promise<void>;
     initializing?: boolean;
 }
@@ -39,6 +39,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({
                     ?.split(/ /g) ?? [undefined, undefined];
                 if (!firstname?.length || !lastnameParts?.length) {
                     toast.error("Firstname & lastname are both required!");
+                    return;
                 }
                 await onRegister({
                     firstname,
@@ -87,7 +88,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({
                                     onChange={(e) => setName(e.target.value)}
                                     placeholder="Your name"
                                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all-smooth shadow-sm hover:shadow-md"
-                                    disabled={isLoading}
+                                    disabled={isLoading || initializing}
                                 />
                             </div>
                         )}
@@ -106,7 +107,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="you@example.com"
                                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all-smooth shadow-sm hover:shadow-md"
-                                disabled={isLoading}
+                                disabled={isLoading || initializing}
                                 autoComplete="email"
                                 required
                             />
@@ -126,7 +127,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="••••••••"
                                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all-smooth shadow-sm hover:shadow-md"
-                                disabled={isLoading}
+                                disabled={isLoading || initializing}
                                 autoComplete={
                                     mode === "login"
                                         ? "current-password"
@@ -142,10 +143,10 @@ export const AuthForm: React.FC<AuthFormProps> = ({
                             className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-2xl transition-all-smooth hover:scale-105 disabled:hover:scale-100 shadow-lg hover:shadow-xl btn-press"
                         >
                             {isLoading || initializing
-                                ? "🔄 Please wait..."
+                                ? "Please wait..."
                                 : mode === "login"
-                                ? "🔐 Login"
-                                : "📝 Register"}
+                                ? "Login"
+                                : "Register"}
                         </button>
                     </form>
 
