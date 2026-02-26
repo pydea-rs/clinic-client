@@ -9,10 +9,11 @@ export interface RequestLogEntry {
   latency: number;
   requestPayload?: unknown;
   responsePayload?: unknown;
+  rawEnvelope?: unknown;
 }
 
 interface DiagnosticsState {
-  requestLog: RequestLogEntry[];
+  requestLogs: RequestLogEntry[];
   maxRequestLogEntries: number;
   sseStatus: 'connected' | 'disconnected' | 'reconnecting' | 'error';
   wsStatus: 'connected' | 'disconnected' | 'reconnecting' | 'error';
@@ -22,7 +23,7 @@ interface DiagnosticsState {
   debugMode: boolean;
   
   addRequestLog: (entry: RequestLogEntry) => void;
-  clearRequestLog: () => void;
+  clearRequestLogs: () => void;
   setSseStatus: (status: DiagnosticsState['sseStatus']) => void;
   setWsStatus: (status: DiagnosticsState['wsStatus']) => void;
   setLastSseEvent: (event: string) => void;
@@ -33,7 +34,7 @@ interface DiagnosticsState {
 }
 
 export const useDiagnosticsStore = create<DiagnosticsState>((set, get) => ({
-  requestLog: [],
+  requestLogs: [],
   maxRequestLogEntries: 50,
   sseStatus: 'disconnected',
   wsStatus: 'disconnected',
@@ -41,12 +42,12 @@ export const useDiagnosticsStore = create<DiagnosticsState>((set, get) => ({
   debugMode: false,
 
   addRequestLog: (entry) => {
-    const { requestLog, maxRequestLogEntries } = get();
-    const newLog = [entry, ...requestLog].slice(0, maxRequestLogEntries);
-    set({ requestLog: newLog });
+    const { requestLogs, maxRequestLogEntries } = get();
+    const newLog = [entry, ...requestLogs].slice(0, maxRequestLogEntries);
+    set({ requestLogs: newLog });
   },
   
-  clearRequestLog: () => set({ requestLog: [] }),
+  clearRequestLogs: () => set({ requestLogs: [] }),
   
   setSseStatus: (status) => set({ sseStatus: status }),
   setWsStatus: (status) => set({ wsStatus: status }),

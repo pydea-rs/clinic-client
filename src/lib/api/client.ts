@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 import { ApiResponse, ApiError } from '../types/api';
+import { useDiagnosticsStore } from '../stores/diagnostics.store';
 
 const DEFAULT_API_BASE_URL = 'http://localhost:8080';
 
@@ -19,10 +20,23 @@ export const apiClient: AxiosInstance = axios.create({
   withCredentials: true,
 });
 
+// Request interceptor for logging
+apiClient.interceptors.request.use(
+  (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
+    // Add timestamp for latency tracking
+    (config as any).__requestStart = Date.now();
+    (config as any).__requestPayload = config.data;
+    return config;
+  }
+);
+
 // Response interceptor - unwrap envelope and normalize errors
 apiClient.interceptors.response.use(
   (response: AxiosResponse): AxiosResponse => {
+    const latency = Date.now() - (response.config as any).__requestStart;
     const data = response.data as unknown;
+    let rawEnvelope = data;
+    let unwrappedData = data;
 
     // Check if response has envelope structure
     if (
@@ -32,17 +46,40 @@ apiClient.interceptors.response.use(
       'message' in data &&
       'contents' in data
     ) {
-      // Return unwrapped contents but keep envelope for diagnostics
-      return {
-        ...response,
-        data: (data as ApiResponse).contents,
-        __rawEnvelope: data as ApiResponse,
-      };
+      rawEnvelope = data as ApiResponse;
+      unwrappedData = (data as ApiResponse).contents;
     }
 
-    return response;
+    // Log to diagnostics store
+    const { debugMode, addRequestLog } = useDiagnosticsStore.getState();
+    if (debugMode) {
+      addRequestLog({
+        id: `${Date.now()}-${Math.random()}`,
+        timestamp: new Date().toISOString(),
+        method: response.config.method?.toUpperCase() || 'GET',
+        url: response.config.url || '',
+        status: response.status,
+        latency,
+        requestPayload: (response.config as any).__requestPayload,
+        responsePayload: unwrappedData,
+        rawEnvelope,
+      });
+    }
+
+    // Only log in development console
+    if (import.meta.env.DEV) {
+      console.log(`[API] ${response.config.method?.toUpperCase()} ${response.config.url} - ${response.status} (${latency}ms)`);
+    }
+
+    // Return unwrapped contents
+    return {
+      ...response,
+      data: unwrappedData,
+    };
   },
   (error): Promise<never> => {
+    const latency = error.config ? Date.now() - (error.config as any).__requestStart : 0;
+    
     const apiError: ApiError = {
       status: error.response?.status || 500,
       message: error.message || 'An error occurred',
@@ -62,30 +99,23 @@ apiClient.interceptors.response.use(
       }
     }
 
-    return Promise.reject(apiError);
-  }
-);
-
-// Request interceptor for logging
-apiClient.interceptors.request.use(
-  (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
-    // Add timestamp for latency tracking
-    (config as any).__requestStart = Date.now();
-    return config;
-  }
-);
-
-// Response interceptor for logging
-apiClient.interceptors.response.use(
-  (response): AxiosResponse => {
-    const latency = Date.now() - (response.config as any).__requestStart;
-    
-    // Only log in development
-    if (import.meta.env.DEV) {
-      console.log(`[API] ${response.config.method?.toUpperCase()} ${response.config.url} - ${response.status} (${latency}ms)`);
+    // Log error to diagnostics store
+    const { debugMode, addRequestLog } = useDiagnosticsStore.getState();
+    if (debugMode && error.config) {
+      addRequestLog({
+        id: `${Date.now()}-${Math.random()}`,
+        timestamp: new Date().toISOString(),
+        method: error.config.method?.toUpperCase() || 'GET',
+        url: error.config.url || '',
+        status: apiError.status,
+        latency,
+        requestPayload: (error.config as any).__requestPayload,
+        responsePayload: null,
+        rawEnvelope: error.response?.data,
+      });
     }
-    
-    return response;
+
+    return Promise.reject(apiError);
   }
 );
 
