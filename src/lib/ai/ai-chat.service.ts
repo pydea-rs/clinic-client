@@ -1,4 +1,4 @@
-import { apiClient, getApiBaseUrl } from './client';
+import { apiClient, getApiBaseUrl } from '../api/client';
 
 export class AiChatService {
   // Start a new conversation
@@ -28,7 +28,5 @@ export class AiChatService {
     return `${baseUrl}/ai-agents/stream/${conversationId}`;
   }
 }
-
-export const aiChatService = new AiChatService();
 
 export const aiChatService = new AiChatService();

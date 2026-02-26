@@ -1,7 +1,6 @@
 import { create } from 'zustand';
-import { ApiError } from '../types/api';
 
-interface RequestLog {
+interface RequestLogEntry {
   id: string;
   timestamp: string;
   method: string;
@@ -10,48 +9,49 @@ interface RequestLog {
   latency: number;
   requestPayload?: unknown;
   responsePayload?: unknown;
-  rawEnvelope?: unknown;
 }
 
-interface DiagnosticsStore {
-  requestLogs: RequestLog[];
-  sseStatus: 'connected' | 'disconnected' | 'reconnecting';
-  wsStatus: 'connected' | 'disconnected' | 'reconnecting';
-  debugMode: boolean;
+interface DiagnosticsState {
+  requestLog: RequestLogEntry[];
+  maxRequestLogEntries: number;
+  sseStatus: 'connected' | 'disconnected' | 'reconnecting' | 'error';
+  wsStatus: 'connected' | 'disconnected' | 'reconnecting' | 'error';
   lastSseEvent?: string;
   lastWsEvent?: string;
+  showRawEnvelope: boolean;
+  debugMode: boolean;
   
-  addRequestLog: (log: Omit<RequestLog, 'id' | 'timestamp' | 'latency'>) => void;
-  setSseStatus: (status: 'connected' | 'disconnected' | 'reconnecting') => void;
-  setWsStatus: (status: 'connected' | 'disconnected' | 'reconnecting') => void;
-  setDebugMode: (enabled: boolean) => void;
+  addRequestLog: (entry: RequestLogEntry) => void;
+  clearRequestLog: () => void;
+  setSseStatus: (status: DiagnosticsState['sseStatus']) => void;
+  setWsStatus: (status: DiagnosticsState['wsStatus']) => void;
   setLastSseEvent: (event: string) => void;
   setLastWsEvent: (event: string) => void;
-  clearRequestLogs: () => void;
+  toggleRawEnvelope: () => void;
+  toggleDebugMode: () => void;
 }
 
-export const useDiagnosticsStore = create<DiagnosticsStore>((set) => ({
-  requestLogs: [],
+export const useDiagnosticsStore = create<DiagnosticsState>((set, get) => ({
+  requestLog: [],
+  maxRequestLogEntries: 50,
   sseStatus: 'disconnected',
   wsStatus: 'disconnected',
+  showRawEnvelope: false,
   debugMode: false,
+
+  addRequestLog: (entry) => {
+    const { requestLog, maxRequestLogEntries } = get();
+    const newLog = [entry, ...requestLog].slice(0, maxRequestLogEntries);
+    set({ requestLog: newLog });
+  },
   
-  addRequestLog: (log) => set((state) => ({
-    requestLogs: [
-      {
-        ...log,
-        id: Date.now().toString() + Math.random().toString(36).substring(2, 11),
-        timestamp: new Date().toISOString(),
-        latency: 0,
-      },
-      ...state.requestLogs.slice(0, 99), // Keep last 100
-    ],
-  })),
+  clearRequestLog: () => set({ requestLog: [] }),
   
   setSseStatus: (status) => set({ sseStatus: status }),
   setWsStatus: (status) => set({ wsStatus: status }),
-  setDebugMode: (enabled) => set({ debugMode: enabled }),
   setLastSseEvent: (event) => set({ lastSseEvent: event }),
   setLastWsEvent: (event) => set({ lastWsEvent: event }),
-  clearRequestLogs: () => set({ requestLogs: [] }),
+  
+  toggleRawEnvelope: () => set((state) => ({ showRawEnvelope: !state.showRawEnvelope })),
+  toggleDebugMode: () => set((state) => ({ debugMode: !state.debugMode })),
 }));

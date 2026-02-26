@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
 import { apiClient as baseApiClient } from './http-client';
 import { ApiError, ApiResponse } from '../lib/types/api';
-import { useDiagnosticsStore } from '../stores/diagnostics.store';
+import { useDiagnosticsStore } from '../lib/stores/diagnostics.store';
 
 export class ApiClient {
   private static instance: ApiClient;

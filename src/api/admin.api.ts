@@ -1,5 +1,5 @@
 import { apiClient } from '../lib/api/client';
-import { User, PlatformStats } from '../lib/types/api';
+import { User, PlatformStats, DoctorReview } from '../lib/types/api';
 
 // Admin API Adapter
 export const adminApi = {
@@ -62,6 +62,10 @@ export const adminApi = {
 
   // Review moderation
   reviews: {
+    list: async (): Promise<DoctorReview[]> => {
+      const response = await apiClient.get('/admin/reviews');
+      return response.data;
+    },
     delete: async (reviewId: number): Promise<void> => {
       await apiClient.delete(`/admin/reviews/${reviewId}`);
     },
