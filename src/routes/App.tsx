@@ -9,7 +9,10 @@ import { DebugPage } from '../features/debug/DebugPage';
 import { Shell } from '../components/Shell';
 import { PatientProfilePage } from '../features/patient/PatientProfilePage';
 import { PatientConsultationsPage } from '../features/patient/PatientConsultationsPage';
+import { PatientConsultationsListPage } from '../features/patient/PatientConsultationsListPage';
+import { PatientSOAPListPage } from '../features/patient/PatientSOAPListPage';
 import { SOAPDetailPage } from '../features/patient/SOAPDetailPage';
+import { UserDetailPage } from '../features/patient/UserDetailPage';
 import { DoctorWorkspacePage } from '../features/doctor/DoctorWorkspacePage';
 import { DoctorDocumentsPage } from '../features/doctor/DoctorDocumentsPage';
 import { ConsultationCreatePage } from '../features/consultation/ConsultationCreatePage';
@@ -80,9 +83,11 @@ function App() {
           
           {/* Patient routes */}
           <Route path="/patient/profile" element={<PatientGuard><Shell><PatientProfilePage /></Shell></PatientGuard>} />
-          <Route path="/patient/consultations" element={<PatientGuard><Shell><PatientConsultationsPage /></Shell></PatientGuard>} />
+          <Route path="/patient/consultations" element={<PatientGuard><Shell><PatientConsultationsListPage /></Shell></PatientGuard>} />
           <Route path="/patient/consultations/create" element={<PatientGuard><Shell><ConsultationCreatePage /></Shell></PatientGuard>} />
+          <Route path="/patient/soaps" element={<PatientGuard><Shell><PatientSOAPListPage /></Shell></PatientGuard>} />
           <Route path="/soap/:id" element={<PatientGuard><Shell><SOAPDetailPage /></Shell></PatientGuard>} />
+          <Route path="/user/:id" element={<AuthGuard><Shell><UserDetailPage /></Shell></AuthGuard>} />
           
           {/* Doctor routes */}
           <Route path="/doctors" element={<DoctorListPage />} />

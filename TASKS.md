@@ -82,22 +82,22 @@
 
 | # | Task | Status | Depends On | Details |
 |---|------|--------|------------|---------|
-| C-50 | Create user API adapter | 🆕 | C-12 | `/user`, `/user/profile`, `/user/avatar`, `/user/:id`, `/user/all`. |
-| C-51 | Build "My Profile" editor | 🆕 | C-50 | `PATCH /user/profile` form with optimistic UI and error mapping. |
-| C-52 | Build avatar uploader | 🆕 | C-50 | Multipart upload to `/user/avatar` with type/size hints. |
-| C-53 | Build user detail viewer | 🆕 | C-50 | `GET /user/:id` page with role-aware metadata display. |
-| C-54 | Build admin-only users quick list | 🆕 | C-50 | Light table for `/user/all` inside user tools/admin context. |
+| C-50 | Create user API adapter | ✅ | C-12 | `/user`, `/user/profile`, `/user/avatar`, `/user/:id`, `/user/all`. |
+| C-51 | Build "My Profile" editor | ✅ | C-50 | `PATCH /user/profile` form with optimistic UI and error mapping. |
+| C-52 | Build avatar uploader | ✅ | C-50 | Multipart upload to `/user/avatar` with type/size hints. |
+| C-53 | Build user detail viewer | ✅ | C-50 | `GET /user/:id` page with role-aware metadata display. |
+| C-54 | Build admin-only users quick list | ✅ | C-50 | Light table for `/user/all` inside user tools/admin context. |
 
 ### 3B — Patient + SOAP
 
 | # | Task | Status | Depends On | Details |
 |---|------|--------|------------|---------|
-| C-55 | Create patient API adapter | 🆕 | C-12 | `/patient/profile`, `/patient/consultations`, `/patient/soaps`. |
-| C-56 | Build patient profile CRUD UI | 🆕 | C-55 | Create/update/get profile forms for patient role. |
-| C-57 | Build array-field medical editor | 🆕 | C-56 | Reusable chips/list editor for history/allergies/medications/surgeries/familyHistory. |
-| C-58 | Build patient consultations list view | 🆕 | C-55 | Paginated list with status filter and quick actions. |
-| C-59 | Build patient SOAP list view | 🆕 | C-55 | Paginated list with generated date and conversation links. |
-| C-60 | Build SOAP detail renderer | 🆕 | C-59 | Render subjective/objective/assessment/plan/triage/specialty/raw note. |
+| C-55 | Create patient API adapter | ✅ | C-12 | `/patient/profile`, `/patient/consultations`, `/patient/soaps`. |
+| C-56 | Build patient profile CRUD UI | ✅ | C-55 | Create/update/get profile forms for patient role. |
+| C-57 | Build array-field medical editor | ✅ | C-56 | Reusable chips/list editor for history/allergies/medications/surgeries/familyHistory. |
+| C-58 | Build patient consultations list view | ✅ | C-55 | Paginated list with status filter and quick actions. |
+| C-59 | Build patient SOAP list view | ✅ | C-55 | Paginated list with generated date and conversation links. |
+| C-60 | Build SOAP detail renderer | ✅ | C-59 | Render subjective/objective/assessment/plan/triage/specialty/raw note. |
 
 ### 3C — Doctor Public + Doctor Workspace
 
@@ -252,12 +252,12 @@
 | Phase 0 Baseline | 6 | 6 | 0 | 0 |
 | Phase 1 Foundation | 13 | 13 | 0 | 0 |
 | Phase 2 Auth + AI | 11 | 11 | 0 | 0 |
-| Phase 3 Core Panels | 38 | 0 | 0 | 38 |
+| Phase 3 Core Panels | 38 | 11 | 0 | 27 |
 | Phase 4 Admin | 8 | 0 | 0 | 8 |
 | Phase 5 Chat Realtime | 12 | 0 | 0 | 12 |
 | Phase 6 QA Tooling | 8 | 0 | 0 | 8 |
 | Phase 7 Quality | 8 | 0 | 0 | 8 |
-| **TOTAL** | **104** | **30** | **0** | **74** |
+| **TOTAL** | **104** | **41** | **0** | **63** |
 
 ---
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { patientApi } from '../../../api/patient.api';
+import { ArrayFieldEditor } from './ArrayFieldEditor';
 import toast from 'react-hot-toast';
 
 interface PatientProfileFormProps {
@@ -12,7 +13,15 @@ export const PatientProfileForm: React.FC<PatientProfileFormProps> = ({
   onSubmitSuccess,
 }) => {
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState(initialData || {});
+  const [formData, setFormData] = useState(initialData || {
+    location: '',
+    bio: '',
+    medicalHistory: [],
+    allergies: [],
+    medications: [],
+    surgeries: [],
+    familyHistory: [],
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +65,41 @@ export const PatientProfileForm: React.FC<PatientProfileFormProps> = ({
           placeholder="About yourself"
         />
       </div>
+
+      <ArrayFieldEditor
+        label="Medical History"
+        items={formData.medicalHistory || []}
+        onChange={(items) => setFormData({ ...formData, medicalHistory: items })}
+        placeholder="e.g., Hypertension, Diabetes"
+      />
+
+      <ArrayFieldEditor
+        label="Allergies"
+        items={formData.allergies || []}
+        onChange={(items) => setFormData({ ...formData, allergies: items })}
+        placeholder="e.g., Penicillin, Peanuts"
+      />
+
+      <ArrayFieldEditor
+        label="Current Medications"
+        items={formData.medications || []}
+        onChange={(items) => setFormData({ ...formData, medications: items })}
+        placeholder="e.g., Aspirin 100mg"
+      />
+
+      <ArrayFieldEditor
+        label="Past Surgeries"
+        items={formData.surgeries || []}
+        onChange={(items) => setFormData({ ...formData, surgeries: items })}
+        placeholder="e.g., Appendectomy 2020"
+      />
+
+      <ArrayFieldEditor
+        label="Family History"
+        items={formData.familyHistory || []}
+        onChange={(items) => setFormData({ ...formData, familyHistory: items })}
+        placeholder="e.g., Father - Heart Disease"
+      />
 
       <button
         type="submit"
