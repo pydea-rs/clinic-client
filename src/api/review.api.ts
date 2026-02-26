@@ -1,41 +1,51 @@
 import { apiClient } from '../lib/api/client';
-import { DoctorReview } from '../lib/types/api';
+import { DoctorReview, DoctorRating } from '../lib/types/api';
 
-// Review API Adapter
+export interface CreateReviewPayload {
+  doctorId: number;
+  title?: string;
+  overview?: string;
+  rating: number;
+}
+
+export interface UpdateReviewPayload {
+  title?: string;
+  overview?: string;
+  rating?: number;
+}
+
 export const reviewApi = {
   // Create review
-  create: async (doctorId: number, payload: {
-    title?: string;
-    overview?: string;
-    rating: number;
-  }): Promise<DoctorReview> => {
-    const response = await apiClient.post(`/review`, { doctorId, ...payload });
+  createReview: async (payload: CreateReviewPayload): Promise<DoctorReview> => {
+    const response = await apiClient.post('/review', payload);
     return response.data;
   },
 
-  // Update own review
-  update: async (reviewId: number, payload: {
-    title?: string;
-    overview?: string;
-    rating?: number;
-  }): Promise<DoctorReview> => {
+  // Update review
+  updateReview: async (reviewId: number, payload: UpdateReviewPayload): Promise<DoctorReview> => {
     const response = await apiClient.patch(`/review/${reviewId}`, payload);
     return response.data;
   },
 
   // Delete review
-  delete: async (reviewId: number): Promise<void> => {
+  deleteReview: async (reviewId: number): Promise<void> => {
     await apiClient.delete(`/review/${reviewId}`);
   },
 
-  // List reviews for doctor (public)
-  listByDoctor: async (doctorId: number, params?: { page?: number; limit?: number }): Promise<{ data: DoctorReview[]; total: number }> => {
-    const response = await apiClient.get(`/review/doctor/${doctorId}`, { params });
+  // Get doctor reviews
+  getDoctorReviews: async (
+    doctorId: number,
+    page?: number,
+    limit?: number
+  ): Promise<{ reviews: DoctorReview[]; total: number }> => {
+    const response = await apiClient.get(`/review/doctor/${doctorId}`, {
+      params: { page, limit },
+    });
     return response.data;
   },
 
-  // Get aggregate rating (public)
-  getRating: async (doctorId: number): Promise<{ averageRating: number; totalReviews: number; distribution: Record<number, number> }> => {
+  // Get doctor rating
+  getDoctorRating: async (doctorId: number): Promise<DoctorRating> => {
     const response = await apiClient.get(`/review/doctor/${doctorId}/rating`);
     return response.data;
   },
