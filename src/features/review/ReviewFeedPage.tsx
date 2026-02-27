@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 export const ReviewFeedPage: React.FC = () => {
-  const { doctorId } = useParams<{ doctorId: string }>();
+  const { id: doctorId } = useParams<{ id: string }>();
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);

@@ -1,11 +1,11 @@
 import { apiClient } from '../lib/api/client';
-import { User, PlatformStats, DoctorReview } from '../lib/types/api';
+import { User, PlatformStats } from '../lib/types/api';
 
 // Admin API Adapter
 export const adminApi = {
   // User management
   users: {
-    list: async (params?: { page?: number; limit?: number; role?: string; search?: string }): Promise<{ data: User[]; total: number }> => {
+    list: async (params?: { skip?: number; take?: number; role?: string; search?: string; isActive?: boolean; isAdmin?: boolean }): Promise<{ data: User[]; total: number }> => {
       const response = await apiClient.get('/admin/users', { params });
       return response.data;
     },
@@ -14,7 +14,6 @@ export const adminApi = {
       lastname?: string;
       email?: string;
       role?: string;
-      isAdmin?: boolean;
       isActive?: boolean;
     }): Promise<User> => {
       const response = await apiClient.patch(`/admin/users/${id}`, payload);
@@ -54,18 +53,8 @@ export const adminApi = {
     },
   },
 
-  // Consultations (admin)
-  consultations: async (params?: { page?: number; limit?: number; status?: string }): Promise<{ data: any[]; total: number }> => {
-    const response = await apiClient.get('/admin/consultations', { params });
-    return response.data;
-  },
-
-  // Review moderation
+  // Review moderation (delete only - no list endpoint exists)
   reviews: {
-    list: async (): Promise<DoctorReview[]> => {
-      const response = await apiClient.get('/admin/reviews');
-      return response.data;
-    },
     delete: async (reviewId: number): Promise<void> => {
       await apiClient.delete(`/admin/reviews/${reviewId}`);
     },

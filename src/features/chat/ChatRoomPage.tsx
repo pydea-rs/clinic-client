@@ -28,13 +28,32 @@ export const ChatRoomPage: React.FC = () => {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastTypingStateRef = useRef<boolean>(false);
 
+  const loadChatAndMessages = useCallback(async () => {
+    if (!id) return;
+
+    try {
+      const [chatData, messagesData] = await Promise.all([
+        chatApi.getById(id),
+        chatApi.getMessages(id, { limit: 100 })
+      ]);
+
+      setChatInfo(chatData);
+      setMessages(messagesData.messages || []);
+    } catch (error: any) {
+      console.error('Failed to load chat:', error);
+      toast.error(error.message || 'Failed to load chat');
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
   useEffect(() => {
     if (!id) return;
 
     loadChatAndMessages();
 
     const socket = socketService.connect();
-    
+
     // Join the chat room
     socketService.joinRoom(id);
 
@@ -48,7 +67,7 @@ export const ChatRoomPage: React.FC = () => {
           }
           return [...prev, data.message];
         });
-        
+
         // Mark as read if not from current user
         if (data.message.senderId !== user?.id) {
           socketService.markAsRead(id, data.message.id);
@@ -93,8 +112,8 @@ export const ChatRoomPage: React.FC = () => {
     // Listen for message edits
     const handleEdited = (data: { chatId: string; messageId: number; content: string; editedAt: string }) => {
       if (data.chatId === id) {
-        setMessages(prev => prev.map(msg => 
-          msg.id === data.messageId 
+        setMessages(prev => prev.map(msg =>
+          msg.id === data.messageId
             ? { ...msg, content: data.content, editedAt: data.editedAt }
             : msg
         ));
@@ -104,8 +123,8 @@ export const ChatRoomPage: React.FC = () => {
     // Listen for message deletes
     const handleDeleted = (data: { chatId: string; messageId: number; deletedAt: string }) => {
       if (data.chatId === id) {
-        setMessages(prev => prev.map(msg => 
-          msg.id === data.messageId 
+        setMessages(prev => prev.map(msg =>
+          msg.id === data.messageId
             ? { ...msg, deletedAt: data.deletedAt, content: '[Message deleted]' }
             : msg
         ));
@@ -136,7 +155,7 @@ export const ChatRoomPage: React.FC = () => {
     return () => {
       // Leave the chat room
       socketService.leaveRoom(id);
-      
+
       socket.off('chat:message', handleNewMessage);
       socket.off('chat:typing', handleTyping);
       socket.off('chat:read', handleRead);
@@ -150,25 +169,6 @@ export const ChatRoomPage: React.FC = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
-  const loadChatAndMessages = useCallback(async () => {
-    if (!id) return;
-    
-    try {
-      const [chatData, messagesData] = await Promise.all([
-        chatApi.getById(id),
-        chatApi.getMessages(id, { limit: 100 })
-      ]);
-      
-      setChatInfo(chatData);
-      setMessages(messagesData.data || []);
-    } catch (error: any) {
-      console.error('Failed to load chat:', error);
-      toast.error(error.message || 'Failed to load chat');
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

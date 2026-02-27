@@ -14,7 +14,7 @@ export const PatientProfilePage: React.FC = () => {
 
   const { data: user, isLoading } = useQuery({
     queryKey: ['user-profile'],
-    queryFn: () => userApi.getProfile(),
+    queryFn: () => userApi.getCurrentUser(),
   });
 
   const updateMutation = useMutation({

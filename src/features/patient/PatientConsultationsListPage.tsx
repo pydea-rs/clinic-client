@@ -16,9 +16,12 @@ export const PatientConsultationsListPage: React.FC = () => {
 
   const getStatusBadgeColor = (status: string) => {
     const colors: Record<string, string> = {
-      PENDING: 'bg-yellow-100 text-yellow-800',
-      ACCEPTED: 'bg-blue-100 text-blue-800',
-      REJECTED: 'bg-red-100 text-red-800',
+      CREATED: 'bg-gray-100 text-gray-800',
+      PENDING_DOCTOR_REVIEW: 'bg-yellow-100 text-yellow-800',
+      DOCTOR_DECIDED: 'bg-blue-100 text-blue-800',
+      PENDING_PAYMENT: 'bg-orange-100 text-orange-800',
+      PAYMENT_CONFIRMED: 'bg-green-100 text-green-800',
+      IN_PROGRESS: 'bg-purple-100 text-purple-800',
       COMPLETED: 'bg-green-100 text-green-800',
       CANCELLED: 'bg-gray-100 text-gray-800',
     };
@@ -64,7 +67,7 @@ export const PatientConsultationsListPage: React.FC = () => {
         >
           All
         </button>
-        {['PENDING', 'ACCEPTED', 'REJECTED', 'COMPLETED', 'CANCELLED'].map((status) => (
+        {['CREATED', 'PENDING_DOCTOR_REVIEW', 'DOCTOR_DECIDED', 'PENDING_PAYMENT', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'].map((status) => (
           <button
             key={status}
             onClick={() => setStatusFilter(status)}
@@ -74,7 +77,7 @@ export const PatientConsultationsListPage: React.FC = () => {
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
-            {status}
+            {status.replaceAll('_', ' ')}
           </button>
         ))}
       </div>

@@ -60,7 +60,7 @@ export const ConsultationDetailPage: React.FC = () => {
     const formData = new FormData(e.target as HTMLFormElement);
     const notes = formData.get('notes') as string;
     const summary = formData.get('summary') as string;
-    const followUpNeeded = formData.get('followUpNeeded') === 'true';
+    const followUpNeeded = formData.get('followUpNeeded') === 'on';
 
     setCompleting(true);
     try {
@@ -126,7 +126,7 @@ export const ConsultationDetailPage: React.FC = () => {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Consultation Details</h1>
         <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(consultation.status)}`}>
-          {consultation.status.replace('_', ' ')}
+          {consultation.status.replaceAll('_', ' ')}
         </span>
       </div>
 

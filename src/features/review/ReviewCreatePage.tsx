@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 export const ReviewCreatePage: React.FC = () => {
-  const { doctorId } = useParams<{ doctorId: string }>();
+  const { id: doctorId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({

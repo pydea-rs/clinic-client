@@ -83,7 +83,7 @@ export const ConsultationListPage: React.FC = () => {
                     </p>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(consultation.status)}`}>
-                    {consultation.status.replace('_', ' ')}
+                    {consultation.status.replaceAll('_', ' ')}
                   </span>
                 </div>
                 

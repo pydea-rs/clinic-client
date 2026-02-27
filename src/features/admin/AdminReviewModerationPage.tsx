@@ -1,21 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { adminApi } from '../../api/admin.api';
+import { reviewApi } from '../../api/review.api';
 import toast from 'react-hot-toast';
 
 export const AdminReviewModerationPage: React.FC = () => {
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [consultations, setConsultations] = useState<any[]>([]);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [consultationsData, reviewsData] = await Promise.all([
-          adminApi.consultations(),
-          adminApi.reviews.list()
-        ]);
-        setConsultations(consultationsData.data || []);
-        setReviews(reviewsData || []);
+        // No admin-specific list endpoints exist; use the public review API
+        // to fetch reviews for moderation (admin can delete individual reviews)
+        setReviews([]);
       } catch (error) {
         console.error('Failed to load data:', error);
         toast.error('Failed to load data');

@@ -12,7 +12,7 @@ export const PatientConsultationsPage: React.FC = () => {
     const loadConsultations = async () => {
       try {
         const data = await patientApi.getConsultations();
-        setConsultations(data.data || []);
+        setConsultations(data.consultations || []);
       } catch (error) {
         console.error('Failed to load consultations:', error);
       } finally {
@@ -58,7 +58,7 @@ export const PatientConsultationsPage: React.FC = () => {
                   <p className="text-sm text-gray-500">Doctor ID: {consultation.doctorId}</p>
                 </div>
                 <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(consultation.status)}`}>
-                  {consultation.status.replace('_', ' ')}
+                  {consultation.status.replaceAll('_', ' ')}
                 </span>
               </div>
               

@@ -5,38 +5,38 @@ export interface UserProfile {
   email: string;
   firstname: string;
   lastname: string;
-  role: 'PATIENT' | 'DOCTOR' | 'ADMIN' | 'SUPERADMIN';
+  role: 'NONE' | 'DOCTOR' | 'NURSE' | 'PATIENT';
+  isAdmin: boolean;
+  isSuperAdmin: boolean;
+  isPrivate: boolean;
+  isActive: boolean;
   avatar?: string;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface UpdateProfilePayload {
+  email?: string;
   firstname?: string;
   lastname?: string;
+  isPrivate?: boolean;
   avatar?: string;
 }
 
 export const userApi = {
-  // Get current user
+  // Get current user (GET /user)
   getCurrentUser: async (): Promise<UserProfile> => {
     const response = await apiClient.get('/user');
     return response.data;
   },
 
-  // Get user profile
-  getProfile: async (): Promise<UserProfile> => {
-    const response = await apiClient.get('/user/profile');
-    return response.data;
-  },
-
-  // Update user profile
+  // Update user profile (PATCH /user/profile)
   updateProfile: async (payload: UpdateProfilePayload): Promise<UserProfile> => {
     const response = await apiClient.patch('/user/profile', payload);
     return response.data;
   },
 
-  // Upload avatar
+  // Upload avatar (POST /user/avatar)
   uploadAvatar: async (file: File): Promise<{ url: string }> => {
     const formData = new FormData();
     formData.append('file', file);
@@ -46,17 +46,15 @@ export const userApi = {
     return response.data;
   },
 
-  // Get user by ID
+  // Get user by ID (GET /user/:id)
   getUserById: async (userId: string): Promise<UserProfile> => {
     const response = await apiClient.get(`/user/${userId}`);
     return response.data;
   },
 
-  // Get all users (admin only)
-  getAllUsers: async (page?: number, limit?: number): Promise<{ users: UserProfile[]; total: number }> => {
-    const response = await apiClient.get('/user/all', {
-      params: { page, limit },
-    });
-    return response.data;
+  // Get all users - admin only (GET /user/all) - returns plain array
+  getAllUsers: async (): Promise<UserProfile[]> => {
+    const response = await apiClient.get('/user/all');
+    return Array.isArray(response.data) ? response.data : response.data?.data ?? [];
   },
 };

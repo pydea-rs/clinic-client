@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { userApi } from '../../api/user.api';
+import { adminApi } from '../../api/admin.api';
 import { Loader2, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -9,8 +9,8 @@ export const AdminUsersQuickList: React.FC = () => {
   const limit = 10;
 
   const { data, isLoading } = useQuery({
-    queryKey: ['users', page],
-    queryFn: () => userApi.getAllUsers(page, limit),
+    queryKey: ['admin-users', page],
+    queryFn: () => adminApi.users.list({ skip: (page - 1) * limit, take: limit }),
   });
 
   const getRoleBadgeColor = (role: string) => {
@@ -31,7 +31,9 @@ export const AdminUsersQuickList: React.FC = () => {
     );
   }
 
-  const totalPages = data ? Math.ceil(data.total / limit) : 1;
+  const users = data?.data || [];
+  const total = data?.total || 0;
+  const totalPages = Math.ceil(total / limit) || 1;
 
   return (
     <div className="bg-white rounded-lg shadow">
@@ -47,7 +49,7 @@ export const AdminUsersQuickList: React.FC = () => {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {data?.users.map((user) => (
+            {users.map((user) => (
               <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
@@ -55,7 +57,7 @@ export const AdminUsersQuickList: React.FC = () => {
                       {user.avatar ? (
                         <img src={user.avatar} alt={user.firstname} className="w-full h-full rounded-full object-cover" />
                       ) : (
-                        '👤'
+                        <span className="text-gray-500 text-xs">N/A</span>
                       )}
                     </div>
                     <span className="font-medium text-gray-900">
@@ -90,7 +92,7 @@ export const AdminUsersQuickList: React.FC = () => {
       {/* Pagination */}
       <div className="px-6 py-4 border-t flex items-center justify-between">
         <p className="text-sm text-gray-600">
-          Showing {(page - 1) * limit + 1} to {Math.min(page * limit, data?.total || 0)} of {data?.total || 0} users
+          Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)} of {total} users
         </p>
         <div className="flex gap-2">
           <button
