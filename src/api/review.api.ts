@@ -1,5 +1,6 @@
 import { apiClient } from '../lib/api/client';
-import { DoctorReview, DoctorRating } from '../lib/types/api';
+import { DoctorReview } from '../lib/types/api';
+import { DoctorRating } from './doctor.api';
 
 export interface CreateReviewPayload {
   doctorId: number;
@@ -38,10 +39,12 @@ export const reviewApi = {
     page?: number,
     limit?: number
   ): Promise<{ reviews: DoctorReview[]; total: number }> => {
+    const skip = page ? (page - 1) * (limit || 20) : undefined;
     const response = await apiClient.get(`/review/doctor/${doctorId}`, {
-      params: { page, limit },
+      params: { skip, take: limit },
     });
-    return response.data;
+    const result = response.data;
+    return { reviews: result?.data || (Array.isArray(result) ? result : []), total: result?.total || 0 };
   },
 
   // Get doctor rating

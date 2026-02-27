@@ -4,7 +4,7 @@ export class AiChatService {
   // Start a new conversation
   async startConversation(): Promise<string> {
     const response = await apiClient.post('/ai-agents/start', {});
-    return response.data.conversationId;
+    return response.data.id;
   }
 
   // Send a message

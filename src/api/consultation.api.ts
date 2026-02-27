@@ -14,7 +14,7 @@ export interface DecideConsultationPayload {
 export interface CompleteConsultationPayload {
   notes?: string;
   summary?: string;
-  followUpNeeded: boolean;
+  followUpNeeded?: boolean;
 }
 
 export const consultationApi = {
@@ -26,10 +26,12 @@ export const consultationApi = {
 
   // Get consultations (role-aware)
   getConsultations: async (page?: number, limit?: number): Promise<{ consultations: Consultation[]; total: number }> => {
+    const skip = page ? (page - 1) * (limit || 20) : undefined;
     const response = await apiClient.get('/consultation', {
-      params: { page, limit },
+      params: { skip, take: limit },
     });
-    return response.data;
+    const result = response.data;
+    return { consultations: result?.data || (Array.isArray(result) ? result : []), total: result?.total || 0 };
   },
 
   // Get consultation by ID

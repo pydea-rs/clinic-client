@@ -1,16 +1,26 @@
 import { apiClient } from '../lib/api/client';
-import { 
-  DoctorAvailability, 
-  SlotDuration, 
-  AvailabilityException, 
-  Appointment 
+import {
+  DoctorAvailability,
+  SlotDuration,
+  AvailabilityException,
+  Appointment
 } from '../lib/types/api';
+
+export interface AvailableSlot {
+  date: string;
+  startTime: string;
+  endTime: string;
+  durationMinutes: number;
+}
 
 export interface BookingPayload {
   doctorId: number;
   dateTime: string;
   durationMinutes: number;
+  price: number;
+  method: 'CHAT' | 'VOICE_CALL' | 'VIDEO_CALL' | 'ON_SITE';
   consultationId?: string;
+  notes?: string;
 }
 
 export const schedulingApi = {
@@ -25,8 +35,8 @@ export const schedulingApi = {
     return response.data;
   },
 
-  updateAvailability: async (payload: Partial<DoctorAvailability>): Promise<DoctorAvailability> => {
-    const response = await apiClient.patch('/scheduling/availability', payload);
+  updateAvailability: async (id: number, payload: Partial<DoctorAvailability>): Promise<DoctorAvailability> => {
+    const response = await apiClient.patch(`/scheduling/availability/${id}`, payload);
     return response.data;
   },
 
@@ -43,15 +53,6 @@ export const schedulingApi = {
   createSlotDuration: async (payload: Partial<SlotDuration>): Promise<SlotDuration> => {
     const response = await apiClient.post('/scheduling/slot-durations', payload);
     return response.data;
-  },
-
-  updateSlotDuration: async (payload: Partial<SlotDuration>): Promise<SlotDuration> => {
-    const response = await apiClient.patch('/scheduling/slot-durations', payload);
-    return response.data;
-  },
-
-  deleteSlotDuration: async (durationId: number): Promise<void> => {
-    await apiClient.delete(`/scheduling/slot-durations/${durationId}`);
   },
 
   // Availability exceptions CRUD
@@ -71,12 +72,13 @@ export const schedulingApi = {
 
   // Public slot explorer
   getDoctorSlots: async (doctorId: number, params?: {
-    startDate?: string;
-    endDate?: string;
+    start?: string;
+    end?: string;
     duration?: number;
-  }): Promise<{ slots: string[]; total: number }> => {
+  }): Promise<AvailableSlot[]> => {
     const response = await apiClient.get(`/scheduling/doctor/${doctorId}/slots`, { params });
-    return response.data;
+    const result = response.data;
+    return Array.isArray(result) ? result : (result?.data || []);
   },
 
   getDoctorDurations: async (doctorId: number): Promise<SlotDuration[]> => {
@@ -92,10 +94,12 @@ export const schedulingApi = {
 
   // Appointments
   getAppointments: async (page?: number, limit?: number): Promise<{ appointments: Appointment[]; total: number }> => {
+    const skip = page ? (page - 1) * (limit || 20) : undefined;
     const response = await apiClient.get('/scheduling/appointments', {
-      params: { page, limit },
+      params: { skip, take: limit },
     });
-    return response.data;
+    const result = response.data;
+    return { appointments: result?.data || (Array.isArray(result) ? result : []), total: result?.total || 0 };
   },
 
   getAppointmentById: async (appointmentId: number): Promise<Appointment> => {

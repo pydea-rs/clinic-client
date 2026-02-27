@@ -1,4 +1,5 @@
 import { apiClient } from '../lib/api/client';
+import { Consultation, PatientSOAP } from '../lib/types/api';
 
 export interface PatientProfile {
   id: string;
@@ -10,31 +11,6 @@ export interface PatientProfile {
   medications?: string[];
   surgeries?: string[];
   familyHistory?: string[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Consultation {
-  id: string;
-  patientId: string;
-  doctorId: string;
-  status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'COMPLETED' | 'CANCELLED';
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface SOAP {
-  id: string;
-  conversationId: string;
-  patientId: string;
-  doctorId?: string;
-  subjective: string;
-  objective: string;
-  assessment: string;
-  plan: string;
-  triage?: string;
-  specialty?: string;
-  rawNote?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -60,23 +36,27 @@ export const patientApi = {
 
   // Get patient consultations
   getConsultations: async (page?: number, limit?: number): Promise<{ consultations: Consultation[]; total: number }> => {
+    const skip = page ? (page - 1) * (limit || 20) : undefined;
     const response = await apiClient.get('/patient/consultations', {
-      params: { page, limit },
+      params: { skip, take: limit },
     });
-    return response.data;
+    const result = response.data;
+    return { consultations: result?.data || (Array.isArray(result) ? result : []), total: result?.total || 0 };
   },
 
   // Get patient SOAPs
-  getSOAPs: async (page?: number, limit?: number): Promise<{ soaps: SOAP[]; total: number }> => {
+  getSOAPs: async (page?: number, limit?: number): Promise<{ soaps: PatientSOAP[]; total: number }> => {
+    const skip = page ? (page - 1) * (limit || 20) : undefined;
     const response = await apiClient.get('/patient/soaps', {
-      params: { page, limit },
+      params: { skip, take: limit },
     });
-    return response.data;
+    const result = response.data;
+    return { soaps: result?.data || (Array.isArray(result) ? result : []), total: result?.total || 0 };
   },
 
   // Get SOAP detail
-  getSOAPDetail: async (soapId: string): Promise<SOAP> => {
-    const response = await apiClient.get(`/patient/soaps/${soapId}`);
+  getSOAPDetail: async (soapId: string): Promise<PatientSOAP> => {
+    const response = await apiClient.get(`/soap/${soapId}`);
     return response.data;
   },
 };

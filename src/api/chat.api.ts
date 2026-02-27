@@ -14,9 +14,14 @@ export const chatApi = {
   },
 
   // List user's chats
-  list: async (): Promise<Chat[]> => {
+  list: async (): Promise<{ chats: Chat[]; total: number }> => {
     const response = await apiClient.get('/chat');
-    return response.data;
+    const result = response.data;
+    // Server returns { chats: [...], total: N }
+    if (result?.chats) return result;
+    // Fallback if server returns array directly
+    if (Array.isArray(result)) return { chats: result, total: result.length };
+    return { chats: [], total: 0 };
   },
 
   // Get single chat
@@ -26,9 +31,11 @@ export const chatApi = {
   },
 
   // Get chat messages
-  getMessages: async (id: string, params?: { page?: number; limit?: number }): Promise<{ data: Message[]; total: number }> => {
-    const response = await apiClient.get(`/chat/${id}/messages`, { params });
-    return response.data;
+  getMessages: async (id: string, params?: { page?: number; limit?: number }): Promise<{ messages: Message[]; total: number }> => {
+    const skip = params?.page ? (params.page - 1) * (params.limit || 20) : undefined;
+    const response = await apiClient.get(`/chat/${id}/messages`, { params: { skip, take: params?.limit } });
+    const result = response.data;
+    return { messages: result?.messages || result?.data || (Array.isArray(result) ? result : []), total: result?.total || 0 };
   },
 
   // Send message

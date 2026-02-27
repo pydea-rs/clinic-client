@@ -59,7 +59,6 @@ export const useChat = () => {
   const startConversation = useCallback(async () => {
     try {
       const conversationId = await aiChatService.startConversation();
-      setChatState((prev) => ({ ...prev, conversationId }));
 
       if (!conversationId) {
         throw new Error("No conversationId returned by server");

@@ -1,7 +1,7 @@
 import { apiClient } from '../lib/api/client';
 
 export interface DoctorProfile {
-  id: string;
+  id: number;
   userId: string;
   specialty: string;
   secondarySpecialties?: string[];
@@ -12,14 +12,13 @@ export interface DoctorProfile {
   clinicLocation?: string;
   rating?: number;
   totalReviews?: number;
-  isVerified?: boolean;
+  verified?: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface DoctorRating {
-  doctorId: string;
-  averageRating: number;
+  averageRating: number | null;
   totalReviews: number;
   distribution: {
     1: number;
@@ -31,11 +30,12 @@ export interface DoctorRating {
 }
 
 export interface DoctorDocument {
-  id: string;
-  doctorId: string;
+  id: number;
+  doctorId: number;
   type: string;
-  url: string;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  fileUrl: string;
+  fileName?: string;
+  status: string;
   reviewedAt?: string;
   reviewedBy?: string;
   rejectionReason?: string;
@@ -53,18 +53,21 @@ export const doctorApi = {
     page?: number;
     limit?: number;
   }): Promise<{ doctors: DoctorProfile[]; total: number }> => {
-    const response = await apiClient.get('/doctor', { params });
-    return response.data;
+    const { page, limit, ...rest } = params || {};
+    const skip = page ? (page - 1) * (limit || 20) : undefined;
+    const response = await apiClient.get('/doctor', { params: { ...rest, skip, take: limit } });
+    const result = response.data;
+    return { doctors: result?.data || (Array.isArray(result) ? result : []), total: result?.total || 0 };
   },
 
   // Get doctor by ID
-  getDoctorById: async (doctorId: string): Promise<DoctorProfile> => {
+  getDoctorById: async (doctorId: number | string): Promise<DoctorProfile> => {
     const response = await apiClient.get(`/doctor/${doctorId}`);
     return response.data;
   },
 
   // Get doctor rating
-  getDoctorRating: async (doctorId: string): Promise<DoctorRating> => {
+  getDoctorRating: async (doctorId: number | string): Promise<DoctorRating> => {
     const response = await apiClient.get(`/doctor/${doctorId}/rating`);
     return response.data;
   },
@@ -77,7 +80,7 @@ export const doctorApi = {
 
   // Update doctor profile
   updateProfile: async (payload: Partial<DoctorProfile>): Promise<DoctorProfile> => {
-    const response = await apiClient.patch('/doctor', payload);
+    const response = await apiClient.patch('/doctor/profile', payload);
     return response.data;
   },
 
@@ -96,10 +99,5 @@ export const doctorApi = {
   getDocuments: async (): Promise<DoctorDocument[]> => {
     const response = await apiClient.get('/doctor/documents');
     return response.data;
-  },
-
-  // Delete document
-  deleteDocument: async (documentId: string): Promise<void> => {
-    await apiClient.delete(`/doctor/documents/${documentId}`);
   },
 };
