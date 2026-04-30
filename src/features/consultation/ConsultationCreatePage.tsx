@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { consultationApi } from '../../api/consultation.api';
 import { doctorApi } from '../../api/doctor.api';
 import { patientApi } from '../../api/patient.api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 export const ConsultationCreatePage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [doctors, setDoctors] = useState<any[]>([]);
   const [soaps, setSoaps] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,6 +32,13 @@ export const ConsultationCreatePage: React.FC = () => {
     };
     loadData();
   }, []);
+
+  useEffect(() => {
+    const doctorIdFromQuery = searchParams.get('doctorId');
+    if (doctorIdFromQuery) {
+      setSelectedDoctor(doctorIdFromQuery);
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

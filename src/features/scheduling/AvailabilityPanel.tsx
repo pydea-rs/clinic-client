@@ -6,6 +6,7 @@ export const AvailabilityPanel: React.FC = () => {
   const [availability, setAvailability] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     dayOfWeek: 1,
     startTime: '09:00',
@@ -31,14 +32,21 @@ export const AvailabilityPanel: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      if (formData.id) {
-        await schedulingApi.updateAvailability(formData);
+      if (editingId !== null) {
+        await schedulingApi.updateAvailability(editingId, formData);
         toast.success('Availability updated');
       } else {
         await schedulingApi.createAvailability(formData);
         toast.success('Availability created');
       }
       setShowForm(false);
+      setEditingId(null);
+      setFormData({
+        dayOfWeek: 1,
+        startTime: '09:00',
+        endTime: '17:00',
+        isActive: true,
+      });
       loadAvailability();
     } catch (error: any) {
       toast.error(error.message || 'Failed to save availability');
@@ -78,7 +86,7 @@ export const AvailabilityPanel: React.FC = () => {
 
       {showForm && (
         <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-bold mb-4">{formData.id ? 'Edit' : 'Create'} Availability</h2>
+          <h2 className="text-xl font-bold mb-4">{editingId !== null ? 'Edit' : 'Create'} Availability</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Day of Week</label>
@@ -88,7 +96,7 @@ export const AvailabilityPanel: React.FC = () => {
                 className="w-full px-4 py-2 border rounded-lg"
               >
                 {days.map((day, index) => (
-                  <option key={day} value={index + 1}>{day}</option>
+                  <option key={day} value={index}>{day}</option>
                 ))}
               </select>
             </div>
@@ -135,7 +143,10 @@ export const AvailabilityPanel: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => setShowForm(false)}
+                onClick={() => {
+                  setShowForm(false);
+                  setEditingId(null);
+                }}
                 className="px-4 py-2 border rounded-lg hover:bg-gray-50"
               >
                 Cancel
@@ -155,7 +166,7 @@ export const AvailabilityPanel: React.FC = () => {
             <div key={item.id} className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-medium">{days[item.dayOfWeek - 1]}</h3>
+                  <h3 className="font-medium">{days[item.dayOfWeek]}</h3>
                   <p className="text-sm text-gray-500">
                     {item.startTime} - {item.endTime}
                   </p>
@@ -166,7 +177,13 @@ export const AvailabilityPanel: React.FC = () => {
                   </span>
                   <button
                     onClick={() => {
-                      setFormData(item);
+                      setFormData({
+                        dayOfWeek: item.dayOfWeek,
+                        startTime: item.startTime,
+                        endTime: item.endTime,
+                        isActive: item.isActive,
+                      });
+                      setEditingId(item.id);
                       setShowForm(true);
                     }}
                     className="px-3 py-1 text-blue-600 hover:underline"

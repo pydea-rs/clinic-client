@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { authApi } from '../auth.api';
 import { apiClient } from '../../lib/api/client';
-import { mockPatientUser, mockApiResponse } from '../../test/mockData';
+import { mockPatientUser } from '../../test/mockData';
 
 vi.mock('../../lib/api/client');
 
@@ -13,14 +13,13 @@ describe('authApi', () => {
   describe('login', () => {
     it('should login successfully with valid credentials', async () => {
       const credentials = { email: 'test@test.com', password: 'password123' };
-      const mockResponse = { data: mockPatientUser };
+      const mockResponse = { data: undefined };
       
       vi.mocked(apiClient.post).mockResolvedValue(mockResponse);
 
-      const result = await authApi.login(credentials);
+      await authApi.login(credentials.email, credentials.password);
 
       expect(apiClient.post).toHaveBeenCalledWith('/auth/login', credentials);
-      expect(result).toEqual(mockPatientUser);
     });
 
     it('should throw error on invalid credentials', async () => {
@@ -29,7 +28,7 @@ describe('authApi', () => {
       
       vi.mocked(apiClient.post).mockRejectedValue(error);
 
-      await expect(authApi.login(credentials)).rejects.toEqual(error);
+      await expect(authApi.login(credentials.email, credentials.password)).rejects.toEqual(error);
     });
   });
 
@@ -42,14 +41,13 @@ describe('authApi', () => {
         lastname: 'User',
         role: 'PATIENT' as const,
       };
-      const mockResponse = { data: mockPatientUser };
+      const mockResponse = { data: undefined };
       
       vi.mocked(apiClient.post).mockResolvedValue(mockResponse);
 
-      const result = await authApi.register(userData);
+      await authApi.register(userData);
 
       expect(apiClient.post).toHaveBeenCalledWith('/auth/register', userData);
-      expect(result).toEqual(mockPatientUser);
     });
 
     it('should throw error on duplicate email', async () => {

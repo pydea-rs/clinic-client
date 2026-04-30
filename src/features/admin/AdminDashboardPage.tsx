@@ -26,7 +26,7 @@ export const AdminDashboardPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto animate-fade-in">
       <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
       
       {/* Stats Cards */}
@@ -86,7 +86,7 @@ export const AdminDashboardPage: React.FC = () => {
       </div>
 
       {/* Recent Activity */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white rounded-lg shadow p-6 animate-slide-in-up">
         <h2 className="text-xl font-bold mb-4">Recent Activity</h2>
         <div className="text-gray-500 text-center py-8">
           <p>Activity feed coming soon...</p>
@@ -113,7 +113,7 @@ const StatCard: React.FC<StatCardProps> = ({ icon, label, value, color }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white rounded-lg shadow p-6 transition-all-smooth hover-lift animate-slide-in-up">
       <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-3 ${colorClasses[color as keyof typeof colorClasses]}`}>
         {icon}
       </div>
@@ -131,7 +131,7 @@ interface ActionCardProps {
 }
 
 const ActionCard: React.FC<ActionCardProps> = ({ to, icon, title, description }) => (
-  <Link to={to} className="block bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow group">
+  <Link to={to} className="block bg-white rounded-lg shadow p-6 hover:shadow-lg transition-all-smooth hover-lift group animate-slide-in-up">
     <div className="w-14 h-14 rounded-xl bg-gray-50 flex items-center justify-center mb-4 group-hover:bg-gray-100 transition-colors">
       <div className="text-gray-600 group-hover:text-gray-900 transition-colors">
         {icon}

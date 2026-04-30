@@ -8,6 +8,7 @@ export const AdminDoctorVerificationPage: React.FC = () => {
   const [selectedDoctor, setSelectedDoctor] = useState<any>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [verifyingDoctorId, setVerifyingDoctorId] = useState<number | null>(null);
+  const [documentsByDoctor, setDocumentsByDoctor] = useState<Record<number, any[]>>({});
 
   useEffect(() => {
     const loadPending = async () => {
@@ -37,6 +38,16 @@ export const AdminDoctorVerificationPage: React.FC = () => {
       toast.error('Failed to verify doctor');
     } finally {
       setVerifyingDoctorId(null);
+    }
+  };
+
+  const loadDoctorDocuments = async (doctorId: number) => {
+    try {
+      const docs = await adminApi.verifications.getDocuments(doctorId);
+      setDocumentsByDoctor((prev) => ({ ...prev, [doctorId]: docs || [] }));
+      toast.success('Documents loaded');
+    } catch (error) {
+      toast.error('Failed to load doctor documents');
     }
   };
 
@@ -71,11 +82,11 @@ export const AdminDoctorVerificationPage: React.FC = () => {
                 </div>
               </div>
               
-              {doctor.documents?.length > 0 && (
+              {(documentsByDoctor[doctor.doctorId] || doctor.documents)?.length > 0 && (
                 <div className="mb-4">
                   <h4 className="font-medium mb-2">Documents:</h4>
                   <div className="space-y-2">
-                    {doctor.documents.map((doc: any) => (
+                    {(documentsByDoctor[doctor.doctorId] || doctor.documents).map((doc: any) => (
                       <div key={doc.id} className="flex items-center justify-between bg-gray-50 p-3 rounded">
                         <div>
                           <span className="text-sm font-medium capitalize">{doc.type?.replace('_', ' ') || doc.type}</span>
@@ -97,6 +108,12 @@ export const AdminDoctorVerificationPage: React.FC = () => {
               )}
               
               <div className="flex gap-2 mt-4">
+                <button
+                  onClick={() => loadDoctorDocuments(doctor.doctorId)}
+                  className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200"
+                >
+                  Refresh Documents
+                </button>
                 <button 
                   onClick={() => handleVerify(doctor.doctorId, true)}
                   disabled={verifyingDoctorId === doctor.doctorId}

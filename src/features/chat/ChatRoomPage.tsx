@@ -20,7 +20,7 @@ export const ChatRoomPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
-  const [editingMessageId, setEditingMessageId] = useState<number | null>(null);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
   const [chatInfo, setChatInfo] = useState<any>(null);
   const [onlineParticipants, setOnlineParticipants] = useState<Set<string>>(new Set());
@@ -58,11 +58,11 @@ export const ChatRoomPage: React.FC = () => {
     socketService.joinRoom(id);
 
     // Listen for incoming messages
-    const handleNewMessage = (data: { chatId: string; message: Message }) => {
-      if (data.chatId === id) {
+    const handleNewMessage = (data: { message: Message }) => {
+      if (data?.message?.chatId === id) {
         setMessages(prev => {
           // Avoid duplicates
-          if (prev.some(m => m.id === data.message.id)) {
+          if (prev.some(m => String(m.id) === String(data.message.id))) {
             return prev;
           }
           return [...prev, data.message];
@@ -70,18 +70,18 @@ export const ChatRoomPage: React.FC = () => {
 
         // Mark as read if not from current user
         if (data.message.senderId !== user?.id) {
-          socketService.markAsRead(id, data.message.id);
+          socketService.markAsRead(id, String(data.message.id));
         }
       }
     };
 
     // Listen for typing indicators
-    const handleTyping = (data: { chatId: string; userId: string; isTyping: boolean; name?: string }) => {
-      if (data.chatId === id && data.userId !== user?.id) {
+    const handleTyping = (data: { userId: string; isTyping: boolean; firstname?: string }) => {
+      if (data.userId !== user?.id) {
         setTypingUsers(prev => {
           if (data.isTyping) {
             if (!prev.some(u => u.userId === data.userId)) {
-              return [...prev, { userId: data.userId, name: data.name }];
+              return [...prev, { userId: data.userId, name: data.firstname }];
             }
           } else {
             return prev.filter(u => u.userId !== data.userId);
@@ -92,10 +92,10 @@ export const ChatRoomPage: React.FC = () => {
     };
 
     // Listen for read receipts
-    const handleRead = (data: { chatId: string; messageId: number; userId: string }) => {
+    const handleRead = (data: { chatId: string; messageId: string; userId: string }) => {
       if (data.chatId === id) {
         setMessages(prev => prev.map(msg => {
-          if (msg.id === data.messageId) {
+          if (String(msg.id) === String(data.messageId)) {
             const readBy = msg.readBy || [];
             if (!readBy.some(r => r.userId === data.userId)) {
               return {
@@ -110,36 +110,36 @@ export const ChatRoomPage: React.FC = () => {
     };
 
     // Listen for message edits
-    const handleEdited = (data: { chatId: string; messageId: number; content: string; editedAt: string }) => {
-      if (data.chatId === id) {
+    const handleEdited = (data: { message: Message }) => {
+      if (data?.message?.chatId === id) {
         setMessages(prev => prev.map(msg =>
-          msg.id === data.messageId
-            ? { ...msg, content: data.content, editedAt: data.editedAt }
+          String(msg.id) === String(data.message.id)
+            ? { ...msg, ...data.message }
             : msg
         ));
       }
     };
 
     // Listen for message deletes
-    const handleDeleted = (data: { chatId: string; messageId: number; deletedAt: string }) => {
-      if (data.chatId === id) {
+    const handleDeleted = (data: { message: Message }) => {
+      if (data?.message?.chatId === id) {
         setMessages(prev => prev.map(msg =>
-          msg.id === data.messageId
-            ? { ...msg, deletedAt: data.deletedAt, content: '[Message deleted]' }
+          String(msg.id) === String(data.message.id)
+            ? { ...msg, ...data.message }
             : msg
         ));
       }
     };
 
     // Listen for presence events
-    const handleUserOnline = (data: { userId: string }) => {
-      setOnlineParticipants(prev => new Set(prev).add(data.userId));
-    };
-
-    const handleUserOffline = (data: { userId: string }) => {
+    const handleUserOnline = (data: { userId: string; isOnline?: boolean }) => {
       setOnlineParticipants(prev => {
         const next = new Set(prev);
-        next.delete(data.userId);
+        if (data.isOnline === false) {
+          next.delete(data.userId);
+        } else {
+          next.add(data.userId);
+        }
         return next;
       });
     };
@@ -150,7 +150,6 @@ export const ChatRoomPage: React.FC = () => {
     socket.on('chat:edited', handleEdited);
     socket.on('chat:deleted', handleDeleted);
     socket.on('user:online', handleUserOnline);
-    socket.on('user:offline', handleUserOffline);
 
     return () => {
       // Leave the chat room
@@ -162,7 +161,6 @@ export const ChatRoomPage: React.FC = () => {
       socket.off('chat:edited', handleEdited);
       socket.off('chat:deleted', handleDeleted);
       socket.off('user:online', handleUserOnline);
-      socket.off('user:offline', handleUserOffline);
     };
   }, [id, user?.id, loadChatAndMessages]);
 
@@ -237,7 +235,7 @@ export const ChatRoomPage: React.FC = () => {
     }
   };
 
-  const handleDelete = async (messageId: number) => {
+  const handleDelete = async (messageId: string) => {
     if (!id || !confirm('Are you sure you want to delete this message?')) return;
     
     try {
@@ -299,13 +297,13 @@ export const ChatRoomPage: React.FC = () => {
   const messageGroups = groupMessagesByDate();
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-screen bg-gray-50 animate-fade-in">
       {/* Header */}
-      <div className="bg-white border-b px-6 py-4 flex items-center justify-between">
+      <div className="bg-white border-b px-6 py-4 flex items-center justify-between animate-slide-in-down">
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/chat')}
-            className="text-gray-600 hover:text-gray-800"
+            className="text-gray-600 hover:text-gray-800 transition-all-smooth btn-press"
           >
             ← Back
           </button>
@@ -334,7 +332,7 @@ export const ChatRoomPage: React.FC = () => {
       </div>
       
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-6 py-4">
+      <div className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar">
         {Object.entries(messageGroups).map(([date, msgs]) => (
           <div key={date}>
             <div className="text-center my-4">
@@ -349,7 +347,7 @@ export const ChatRoomPage: React.FC = () => {
               const isDeleted = !!msg.deletedAt;
               
               return (
-                <div key={msg.id} className={`flex mb-4 ${isOwn ? 'justify-end' : 'justify-start'}`}>
+                <div key={msg.id} className={`flex mb-4 animate-slide-in-up ${isOwn ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-md ${isOwn ? 'items-end' : 'items-start'} flex flex-col`}>
                     {isEditing ? (
                       <div className="w-full">
@@ -390,7 +388,7 @@ export const ChatRoomPage: React.FC = () => {
                           isOwn 
                             ? 'bg-blue-600 text-white' 
                             : 'bg-white text-gray-800 border'
-                        } ${isDeleted ? 'opacity-50 italic' : ''}`}>
+                        } ${isDeleted ? 'opacity-50 italic' : ''} transition-all-smooth`}>
                           <p>{msg.content}</p>
                           {msg.editedAt && !isDeleted && (
                             <p className="text-xs opacity-70 mt-1">(edited)</p>
@@ -408,13 +406,13 @@ export const ChatRoomPage: React.FC = () => {
                             <div className="flex gap-2 ml-2">
                               <button
                                 onClick={() => handleEdit(msg)}
-                                className="text-blue-600 hover:underline"
+                                className="text-blue-600 hover:underline transition-all-smooth btn-press"
                               >
                                 Edit
                               </button>
                               <button
-                                onClick={() => handleDelete(msg.id)}
-                                className="text-red-600 hover:underline"
+                                onClick={() => handleDelete(String(msg.id))}
+                                className="text-red-600 hover:underline transition-all-smooth btn-press"
                               >
                                 Delete
                               </button>
@@ -433,7 +431,7 @@ export const ChatRoomPage: React.FC = () => {
         {/* Typing indicator */}
         {typingUsers.length > 0 && (
           <div className="flex justify-start mb-4">
-            <div className="px-4 py-2 bg-gray-200 rounded-lg text-gray-600 text-sm">
+            <div className="px-4 py-2 bg-gray-200 rounded-lg text-gray-600 text-sm animate-pulse-slow">
               {typingUsers.map(u => u.name || 'Someone').join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
             </div>
           </div>
@@ -450,14 +448,14 @@ export const ChatRoomPage: React.FC = () => {
             value={content}
             onChange={(e) => handleContentChange(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-            className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+            className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all-smooth"
             placeholder="Type a message..."
             disabled={sending}
           />
           <button
             onClick={handleSend}
             disabled={sending || !content.trim()}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300"
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300 transition-all-smooth hover-lift btn-press"
           >
             {sending ? 'Sending...' : 'Send'}
           </button>

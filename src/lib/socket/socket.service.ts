@@ -96,15 +96,14 @@ class SocketService {
       this.logEvent('receive', 'chat:error', error);
     });
 
-    // Listen for presence events
-    this.socket.on('user:online', (data: { userId: string }) => {
-      this.onlineUsers.add(data.userId);
+    // Listen for presence events (backend emits only user:online with isOnline flag)
+    this.socket.on('user:online', (data: { userId: string; isOnline?: boolean }) => {
+      if (data.isOnline === false) {
+        this.onlineUsers.delete(data.userId);
+      } else {
+        this.onlineUsers.add(data.userId);
+      }
       this.logEvent('receive', 'user:online', data);
-    });
-
-    this.socket.on('user:offline', (data: { userId: string }) => {
-      this.onlineUsers.delete(data.userId);
-      this.logEvent('receive', 'user:offline', data);
     });
 
     return this.socket;
@@ -218,16 +217,16 @@ class SocketService {
     this.emit('chat:typing', { chatId, isTyping });
   }
 
-  markAsRead(chatId: string, messageId: number): void {
+  markAsRead(chatId: string, messageId: string): void {
     this.emit('chat:read', { chatId, messageId });
   }
 
-  editMessage(chatId: string, messageId: number, content: string): void {
-    this.emit('chat:edit', { chatId, messageId, content });
+  editMessage(chatId: string, messageId: string, content: string): void {
+    this.emit('chat:edit', { messageId, content });
   }
 
-  deleteMessage(chatId: string, messageId: number): void {
-    this.emit('chat:delete', { chatId, messageId });
+  deleteMessage(chatId: string, messageId: string): void {
+    this.emit('chat:delete', { messageId });
   }
 }
 

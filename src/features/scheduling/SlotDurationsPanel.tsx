@@ -31,30 +31,18 @@ export const SlotDurationsPanel: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      if (formData.id) {
-        await schedulingApi.updateSlotDuration(formData);
-        toast.success('Duration updated');
-      } else {
-        await schedulingApi.createSlotDuration(formData);
-        toast.success('Duration created');
-      }
+      await schedulingApi.createSlotDuration({
+        minutes: formData.minutes,
+        price: Number(formData.price),
+        label: formData.label || undefined,
+        isActive: formData.isActive,
+      });
+      toast.success('Duration created');
       setShowForm(false);
+      setFormData({ minutes: 30, price: '50.00', label: '', isActive: true });
       loadDurations();
     } catch (error: any) {
       toast.error(error.message || 'Failed to save duration');
-    }
-  };
-
-  const handleDelete = async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this duration?')) {
-      return;
-    }
-    try {
-      await schedulingApi.deleteSlotDuration(id);
-      toast.success('Duration deleted');
-      loadDurations();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to delete duration');
     }
   };
 
@@ -76,7 +64,7 @@ export const SlotDurationsPanel: React.FC = () => {
 
       {showForm && (
         <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-bold mb-4">{formData.id ? 'Edit' : 'Create'} Duration</h2>
+          <h2 className="text-xl font-bold mb-4">Create Duration</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Minutes</label>
@@ -162,21 +150,6 @@ export const SlotDurationsPanel: React.FC = () => {
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${item.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
                     {item.isActive ? 'Active' : 'Inactive'}
                   </span>
-                  <button
-                    onClick={() => {
-                      setFormData(item);
-                      setShowForm(true);
-                    }}
-                    className="px-3 py-1 text-blue-600 hover:underline"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(item.id)}
-                    className="px-3 py-1 text-red-600 hover:underline"
-                  >
-                    Delete
-                  </button>
                 </div>
               </div>
             </div>

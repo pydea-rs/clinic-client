@@ -83,9 +83,10 @@ export const DoctorListPage: React.FC = () => {
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">All Methods</option>
-                <option value="In-Person">In-Person</option>
-                <option value="Video Call">Video Call</option>
-                <option value="Phone">Phone</option>
+                <option value="CHAT">Chat</option>
+                <option value="VOICE_CALL">Voice Call</option>
+                <option value="VIDEO_CALL">Video Call</option>
+                <option value="ON_SITE">On Site</option>
               </select>
             </div>
 
@@ -150,7 +151,7 @@ export const DoctorListPage: React.FC = () => {
                             <h3 className="font-bold text-lg text-gray-900">Dr. {doctor.specialty}</h3>
                             <p className="text-sm text-gray-600">{doctor.specialty}</p>
                           </div>
-                          {doctor.isVerified && (
+                          {doctor.verified && (
                             <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">
                               Verified
                             </span>

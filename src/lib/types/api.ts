@@ -115,13 +115,13 @@ export interface Chat {
 }
 
 export interface Message {
-  id: number;
+  id: string;
   chatId: string;
   senderId: string;
   content: string;
   type: 'TEXT' | 'IMAGE' | 'FILE' | 'AUDIO' | 'VIDEO' | 'SYSTEM';
   fileUrl?: string;
-  repliedToId?: number;
+  repliedToId?: string;
   readBy?: Array<{ userId: string; readAt: string }>;
   editedAt?: string;
   deletedAt?: string;

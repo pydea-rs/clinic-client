@@ -1,8 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import axios from 'axios';
 import { apiClient } from '../client';
-
-vi.mock('axios');
 
 describe('API Client', () => {
   beforeEach(() => {
@@ -16,9 +13,6 @@ describe('API Client', () => {
         message: 'Success',
         contents: { id: '123', name: 'Test' },
       };
-
-      // Mock axios create to return our apiClient
-      vi.mocked(axios.create).mockReturnValue(apiClient as any);
 
       // The interceptor should unwrap the envelope
       const response = {

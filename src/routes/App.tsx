@@ -28,6 +28,7 @@ import { ExceptionsPanel } from '../features/scheduling/ExceptionsPanel';
 import { SlotExplorer } from '../features/scheduling/SlotExplorer';
 import { BookingPage } from '../features/scheduling/BookingPage';
 import { AppointmentsPage } from '../features/scheduling/AppointmentsPage';
+import { AppointmentDetailPage } from '../features/scheduling/AppointmentDetailPage';
 import { ReviewCreatePage } from '../features/review/ReviewCreatePage';
 import { ReviewFeedPage } from '../features/review/ReviewFeedPage';
 import { RatingWidget } from '../features/review/RatingWidget';
@@ -95,6 +96,7 @@ function App() {
           <Route path="/ai" element={isAuthenticated ? <ChatInterface onLogout={logout} /> : <Navigate to="/auth" replace />} />
           
           {/* Patient routes */}
+          <Route path="/patient" element={<PatientGuard><Navigate to="/patient/consultations" replace /></PatientGuard>} />
           <Route path="/patient/profile" element={<PatientGuard><Shell><PatientProfilePage /></Shell></PatientGuard>} />
           <Route path="/patient/consultations" element={<PatientGuard><Shell><PatientConsultationsListPage /></Shell></PatientGuard>} />
           <Route path="/patient/consultations/create" element={<PatientGuard><Shell><ConsultationCreatePage /></Shell></PatientGuard>} />
@@ -103,13 +105,14 @@ function App() {
           <Route path="/user/:id" element={<AuthGuard><Shell><UserDetailPage /></Shell></AuthGuard>} />
           
           {/* Doctor routes */}
+          <Route path="/doctor" element={<DoctorGuard><Navigate to="/doctor/workspace" replace /></DoctorGuard>} />
           <Route path="/doctors" element={<DoctorListPage />} />
           <Route path="/doctor/:id" element={<DoctorProfilePage />} />
-          <Route path="/doctor/:id/review" element={<PatientGuard><Shell><ReviewCreatePage doctorId={0} consultationId="" /></Shell></PatientGuard>} />
+          <Route path="/doctor/:id/review" element={<PatientGuard><Shell><ReviewCreatePage /></Shell></PatientGuard>} />
           <Route path="/doctor/workspace" element={<DoctorGuard><Shell><DoctorWorkspacePage /></Shell></DoctorGuard>} />
           <Route path="/doctor/profile" element={<DoctorGuard><Shell><DoctorProfilePage /></Shell></DoctorGuard>} />
           <Route path="/doctor/documents" element={<DoctorGuard><Shell><DoctorDocumentsPage /></Shell></DoctorGuard>} />
-          <Route path="/doctor/consultations" element={<DoctorGuard><Shell><PatientConsultationsListPage /></Shell></DoctorGuard>} />
+          <Route path="/doctor/consultations" element={<DoctorGuard><Shell><ConsultationListPage /></Shell></DoctorGuard>} />
           <Route path="/doctor/scheduling" element={<DoctorGuard><Shell><SchedulingPage /></Shell></DoctorGuard>} />
           <Route path="/doctor/scheduling/availability" element={<DoctorGuard><Shell><AvailabilityPanel /></Shell></DoctorGuard>} />
           <Route path="/doctor/scheduling/durations" element={<DoctorGuard><Shell><SlotDurationsPanel /></Shell></DoctorGuard>} />
@@ -125,6 +128,7 @@ function App() {
           <Route path="/slots/:doctorId" element={<SlotExplorer />} />
           <Route path="/booking/:doctorId" element={<BookingPage />} />
           <Route path="/appointments" element={<AuthGuard><Shell><AppointmentsPage /></Shell></AuthGuard>} />
+          <Route path="/appointments/:id" element={<AuthGuard><Shell><AppointmentDetailPage /></Shell></AuthGuard>} />
           
           {/* Review routes */}
           <Route path="/doctor/:id/reviews" element={<ReviewFeedPage />} />

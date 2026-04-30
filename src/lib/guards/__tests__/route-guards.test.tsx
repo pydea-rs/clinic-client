@@ -87,7 +87,7 @@ describe('Route Guards', () => {
       expect(screen.getByTestId('protected-content')).toBeInTheDocument();
     });
 
-    it('should redirect to /auth for non-patient role', () => {
+    it('should redirect to / for non-patient role', () => {
       vi.mocked(useAuthStore).mockReturnValue({
         isAuthenticated: true,
         user: mockDoctorUser,
@@ -100,7 +100,7 @@ describe('Route Guards', () => {
         </PatientGuard>
       );
 
-      expect(screen.getByTestId('navigate')).toHaveTextContent('/auth');
+      expect(screen.getByTestId('navigate')).toHaveTextContent('/');
     });
 
     it('should redirect to /auth when not authenticated', () => {
@@ -137,7 +137,7 @@ describe('Route Guards', () => {
       expect(screen.getByTestId('protected-content')).toBeInTheDocument();
     });
 
-    it('should redirect to /auth for non-doctor role', () => {
+    it('should redirect to / for non-doctor role', () => {
       vi.mocked(useAuthStore).mockReturnValue({
         isAuthenticated: true,
         user: mockPatientUser,
@@ -150,7 +150,7 @@ describe('Route Guards', () => {
         </DoctorGuard>
       );
 
-      expect(screen.getByTestId('navigate')).toHaveTextContent('/auth');
+      expect(screen.getByTestId('navigate')).toHaveTextContent('/');
     });
   });
 
@@ -187,7 +187,7 @@ describe('Route Guards', () => {
       expect(screen.getByTestId('protected-content')).toBeInTheDocument();
     });
 
-    it('should redirect to /auth for non-admin user', () => {
+    it('should redirect to / for non-admin user', () => {
       vi.mocked(useAuthStore).mockReturnValue({
         isAuthenticated: true,
         user: mockPatientUser,
@@ -200,7 +200,7 @@ describe('Route Guards', () => {
         </AdminGuard>
       );
 
-      expect(screen.getByTestId('navigate')).toHaveTextContent('/auth');
+      expect(screen.getByTestId('navigate')).toHaveTextContent('/');
     });
   });
 
@@ -221,7 +221,7 @@ describe('Route Guards', () => {
       expect(screen.getByTestId('protected-content')).toBeInTheDocument();
     });
 
-    it('should redirect to /auth for non-superadmin user', () => {
+    it('should redirect to / for non-superadmin user', () => {
       vi.mocked(useAuthStore).mockReturnValue({
         isAuthenticated: true,
         user: mockAdminUser,
@@ -234,10 +234,10 @@ describe('Route Guards', () => {
         </SuperAdminGuard>
       );
 
-      expect(screen.getByTestId('navigate')).toHaveTextContent('/auth');
+      expect(screen.getByTestId('navigate')).toHaveTextContent('/');
     });
 
-    it('should redirect to /auth for regular user', () => {
+    it('should redirect to / for regular user', () => {
       vi.mocked(useAuthStore).mockReturnValue({
         isAuthenticated: true,
         user: mockPatientUser,
@@ -250,7 +250,7 @@ describe('Route Guards', () => {
         </SuperAdminGuard>
       );
 
-      expect(screen.getByTestId('navigate')).toHaveTextContent('/auth');
+      expect(screen.getByTestId('navigate')).toHaveTextContent('/');
     });
   });
 });

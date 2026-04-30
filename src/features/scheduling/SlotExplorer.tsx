@@ -6,21 +6,21 @@ import toast from 'react-hot-toast';
 export const SlotExplorer: React.FC = () => {
   const { doctorId } = useParams<{ doctorId: string }>();
   const navigate = useNavigate();
-  const [slots, setSlots] = useState<string[]>([]);
+  const [slots, setSlots] = useState<Array<{ date: string; startTime: string; endTime: string; durationMinutes: number }>>([]);
   const [durations, setDurations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [selectedDuration, setSelectedDuration] = useState<number>(30);
-  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<{ date: string; startTime: string; endTime: string; durationMinutes: number } | null>(null);
 
   const loadSlots = useCallback(async () => {
     try {
       const data = await schedulingApi.getDoctorSlots(Number(doctorId), {
-        startDate: selectedDate,
-        endDate: selectedDate,
+        start: selectedDate,
+        end: selectedDate,
         duration: selectedDuration,
       });
-      setSlots(data.slots || []);
+      setSlots(data || []);
     } catch (error: any) {
       toast.error(error.message || 'Failed to load slots');
     } finally {
@@ -46,7 +46,8 @@ export const SlotExplorer: React.FC = () => {
 
   const handleBook = () => {
     if (selectedSlot) {
-      navigate(`/booking/${doctorId}`, { state: { slot: selectedSlot, duration: selectedDuration } });
+      const selectedDurationPrice = durations.find((d) => d.minutes === selectedDuration)?.price;
+      navigate(`/booking/${doctorId}`, { state: { slot: selectedSlot, duration: selectedDuration, price: Number(selectedDurationPrice || 0) } });
     }
   };
 
@@ -101,15 +102,15 @@ export const SlotExplorer: React.FC = () => {
           <div className="grid grid-cols-3 gap-4">
             {slots.map((slot) => (
               <button
-                key={slot}
+                key={`${slot.date}-${slot.startTime}-${slot.endTime}-${slot.durationMinutes}`}
                 onClick={() => setSelectedSlot(slot)}
                 className={`p-4 rounded-lg border-2 ${
-                  selectedSlot === slot
+                  selectedSlot?.date === slot.date && selectedSlot?.startTime === slot.startTime
                     ? 'border-blue-600 bg-blue-50'
                     : 'border-gray-200 hover:border-blue-300'
                 }`}
               >
-                <div className="font-medium">{slot}</div>
+                <div className="font-medium">{slot.startTime} - {slot.endTime}</div>
                 <div className="text-sm text-gray-500">
                   {durations.find((d) => d.minutes === selectedDuration)?.price || 'N/A'} USD
                 </div>
@@ -123,7 +124,7 @@ export const SlotExplorer: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Selected Slot</p>
-                <p className="text-lg font-medium">{selectedSlot}</p>
+                <p className="text-lg font-medium">{selectedSlot.startTime} - {selectedSlot.endTime}</p>
                 <p className="text-sm text-gray-500">
                   Duration: {selectedDuration} min
                 </p>

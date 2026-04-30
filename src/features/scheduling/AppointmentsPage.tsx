@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { schedulingApi } from '../../api/scheduling.api';
 import { useAuthStore } from '../../lib/stores/auth.store';
 import toast from 'react-hot-toast';
+import { Link } from 'react-router-dom';
 
 export const AppointmentsPage: React.FC = () => {
   const [appointments, setAppointments] = useState<any[]>([]);
@@ -102,12 +103,29 @@ export const AppointmentsPage: React.FC = () => {
 
                 {user?.role === 'PATIENT' && appointment.status === 'PENDING' && (
                   <div className="mt-4 pt-4 border-t">
+                    <Link
+                      to={`/appointments/${appointment.id}`}
+                      className="mr-4 text-blue-600 hover:underline"
+                    >
+                      View Details
+                    </Link>
                     <button
                       onClick={() => handleCancel(appointment.id)}
                       className="text-red-600 hover:underline"
                     >
                       Cancel Appointment
                     </button>
+                  </div>
+                )}
+
+                {!(user?.role === 'PATIENT' && appointment.status === 'PENDING') && (
+                  <div className="mt-4 pt-4 border-t">
+                    <Link
+                      to={`/appointments/${appointment.id}`}
+                      className="text-blue-600 hover:underline"
+                    >
+                      View Details
+                    </Link>
                   </div>
                 )}
               </div>

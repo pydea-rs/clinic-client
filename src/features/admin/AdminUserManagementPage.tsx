@@ -220,7 +220,6 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSave }) 
     lastname: user.lastname,
     email: user.email,
     role: user.role,
-    isAdmin: user.isAdmin,
     isActive: user.isActive,
   });
 
@@ -278,16 +277,6 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSave }) 
               <option value="DOCTOR">Doctor</option>
               <option value="NURSE">Nurse</option>
             </select>
-          </div>
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="isAdmin"
-              checked={formData.isAdmin}
-              onChange={e => setFormData({ ...formData, isAdmin: e.target.checked })}
-              className="rounded"
-            />
-            <label htmlFor="isAdmin" className="text-sm font-medium">Admin</label>
           </div>
           <div className="flex items-center gap-2">
             <input

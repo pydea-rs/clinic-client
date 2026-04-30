@@ -48,31 +48,29 @@ export const ChatListPage: React.FC = () => {
     const socket = socketService.connect();
     
     // Listen for presence events
-    const handleUserOnline = (data: { userId: string }) => {
-      setOnlineUsers(prev => new Set(prev).add(data.userId));
-    };
-    
-    const handleUserOffline = (data: { userId: string }) => {
+    const handleUserOnline = (data: { userId: string; isOnline?: boolean }) => {
       setOnlineUsers(prev => {
         const next = new Set(prev);
-        next.delete(data.userId);
+        if (data.isOnline === false) {
+          next.delete(data.userId);
+        } else {
+          next.add(data.userId);
+        }
         return next;
       });
     };
     
     socket.on('user:online', handleUserOnline);
-    socket.on('user:offline', handleUserOffline);
     
     return () => {
       socket.off('user:online', handleUserOnline);
-      socket.off('user:offline', handleUserOffline);
     };
   }, []);
 
   const loadChats = async () => {
     try {
       const data = await chatApi.list();
-      setChats(data || []);
+      setChats(data?.chats || []);
     } catch (error: any) {
       console.error('Failed to load chats:', error);
       toast.error(error.message || 'Failed to load chats');
@@ -119,12 +117,12 @@ export const ChatListPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-6 max-w-4xl mx-auto animate-fade-in">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Chats</h1>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all-smooth hover-lift btn-press"
         >
           New Chat
         </button>
@@ -135,7 +133,7 @@ export const ChatListPage: React.FC = () => {
           <p className="text-gray-500">No chats yet</p>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all-smooth hover-lift btn-press"
           >
             Start a Chat
           </button>
@@ -150,7 +148,7 @@ export const ChatListPage: React.FC = () => {
               <Link
                 key={chat.id}
                 to={`/chat/${chat.id}`}
-                className="block bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow"
+                className="block bg-white rounded-lg shadow p-6 hover:shadow-lg transition-all-smooth hover-lift animate-slide-in-up"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
@@ -200,8 +198,8 @@ export const ChatListPage: React.FC = () => {
 
       {/* Create Chat Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 animate-slide-in-up">
             <h2 className="text-xl font-bold mb-4">Create New Chat</h2>
             
             <div className="space-y-4">
@@ -239,7 +237,7 @@ export const ChatListPage: React.FC = () => {
                   setNewChatParticipantId('');
                   setNewChatTopic('');
                 }}
-                className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50"
+                className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50 transition-all-smooth btn-press"
                 disabled={creating}
               >
                 Cancel
@@ -247,7 +245,7 @@ export const ChatListPage: React.FC = () => {
               <button
                 onClick={handleCreateChat}
                 disabled={creating || !newChatParticipantId.trim()}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300"
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300 transition-all-smooth hover-lift btn-press"
               >
                 {creating ? 'Creating...' : 'Create'}
               </button>

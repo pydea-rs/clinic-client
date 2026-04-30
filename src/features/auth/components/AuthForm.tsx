@@ -49,6 +49,8 @@ export const AuthForm: React.FC<AuthFormProps> = ({
                     role: "PATIENT",
                 });
             }
+        } catch (error: any) {
+            toast.error(error?.message || "Authentication failed");
         } finally {
             setIsLoading(false);
         }

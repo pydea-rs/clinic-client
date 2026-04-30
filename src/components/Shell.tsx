@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../lib/stores/auth.store';
+import { authApi } from '../api/auth.api';
 import { 
   MessageCircle, 
   User, 
@@ -34,6 +35,14 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
 
   const role = user?.role || 'NONE';
   const isAdmin = user?.isAdmin || false;
+
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+    } finally {
+      clearAuth();
+    }
+  };
 
   const filteredNavItems = navItems.filter(item => {
     if (item.role === 'ADMIN') {
@@ -93,7 +102,9 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
               </div>
             )}
             <button
-              onClick={clearAuth}
+              onClick={() => {
+                void handleLogout();
+              }}
               className="flex items-center gap-2 w-full px-4 py-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
             >
               <LogOut className="w-5 h-5" />
