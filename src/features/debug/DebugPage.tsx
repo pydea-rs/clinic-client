@@ -7,6 +7,7 @@ import { TestChecklist } from './components/TestChecklist';
 import { AccountSwitcher } from './components/AccountSwitcher';
 import { apiClient } from '../../lib/api/client';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../../lib/api/error.utils';
 
 export const DebugPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'diagnostics' | 'checklist' | 'accounts'>('diagnostics');
@@ -25,8 +26,8 @@ export const DebugPage: React.FC = () => {
       const response = await apiClient.post('/ai-agents/openai', { message: openAiMessage });
       setOpenAiResponse(typeof response.data === 'string' ? response.data : JSON.stringify(response.data, null, 2));
       toast.success('OpenAI endpoint responded');
-    } catch (error: any) {
-      toast.error(error.message || 'OpenAI endpoint failed');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'OpenAI endpoint failed'));
     } finally {
       setProbingOpenAi(false);
     }
@@ -43,12 +44,12 @@ export const DebugPage: React.FC = () => {
       });
       setManualResponse(JSON.stringify(response.data, null, 2));
       toast.success('Manual request succeeded');
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof SyntaxError) {
         toast.error('Invalid JSON body');
       } else {
         setManualResponse(JSON.stringify(error, null, 2));
-        toast.error(error.message || 'Manual request failed');
+        toast.error(getErrorMessage(error, 'Manual request failed'));
       }
     } finally {
       setRunningManual(false);

@@ -9,7 +9,12 @@ export const SOAPDetailPage: React.FC = () => {
 
   const { data: soap, isLoading, error } = useQuery({
     queryKey: ['soap', id],
-    queryFn: () => patientApi.getSOAPDetail(id!),
+    queryFn: () => {
+      if (!id) {
+        throw new Error('SOAP ID is required');
+      }
+      return patientApi.getSOAPDetail(id);
+    },
     enabled: !!id,
   });
 

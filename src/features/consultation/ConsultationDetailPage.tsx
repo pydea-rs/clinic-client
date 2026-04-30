@@ -3,11 +3,13 @@ import { consultationApi } from '../../api/consultation.api';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../../lib/stores/auth.store';
 import toast from 'react-hot-toast';
+import { Consultation } from '../../lib/types/api';
+import { getErrorMessage } from '../../lib/api/error.utils';
 
 export const ConsultationDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [consultation, setConsultation] = useState<any>(null);
+  const [consultation, setConsultation] = useState<Consultation | null>(null);
   const [loading, setLoading] = useState(true);
   const [deciding, setDeciding] = useState(false);
   const [completing, setCompleting] = useState(false);
@@ -21,8 +23,8 @@ export const ConsultationDetailPage: React.FC = () => {
     try {
       const data = await consultationApi.getConsultationById(id);
       setConsultation(data);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to load consultation');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to load consultation'));
     } finally {
       setLoading(false);
     }
@@ -46,8 +48,8 @@ export const ConsultationDetailPage: React.FC = () => {
       toast.success('Consultation decided successfully');
       setShowDecisionForm(false);
       loadConsultation();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to decide consultation');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to decide consultation'));
     } finally {
       setDeciding(false);
     }
@@ -68,8 +70,8 @@ export const ConsultationDetailPage: React.FC = () => {
       toast.success('Consultation completed successfully');
       setShowCompletionForm(false);
       loadConsultation();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to complete consultation');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to complete consultation'));
     } finally {
       setCompleting(false);
     }
@@ -87,8 +89,8 @@ export const ConsultationDetailPage: React.FC = () => {
       await consultationApi.cancel(id);
       toast.success('Consultation cancelled successfully');
       navigate('/consultations');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to cancel consultation');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to cancel consultation'));
     } finally {
       setCancelling(false);
     }

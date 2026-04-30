@@ -3,13 +3,30 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { chatApi } from '../../api/chat.api';
 import { socketService } from '../../lib/socket/socket.service';
 import { useAuthStore } from '../../lib/stores/auth.store';
-import { Message } from '../../lib/types/api';
+import { Chat, Message } from '../../lib/types/api';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../../lib/api/error.utils';
 
 interface TypingUser {
   userId: string;
   name?: string;
 }
+
+type ChatParticipant = {
+  userId: string;
+  joinedAt: string;
+  lastSeenAt?: string;
+  user?: {
+    id: string;
+    firstname: string;
+    lastname: string;
+    email: string;
+  };
+};
+
+type ChatWithParticipants = Chat & {
+  participants?: ChatParticipant[];
+};
 
 export const ChatRoomPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -22,7 +39,7 @@ export const ChatRoomPage: React.FC = () => {
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
-  const [chatInfo, setChatInfo] = useState<any>(null);
+  const [chatInfo, setChatInfo] = useState<ChatWithParticipants | null>(null);
   const [onlineParticipants, setOnlineParticipants] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -39,9 +56,9 @@ export const ChatRoomPage: React.FC = () => {
 
       setChatInfo(chatData);
       setMessages(messagesData.messages || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to load chat:', error);
-      toast.error(error.message || 'Failed to load chat');
+      toast.error(getErrorMessage(error, 'Failed to load chat'));
     } finally {
       setLoading(false);
     }
@@ -210,8 +227,8 @@ export const ChatRoomPage: React.FC = () => {
       // Send via REST API (will also trigger WebSocket event)
       await chatApi.sendMessage(id, { content: content.trim() });
       setContent('');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to send message');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to send message'));
     } finally {
       setSending(false);
     }
@@ -230,8 +247,8 @@ export const ChatRoomPage: React.FC = () => {
       setEditingMessageId(null);
       setEditContent('');
       toast.success('Message edited');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to edit message');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to edit message'));
     }
   };
 
@@ -241,14 +258,14 @@ export const ChatRoomPage: React.FC = () => {
     try {
       socketService.deleteMessage(id, messageId);
       toast.success('Message deleted');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to delete message');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to delete message'));
     }
   };
 
   const getOtherParticipant = () => {
     if (!chatInfo?.participants || !user) return null;
-    return chatInfo.participants.find((p: any) => p.userId !== user.id);
+    return chatInfo.participants.find((p) => p.userId !== user.id);
   };
 
   const isParticipantOnline = (userId: string) => {

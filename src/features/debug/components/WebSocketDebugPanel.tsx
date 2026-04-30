@@ -143,7 +143,7 @@ export const WebSocketDebugPanel: React.FC = () => {
           <div className="flex items-center gap-2">
             <select
               value={filter}
-              onChange={(e) => setFilter(e.target.value as any)}
+              onChange={(e) => setFilter(e.target.value as 'all' | 'emit' | 'receive')}
               className="px-3 py-1 border rounded text-sm"
             >
               <option value="all">All Events</option>

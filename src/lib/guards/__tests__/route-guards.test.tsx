@@ -15,6 +15,18 @@ vi.mock('react-router-dom', async () => {
 
 describe('Route Guards', () => {
   const TestComponent = () => <div data-testid="protected-content">Protected Content</div>;
+  type AuthStoreSnapshot = ReturnType<typeof useAuthStore>;
+
+  const createMockAuthStore = (overrides: Partial<AuthStoreSnapshot>): AuthStoreSnapshot => ({
+    user: null,
+    isAuthenticated: false,
+    initializing: false,
+    setUser: vi.fn(),
+    setAuthenticated: vi.fn(),
+    setInitializing: vi.fn(),
+    clearAuth: vi.fn(),
+    ...overrides,
+  });
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -22,11 +34,11 @@ describe('Route Guards', () => {
 
   describe('AuthGuard', () => {
     it('should render children when authenticated', () => {
-      vi.mocked(useAuthStore).mockReturnValue({
+      vi.mocked(useAuthStore).mockReturnValue(createMockAuthStore({
         isAuthenticated: true,
         user: mockPatientUser,
         initializing: false,
-      } as any);
+      }));
 
       render(
         <AuthGuard>
@@ -38,11 +50,11 @@ describe('Route Guards', () => {
     });
 
     it('should redirect to /auth when not authenticated', () => {
-      vi.mocked(useAuthStore).mockReturnValue({
+      vi.mocked(useAuthStore).mockReturnValue(createMockAuthStore({
         isAuthenticated: false,
         user: null,
         initializing: false,
-      } as any);
+      }));
 
       render(
         <AuthGuard>
@@ -54,11 +66,11 @@ describe('Route Guards', () => {
     });
 
     it('should show loading when initializing', () => {
-      vi.mocked(useAuthStore).mockReturnValue({
+      vi.mocked(useAuthStore).mockReturnValue(createMockAuthStore({
         isAuthenticated: false,
         user: null,
         initializing: true,
-      } as any);
+      }));
 
       render(
         <AuthGuard>
@@ -72,11 +84,11 @@ describe('Route Guards', () => {
 
   describe('PatientGuard', () => {
     it('should render children for patient role', () => {
-      vi.mocked(useAuthStore).mockReturnValue({
+      vi.mocked(useAuthStore).mockReturnValue(createMockAuthStore({
         isAuthenticated: true,
         user: mockPatientUser,
         initializing: false,
-      } as any);
+      }));
 
       render(
         <PatientGuard>
@@ -88,11 +100,11 @@ describe('Route Guards', () => {
     });
 
     it('should redirect to / for non-patient role', () => {
-      vi.mocked(useAuthStore).mockReturnValue({
+      vi.mocked(useAuthStore).mockReturnValue(createMockAuthStore({
         isAuthenticated: true,
         user: mockDoctorUser,
         initializing: false,
-      } as any);
+      }));
 
       render(
         <PatientGuard>
@@ -104,11 +116,11 @@ describe('Route Guards', () => {
     });
 
     it('should redirect to /auth when not authenticated', () => {
-      vi.mocked(useAuthStore).mockReturnValue({
+      vi.mocked(useAuthStore).mockReturnValue(createMockAuthStore({
         isAuthenticated: false,
         user: null,
         initializing: false,
-      } as any);
+      }));
 
       render(
         <PatientGuard>
@@ -122,11 +134,11 @@ describe('Route Guards', () => {
 
   describe('DoctorGuard', () => {
     it('should render children for doctor role', () => {
-      vi.mocked(useAuthStore).mockReturnValue({
+      vi.mocked(useAuthStore).mockReturnValue(createMockAuthStore({
         isAuthenticated: true,
         user: mockDoctorUser,
         initializing: false,
-      } as any);
+      }));
 
       render(
         <DoctorGuard>
@@ -138,11 +150,11 @@ describe('Route Guards', () => {
     });
 
     it('should redirect to / for non-doctor role', () => {
-      vi.mocked(useAuthStore).mockReturnValue({
+      vi.mocked(useAuthStore).mockReturnValue(createMockAuthStore({
         isAuthenticated: true,
         user: mockPatientUser,
         initializing: false,
-      } as any);
+      }));
 
       render(
         <DoctorGuard>
@@ -156,11 +168,11 @@ describe('Route Guards', () => {
 
   describe('AdminGuard', () => {
     it('should render children for admin user', () => {
-      vi.mocked(useAuthStore).mockReturnValue({
+      vi.mocked(useAuthStore).mockReturnValue(createMockAuthStore({
         isAuthenticated: true,
         user: mockAdminUser,
         initializing: false,
-      } as any);
+      }));
 
       render(
         <AdminGuard>
@@ -172,11 +184,11 @@ describe('Route Guards', () => {
     });
 
     it('should render children for superadmin user', () => {
-      vi.mocked(useAuthStore).mockReturnValue({
+      vi.mocked(useAuthStore).mockReturnValue(createMockAuthStore({
         isAuthenticated: true,
         user: mockSuperAdminUser,
         initializing: false,
-      } as any);
+      }));
 
       render(
         <AdminGuard>
@@ -188,11 +200,11 @@ describe('Route Guards', () => {
     });
 
     it('should redirect to / for non-admin user', () => {
-      vi.mocked(useAuthStore).mockReturnValue({
+      vi.mocked(useAuthStore).mockReturnValue(createMockAuthStore({
         isAuthenticated: true,
         user: mockPatientUser,
         initializing: false,
-      } as any);
+      }));
 
       render(
         <AdminGuard>
@@ -206,11 +218,11 @@ describe('Route Guards', () => {
 
   describe('SuperAdminGuard', () => {
     it('should render children for superadmin user', () => {
-      vi.mocked(useAuthStore).mockReturnValue({
+      vi.mocked(useAuthStore).mockReturnValue(createMockAuthStore({
         isAuthenticated: true,
         user: mockSuperAdminUser,
         initializing: false,
-      } as any);
+      }));
 
       render(
         <SuperAdminGuard>
@@ -222,11 +234,11 @@ describe('Route Guards', () => {
     });
 
     it('should redirect to / for non-superadmin user', () => {
-      vi.mocked(useAuthStore).mockReturnValue({
+      vi.mocked(useAuthStore).mockReturnValue(createMockAuthStore({
         isAuthenticated: true,
         user: mockAdminUser,
         initializing: false,
-      } as any);
+      }));
 
       render(
         <SuperAdminGuard>
@@ -238,11 +250,11 @@ describe('Route Guards', () => {
     });
 
     it('should redirect to / for regular user', () => {
-      vi.mocked(useAuthStore).mockReturnValue({
+      vi.mocked(useAuthStore).mockReturnValue(createMockAuthStore({
         isAuthenticated: true,
         user: mockPatientUser,
         initializing: false,
-      } as any);
+      }));
 
       render(
         <SuperAdminGuard>

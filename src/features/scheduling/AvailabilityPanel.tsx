@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { schedulingApi } from '../../api/scheduling.api';
 import toast from 'react-hot-toast';
+import { DoctorAvailability } from '../../lib/types/api';
+import { getErrorMessage } from '../../lib/api/error.utils';
 
 export const AvailabilityPanel: React.FC = () => {
-  const [availability, setAvailability] = useState<any[]>([]);
+  const [availability, setAvailability] = useState<DoctorAvailability[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -22,8 +24,8 @@ export const AvailabilityPanel: React.FC = () => {
     try {
       const data = await schedulingApi.getAvailability();
       setAvailability(data);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to load availability');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to load availability'));
     } finally {
       setLoading(false);
     }
@@ -48,8 +50,8 @@ export const AvailabilityPanel: React.FC = () => {
         isActive: true,
       });
       loadAvailability();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to save availability');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to save availability'));
     }
   };
 
@@ -61,8 +63,8 @@ export const AvailabilityPanel: React.FC = () => {
       await schedulingApi.deleteAvailability(id);
       toast.success('Availability deleted');
       loadAvailability();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to delete availability');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to delete availability'));
     }
   };
 

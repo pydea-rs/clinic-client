@@ -23,12 +23,6 @@ export const RatingWidget: React.FC<RatingWidgetProps> = ({
     return 'text-gray-300';
   };
 
-  const getStarWidth = (star: number) => {
-    if (averageRating >= star) return 'w-full';
-    if (averageRating >= star - 0.5) return 'w-1/2';
-    return 'w-0';
-  };
-
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <h2 className="text-xl font-bold mb-4">Rating & Reviews</h2>
@@ -58,7 +52,7 @@ export const RatingWidget: React.FC<RatingWidgetProps> = ({
         {distribution && (
           <div className="flex-1 space-y-2">
             {[5, 4, 3, 2, 1].map((star) => {
-              const count = distribution[star] || 0;
+              const count = distribution[star as keyof typeof distribution] || 0;
               const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
               return (
                 <div key={star} className="flex items-center space-x-2">

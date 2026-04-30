@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { adminApi } from '../../api/admin.api';
-import { reviewApi } from '../../api/review.api';
 import toast from 'react-hot-toast';
+import { DoctorReview } from '../../lib/types/api';
 
 export const AdminReviewModerationPage: React.FC = () => {
-  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<DoctorReview[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

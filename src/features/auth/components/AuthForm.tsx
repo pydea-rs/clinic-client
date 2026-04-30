@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { MessageCircle } from "lucide-react";
 import toast from "react-hot-toast";
+import { getErrorMessage } from "../../../lib/api/error.utils";
 
 interface AuthFormProps {
     onLogin: (email: string, password: string) => Promise<void>;
@@ -49,8 +50,8 @@ export const AuthForm: React.FC<AuthFormProps> = ({
                     role: "PATIENT",
                 });
             }
-        } catch (error: any) {
-            toast.error(error?.message || "Authentication failed");
+        } catch (error: unknown) {
+            toast.error(getErrorMessage(error, "Authentication failed"));
         } finally {
             setIsLoading(false);
         }

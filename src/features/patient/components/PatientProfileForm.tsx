@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { patientApi } from '../../../api/patient.api';
 import { ArrayFieldEditor } from './ArrayFieldEditor';
 import toast from 'react-hot-toast';
+import { PatientProfile } from '../../../api/patient.api';
+import { getErrorMessage } from '../../../lib/api/error.utils';
 
 interface PatientProfileFormProps {
-  initialData?: any;
+  initialData?: PatientProfile;
   onSubmitSuccess?: () => void;
 }
 
@@ -13,7 +15,7 @@ export const PatientProfileForm: React.FC<PatientProfileFormProps> = ({
   onSubmitSuccess,
 }) => {
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState(initialData || {
+  const [formData, setFormData] = useState<Partial<PatientProfile>>(initialData || {
     location: '',
     bio: '',
     medicalHistory: [],
@@ -35,8 +37,8 @@ export const PatientProfileForm: React.FC<PatientProfileFormProps> = ({
         toast.success('Profile created successfully');
       }
       onSubmitSuccess?.();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to save profile');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to save profile'));
     } finally {
       setLoading(false);
     }

@@ -3,9 +3,11 @@ import { schedulingApi } from '../../api/scheduling.api';
 import { useAuthStore } from '../../lib/stores/auth.store';
 import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
+import { Appointment } from '../../lib/types/api';
+import { getErrorMessage } from '../../lib/api/error.utils';
 
 export const AppointmentsPage: React.FC = () => {
-  const [appointments, setAppointments] = useState<any[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -16,8 +18,8 @@ export const AppointmentsPage: React.FC = () => {
       const data = await schedulingApi.getAppointments(page, 10);
       setAppointments(data.appointments || []);
       setTotal(data.total || 0);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to load appointments');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to load appointments'));
     } finally {
       setLoading(false);
     }
@@ -35,8 +37,8 @@ export const AppointmentsPage: React.FC = () => {
       await schedulingApi.cancelAppointment(id);
       toast.success('Appointment cancelled');
       loadAppointments();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to cancel appointment');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to cancel appointment'));
     }
   };
 

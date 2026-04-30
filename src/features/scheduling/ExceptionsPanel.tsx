@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { schedulingApi } from '../../api/scheduling.api';
 import toast from 'react-hot-toast';
+import { AvailabilityException } from '../../lib/types/api';
+import { getErrorMessage } from '../../lib/api/error.utils';
 
 export const ExceptionsPanel: React.FC = () => {
-  const [exceptions, setExceptions] = useState<any[]>([]);
+  const [exceptions, setExceptions] = useState<AvailabilityException[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
@@ -22,8 +24,8 @@ export const ExceptionsPanel: React.FC = () => {
     try {
       const data = await schedulingApi.getExceptions();
       setExceptions(data);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to load exceptions');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to load exceptions'));
     } finally {
       setLoading(false);
     }
@@ -36,8 +38,8 @@ export const ExceptionsPanel: React.FC = () => {
       toast.success('Exception created');
       setShowForm(false);
       loadExceptions();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to save exception');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to save exception'));
     }
   };
 
@@ -49,8 +51,8 @@ export const ExceptionsPanel: React.FC = () => {
       await schedulingApi.deleteException(id);
       toast.success('Exception deleted');
       loadExceptions();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to delete exception');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to delete exception'));
     }
   };
 

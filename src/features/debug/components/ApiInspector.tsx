@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDiagnosticsStore } from '../../../lib/stores/diagnostics.store';
-import { Copy, Trash2, Download } from 'lucide-react';
+import { Copy, Trash2 } from 'lucide-react';
 
 interface RequestLog {
   id: string;
@@ -47,7 +47,6 @@ export const ApiInspector: React.FC = () => {
           </label>
           <button
             onClick={() => {
-              // Clear logs
               const store = useDiagnosticsStore.getState();
               store.clearRequestLogs();
             }}

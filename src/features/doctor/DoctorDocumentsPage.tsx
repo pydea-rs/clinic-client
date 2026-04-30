@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { doctorApi } from '../../api/doctor.api';
 import { Loader2, Upload, FileText, Trash2, CheckCircle, Clock, XCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../../lib/api/error.utils';
 
 const DOCUMENT_TYPES = [
   'LICENSE',
@@ -31,8 +32,8 @@ export const DoctorDocumentsPage: React.FC = () => {
       setSelectedType('LICENSE');
       queryClient.invalidateQueries({ queryKey: ['doctor-documents'] });
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to upload document');
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Failed to upload document'));
     },
   });
 
@@ -42,8 +43,8 @@ export const DoctorDocumentsPage: React.FC = () => {
       toast.success('Document deleted successfully');
       queryClient.invalidateQueries({ queryKey: ['doctor-documents'] });
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to delete document');
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Failed to delete document'));
     },
   });
 

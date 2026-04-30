@@ -3,6 +3,9 @@ import { useAuthStore } from '../../../lib/stores/auth.store';
 import { authApi } from '../../../api/auth.api';
 import { User, Shield, Stethoscope, UserCog, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../../../lib/api/error.utils';
+
+type RegisterRole = 'PATIENT' | 'DOCTOR';
 
 interface SeedAccount {
   id: string;
@@ -96,12 +99,9 @@ export const AccountSwitcher: React.FC = () => {
       }
 
       // Login with seed account
-      const response = await authApi.login({
-        email: account.email,
-        password: account.password,
-      });
-
-      setUser(response);
+      await authApi.login(account.email, account.password);
+      const me = await authApi.me();
+      setUser(me);
       setAuthenticated(true);
       toast.success(`Switched to ${account.firstname} ${account.lastname}`);
       
@@ -109,8 +109,8 @@ export const AccountSwitcher: React.FC = () => {
       setTimeout(() => {
         window.location.href = '/';
       }, 500);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to switch account');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to switch account'));
     } finally {
       setSwitching(false);
       setSelectedAccount(null);
@@ -122,24 +122,30 @@ export const AccountSwitcher: React.FC = () => {
     setSelectedAccount(account.id);
 
     try {
+      const role: RegisterRole | undefined =
+        account.role === 'PATIENT' || account.role === 'DOCTOR'
+          ? account.role
+          : undefined;
+
       await authApi.register({
         email: account.email,
         password: account.password,
         firstname: account.firstname,
         lastname: account.lastname,
-        role: account.role as any,
+        role,
       });
 
       toast.success(`Created account: ${account.email}`);
       
       // Now login
       await handleSwitch(account);
-    } catch (error: any) {
-      if (error.message?.includes('already exists') || error.message?.includes('duplicate')) {
+    } catch (error: unknown) {
+      const message = getErrorMessage(error, 'Failed to create account');
+      if (message.includes('already exists') || message.includes('duplicate')) {
         toast.error('Account already exists, trying to login...');
         await handleSwitch(account);
       } else {
-        toast.error(error.message || 'Failed to create account');
+        toast.error(message);
       }
     } finally {
       setSwitching(false);

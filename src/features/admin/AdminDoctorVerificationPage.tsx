@@ -2,13 +2,33 @@ import React, { useState, useEffect } from 'react';
 import { adminApi } from '../../api/admin.api';
 import toast from 'react-hot-toast';
 
+interface VerificationDocument {
+  id: number;
+  type: string;
+  fileUrl: string;
+  status: string;
+}
+
+interface PendingDoctor {
+  doctorId: number;
+  userId: string;
+  user?: {
+    id: string;
+    firstname?: string;
+    lastname?: string;
+    email?: string;
+    role?: string;
+  };
+  documents?: VerificationDocument[];
+}
+
 export const AdminDoctorVerificationPage: React.FC = () => {
-  const [pendingDoctors, setPendingDoctors] = useState<any[]>([]);
+  const [pendingDoctors, setPendingDoctors] = useState<PendingDoctor[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedDoctor, setSelectedDoctor] = useState<any>(null);
+  const [selectedDoctor, setSelectedDoctor] = useState<PendingDoctor | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [verifyingDoctorId, setVerifyingDoctorId] = useState<number | null>(null);
-  const [documentsByDoctor, setDocumentsByDoctor] = useState<Record<number, any[]>>({});
+  const [documentsByDoctor, setDocumentsByDoctor] = useState<Record<number, VerificationDocument[]>>({});
 
   useEffect(() => {
     const loadPending = async () => {
@@ -46,7 +66,7 @@ export const AdminDoctorVerificationPage: React.FC = () => {
       const docs = await adminApi.verifications.getDocuments(doctorId);
       setDocumentsByDoctor((prev) => ({ ...prev, [doctorId]: docs || [] }));
       toast.success('Documents loaded');
-    } catch (error) {
+    } catch {
       toast.error('Failed to load doctor documents');
     }
   };
@@ -86,7 +106,7 @@ export const AdminDoctorVerificationPage: React.FC = () => {
                 <div className="mb-4">
                   <h4 className="font-medium mb-2">Documents:</h4>
                   <div className="space-y-2">
-                    {(documentsByDoctor[doctor.doctorId] || doctor.documents).map((doc: any) => (
+                    {(documentsByDoctor[doctor.doctorId] || doctor.documents).map((doc) => (
                       <div key={doc.id} className="flex items-center justify-between bg-gray-50 p-3 rounded">
                         <div>
                           <span className="text-sm font-medium capitalize">{doc.type?.replace('_', ' ') || doc.type}</span>

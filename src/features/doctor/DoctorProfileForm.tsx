@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { doctorApi, DoctorProfile } from '../../api/doctor.api';
 import { ArrayFieldEditor } from '../patient/components/ArrayFieldEditor';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../../lib/api/error.utils';
 
 interface DoctorProfileFormProps {
   initialData?: DoctorProfile;
@@ -43,8 +44,8 @@ export const DoctorProfileForm: React.FC<DoctorProfileFormProps> = ({
         toast.success('Profile created successfully');
       }
       onSubmitSuccess?.();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to save profile');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to save profile'));
     } finally {
       setLoading(false);
     }

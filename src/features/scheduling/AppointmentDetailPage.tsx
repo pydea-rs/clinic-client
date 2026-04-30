@@ -2,20 +2,22 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { schedulingApi } from '../../api/scheduling.api';
 import toast from 'react-hot-toast';
+import { Appointment } from '../../lib/types/api';
+import { getErrorMessage } from '../../lib/api/error.utils';
 
 export const AppointmentDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [appointment, setAppointment] = useState<any>(null);
+  const [appointment, setAppointment] = useState<Appointment | null>(null);
 
   const loadAppointment = useCallback(async () => {
     if (!id) return;
     try {
       const data = await schedulingApi.getAppointmentById(Number(id));
       setAppointment(data);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to load appointment');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to load appointment'));
     } finally {
       setLoading(false);
     }

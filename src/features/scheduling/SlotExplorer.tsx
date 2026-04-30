@@ -2,12 +2,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { schedulingApi } from '../../api/scheduling.api';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { SlotDuration } from '../../lib/types/api';
+import { getErrorMessage } from '../../lib/api/error.utils';
 
 export const SlotExplorer: React.FC = () => {
   const { doctorId } = useParams<{ doctorId: string }>();
   const navigate = useNavigate();
   const [slots, setSlots] = useState<Array<{ date: string; startTime: string; endTime: string; durationMinutes: number }>>([]);
-  const [durations, setDurations] = useState<any[]>([]);
+  const [durations, setDurations] = useState<SlotDuration[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [selectedDuration, setSelectedDuration] = useState<number>(30);
@@ -21,8 +23,8 @@ export const SlotExplorer: React.FC = () => {
         duration: selectedDuration,
       });
       setSlots(data || []);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to load slots');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to load slots'));
     } finally {
       setLoading(false);
     }
@@ -32,8 +34,8 @@ export const SlotExplorer: React.FC = () => {
     try {
       const data = await schedulingApi.getDoctorDurations(Number(doctorId));
       setDurations(data);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to load durations');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to load durations'));
     }
   }, [doctorId]);
 

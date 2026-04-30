@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '../../../lib/stores/auth.store';
 import { authApi } from '../../../api/auth.api';
+import { User } from '../../../lib/types/api';
 
 export const useAuth = (): {
-  user: any;
+  user: User | null;
   isAuthenticated: boolean;
   initializing: boolean;
   login: (email: string, password: string) => Promise<void>;

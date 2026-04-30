@@ -4,12 +4,15 @@ import { doctorApi } from '../../api/doctor.api';
 import { patientApi } from '../../api/patient.api';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { DoctorProfile } from '../../api/doctor.api';
+import { PatientSOAP } from '../../lib/types/api';
+import { getErrorMessage } from '../../lib/api/error.utils';
 
 export const ConsultationCreatePage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [doctors, setDoctors] = useState<any[]>([]);
-  const [soaps, setSoaps] = useState<any[]>([]);
+  const [doctors, setDoctors] = useState<DoctorProfile[]>([]);
+  const [soaps, setSoaps] = useState<PatientSOAP[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDoctor, setSelectedDoctor] = useState<string>('');
   const [selectedSoap, setSelectedSoap] = useState<string>('');
@@ -55,8 +58,8 @@ export const ConsultationCreatePage: React.FC = () => {
       });
       toast.success('Consultation created successfully');
       navigate('/patient/consultations');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to create consultation');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to create consultation'));
     } finally {
       setSubmitting(false);
     }

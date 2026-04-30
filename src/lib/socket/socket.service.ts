@@ -11,7 +11,7 @@ export interface SocketEventLog {
   timestamp: Date;
   type: 'emit' | 'receive';
   event: string;
-  data?: any;
+  data?: unknown;
 }
 
 class SocketService {
@@ -42,32 +42,20 @@ class SocketService {
     });
 
     this.socket.on('connect', () => {
-      if (import.meta.env.DEV) {
-        console.log('[Socket] Connected to chat namespace');
-      }
       this.updateStatus({ connected: true, reconnecting: false, reconnectAttempts: 0 });
       this.logEvent('receive', 'connect');
     });
 
     this.socket.on('disconnect', (reason) => {
-      if (import.meta.env.DEV) {
-        console.log('[Socket] Disconnected from chat namespace:', reason);
-      }
       this.updateStatus({ connected: false, reconnecting: false, reconnectAttempts: 0 });
       this.logEvent('receive', 'disconnect', { reason });
     });
 
     this.socket.on('reconnect_attempt', (attempt) => {
-      if (import.meta.env.DEV) {
-        console.log('[Socket] Reconnection attempt:', attempt);
-      }
       this.updateStatus({ connected: false, reconnecting: true, reconnectAttempts: attempt });
     });
 
     this.socket.on('reconnect', (attempt) => {
-      if (import.meta.env.DEV) {
-        console.log('[Socket] Reconnected after', attempt, 'attempts');
-      }
       this.updateStatus({ connected: true, reconnecting: false, reconnectAttempts: 0 });
       this.logEvent('receive', 'reconnect', { attempt });
     });
@@ -159,7 +147,7 @@ class SocketService {
     this.statusListeners.forEach(listener => listener(this.connectionStatus));
   }
 
-  private logEvent(type: 'emit' | 'receive', event: string, data?: any): void {
+  private logEvent(type: 'emit' | 'receive', event: string, data?: unknown): void {
     this.eventLogs.push({
       timestamp: new Date(),
       type,
@@ -173,7 +161,7 @@ class SocketService {
     }
   }
 
-  emit(event: string, data?: any): void {
+  emit(event: string, data?: unknown): void {
     if (this.socket?.connected) {
       this.socket.emit(event, data);
       this.logEvent('emit', event, data);
@@ -184,9 +172,9 @@ class SocketService {
     }
   }
 
-  on(event: string, callback: (...args: any[]) => void): void {
+  on(event: string, callback: (...args: unknown[]) => void): void {
     if (this.socket) {
-      const wrappedCallback = (...args: any[]) => {
+      const wrappedCallback = (...args: unknown[]) => {
         this.logEvent('receive', event, args);
         callback(...args);
       };
@@ -194,7 +182,7 @@ class SocketService {
     }
   }
 
-  off(event: string, callback?: (...args: any[]) => void): void {
+  off(event: string, callback?: (...args: unknown[]) => void): void {
     if (this.socket) {
       this.socket.off(event, callback);
     }

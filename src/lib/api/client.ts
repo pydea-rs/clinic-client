@@ -2,6 +2,11 @@ import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 
 import { ApiResponse, ApiError } from '../types/api';
 import { useDiagnosticsStore } from '../stores/diagnostics.store';
 
+type TrackedRequestConfig = InternalAxiosRequestConfig & {
+  __requestStart?: number;
+  __requestPayload?: unknown;
+};
+
 const DEFAULT_API_BASE_URL = 'http://localhost:8080';
 
 const normalizeBaseUrl = (value?: string): string => {
@@ -23,9 +28,10 @@ export const apiClient: AxiosInstance = axios.create({
 // Request interceptor for logging
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
+    const trackedConfig = config as TrackedRequestConfig;
     // Add timestamp for latency tracking
-    (config as any).__requestStart = Date.now();
-    (config as any).__requestPayload = config.data;
+    trackedConfig.__requestStart = Date.now();
+    trackedConfig.__requestPayload = config.data;
     return config;
   }
 );
@@ -33,7 +39,8 @@ apiClient.interceptors.request.use(
 // Response interceptor - unwrap envelope and normalize errors
 apiClient.interceptors.response.use(
   (response: AxiosResponse): AxiosResponse => {
-    const latency = Date.now() - (response.config as any).__requestStart;
+    const responseConfig = response.config as TrackedRequestConfig;
+    const latency = Date.now() - (responseConfig.__requestStart ?? Date.now());
     const data = response.data as unknown;
     let rawEnvelope = data;
     let unwrappedData = data;
@@ -60,15 +67,10 @@ apiClient.interceptors.response.use(
         url: response.config.url || '',
         status: response.status,
         latency,
-        requestPayload: (response.config as any).__requestPayload,
+        requestPayload: responseConfig.__requestPayload,
         responsePayload: unwrappedData,
         rawEnvelope,
       });
-    }
-
-    // Only log in development console
-    if (import.meta.env.DEV) {
-      console.log(`[API] ${response.config.method?.toUpperCase()} ${response.config.url} - ${response.status} (${latency}ms)`);
     }
 
     // Return unwrapped contents
@@ -78,7 +80,8 @@ apiClient.interceptors.response.use(
     };
   },
   (error): Promise<never> => {
-    const latency = error.config ? Date.now() - (error.config as any).__requestStart : 0;
+    const errorConfig = (error?.config as TrackedRequestConfig | undefined);
+    const latency = errorConfig ? Date.now() - (errorConfig.__requestStart ?? Date.now()) : 0;
     
     const apiError: ApiError = {
       status: error.response?.status || 500,
@@ -89,9 +92,9 @@ apiClient.interceptors.response.use(
     };
 
     // Extract backend error envelope if present
-    if (error.response?.data && typeof error.response.data === 'object') {
-      const data = error.response.data as any;
-      if (data.status && data.message && data.timestamp && data.path) {
+    if (error.response?.data && typeof error.response.data === 'object' && error.response.data !== null) {
+      const data = error.response.data as Record<string, unknown>;
+      if (typeof data.status === 'number' && typeof data.message === 'string' && typeof data.timestamp === 'string' && typeof data.path === 'string') {
         apiError.status = data.status;
         apiError.message = data.message;
         apiError.timestamp = data.timestamp;
@@ -109,7 +112,7 @@ apiClient.interceptors.response.use(
         url: error.config.url || '',
         status: apiError.status,
         latency,
-        requestPayload: (error.config as any).__requestPayload,
+        requestPayload: errorConfig?.__requestPayload,
         responsePayload: null,
         rawEnvelope: error.response?.data,
       });

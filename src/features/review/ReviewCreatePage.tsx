@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { reviewApi } from '../../api/review.api';
 import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../../lib/api/error.utils';
 
 export const ReviewCreatePage: React.FC = () => {
   const { id: doctorId } = useParams<{ id: string }>();
@@ -25,8 +26,8 @@ export const ReviewCreatePage: React.FC = () => {
       });
       toast.success('Review created successfully');
       navigate(`/doctor/${doctorId}`);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to create review');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to create review'));
     } finally {
       setLoading(false);
     }

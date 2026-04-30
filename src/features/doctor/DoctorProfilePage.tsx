@@ -12,13 +12,23 @@ export const DoctorProfilePage: React.FC = () => {
 
   const { data: doctor, isLoading: doctorLoading } = useQuery({
     queryKey: ['doctor', id],
-    queryFn: () => doctorApi.getDoctorById(id!),
+    queryFn: () => {
+      if (!id) {
+        throw new Error('Doctor ID is required');
+      }
+      return doctorApi.getDoctorById(id);
+    },
     enabled: !!id,
   });
 
   const { data: rating, isLoading: ratingLoading } = useQuery({
     queryKey: ['doctor-rating', id],
-    queryFn: () => reviewApi.getDoctorRating(id!),
+    queryFn: () => {
+      if (!id) {
+        throw new Error('Doctor ID is required');
+      }
+      return reviewApi.getDoctorRating(id);
+    },
     enabled: !!id,
   });
 

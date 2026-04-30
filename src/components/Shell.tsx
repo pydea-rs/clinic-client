@@ -9,7 +9,6 @@ import {
   Shield, 
   MessageSquare, 
   Activity, 
-  Settings,
   LogOut,
   Menu,
   X

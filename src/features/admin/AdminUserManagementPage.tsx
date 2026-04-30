@@ -1,11 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { adminApi } from '../../api/admin.api';
 import toast from 'react-hot-toast';
+import { User } from '../../lib/types/api';
+
+type UserUpdatePayload = {
+  firstname?: string;
+  lastname?: string;
+  email?: string;
+  role?: string;
+  isActive?: boolean;
+};
 
 export const AdminUserManagementPage: React.FC = () => {
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editingUser, setEditingUser] = useState<any>(null);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('');
 
@@ -24,7 +33,7 @@ export const AdminUserManagementPage: React.FC = () => {
     loadUsers();
   }, []);
 
-  const handleUpdateUser = async (id: string, payload: any) => {
+  const handleUpdateUser = async (id: string, payload: UserUpdatePayload) => {
     try {
       const updatedUser = await adminApi.users.update(id, payload);
       setUsers(users.map(u => u.id === id ? updatedUser : u));
@@ -209,9 +218,9 @@ export const AdminUserManagementPage: React.FC = () => {
 };
 
 interface EditUserModalProps {
-  user: any;
+  user: User;
   onClose: () => void;
-  onSave: (id: string, payload: any) => void;
+  onSave: (id: string, payload: UserUpdatePayload) => void;
 }
 
 const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSave }) => {

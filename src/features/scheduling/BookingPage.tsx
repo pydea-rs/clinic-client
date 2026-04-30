@@ -2,6 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { schedulingApi } from '../../api/scheduling.api';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../../lib/api/error.utils';
+
+interface BookingLocationState {
+  slot?: {
+    date: string;
+    startTime: string;
+    endTime: string;
+  };
+  duration?: number;
+  price?: number;
+}
 
 export const BookingPage: React.FC = () => {
   const { doctorId } = useParams<{ doctorId: string }>();
@@ -20,7 +31,7 @@ export const BookingPage: React.FC = () => {
   const [slotDisplay, setSlotDisplay] = useState('');
 
   useEffect(() => {
-    const state = location.state as any;
+    const state = location.state as BookingLocationState | null;
     if (!state?.slot) {
       navigate(`/slots/${doctorId}`);
       return;
@@ -44,8 +55,8 @@ export const BookingPage: React.FC = () => {
       await schedulingApi.bookAppointment(formData);
       toast.success('Appointment booked successfully');
       navigate('/appointments');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to book appointment');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to book appointment'));
     } finally {
       setLoading(false);
     }

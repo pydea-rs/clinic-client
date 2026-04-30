@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { adminApi } from '../../api/admin.api';
 import { Link } from 'react-router-dom';
 import { User, UserCheck, MessageSquare, Star, Clock } from 'lucide-react';
+import { PlatformStats } from '../../lib/types/api';
 
 export const AdminDashboardPage: React.FC = () => {
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<PlatformStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

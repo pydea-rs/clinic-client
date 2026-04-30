@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { socketService } from '../../lib/socket/socket.service';
 import { useAuthStore } from '../../lib/stores/auth.store';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../../lib/api/error.utils';
 
 interface ChatWithParticipants {
   id: string;
@@ -71,9 +72,9 @@ export const ChatListPage: React.FC = () => {
     try {
       const data = await chatApi.list();
       setChats(data?.chats || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to load chats:', error);
-      toast.error(error.message || 'Failed to load chats');
+      toast.error(getErrorMessage(error, 'Failed to load chats'));
     } finally {
       setLoading(false);
     }
@@ -87,7 +88,7 @@ export const ChatListPage: React.FC = () => {
 
     setCreating(true);
     try {
-      const newChat = await chatApi.create({
+      await chatApi.create({
         participantId: newChatParticipantId,
         topic: newChatTopic || undefined,
       });
@@ -96,8 +97,8 @@ export const ChatListPage: React.FC = () => {
       setNewChatParticipantId('');
       setNewChatTopic('');
       await loadChats();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to create chat');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to create chat'));
     } finally {
       setCreating(false);
     }

@@ -7,33 +7,22 @@ describe('API Client', () => {
   });
 
   describe('Response Envelope Unwrapping', () => {
-    it('should unwrap envelope structure and return contents', async () => {
+    it('should unwrap envelope structure and return contents', () => {
       const mockEnvelope = {
         status: 200,
         message: 'Success',
         contents: { id: '123', name: 'Test' },
       };
 
-      // The interceptor should unwrap the envelope
-      const response = {
-        data: mockEnvelope,
-        status: 200,
-        statusText: 'OK',
-        headers: {},
-        config: {} as any,
-      };
-
-      // Test that envelope is properly structured
       expect(mockEnvelope).toHaveProperty('status');
       expect(mockEnvelope).toHaveProperty('message');
       expect(mockEnvelope).toHaveProperty('contents');
       expect(mockEnvelope.contents).toEqual({ id: '123', name: 'Test' });
     });
 
-    it('should handle non-envelope responses', async () => {
+    it('should handle non-envelope responses', () => {
       const mockData = { id: '123', name: 'Test' };
 
-      // Non-envelope response should pass through
       expect(mockData).not.toHaveProperty('status');
       expect(mockData).not.toHaveProperty('message');
       expect(mockData).not.toHaveProperty('contents');

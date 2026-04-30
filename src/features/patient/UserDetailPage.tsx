@@ -9,7 +9,12 @@ export const UserDetailPage: React.FC = () => {
 
   const { data: user, isLoading, error } = useQuery({
     queryKey: ['user', id],
-    queryFn: () => userApi.getUserById(id!),
+    queryFn: () => {
+      if (!id) {
+        throw new Error('User ID is required');
+      }
+      return userApi.getUserById(id);
+    },
     enabled: !!id,
   });
 

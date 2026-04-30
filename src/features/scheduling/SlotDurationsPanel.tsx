@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { schedulingApi } from '../../api/scheduling.api';
 import toast from 'react-hot-toast';
+import { SlotDuration } from '../../lib/types/api';
+import { getErrorMessage } from '../../lib/api/error.utils';
 
 export const SlotDurationsPanel: React.FC = () => {
-  const [durations, setDurations] = useState<any[]>([]);
+  const [durations, setDurations] = useState<SlotDuration[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
@@ -21,8 +23,8 @@ export const SlotDurationsPanel: React.FC = () => {
     try {
       const data = await schedulingApi.getSlotDurations();
       setDurations(data);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to load durations');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to load durations'));
     } finally {
       setLoading(false);
     }
@@ -41,8 +43,8 @@ export const SlotDurationsPanel: React.FC = () => {
       setShowForm(false);
       setFormData({ minutes: 30, price: '50.00', label: '', isActive: true });
       loadDurations();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to save duration');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to save duration'));
     }
   };
 

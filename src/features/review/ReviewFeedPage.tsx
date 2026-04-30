@@ -3,10 +3,12 @@ import { reviewApi } from '../../api/review.api';
 import { useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../../lib/stores/auth.store';
+import { DoctorReview } from '../../lib/types/api';
+import { getErrorMessage } from '../../lib/api/error.utils';
 
 export const ReviewFeedPage: React.FC = () => {
   const { id: doctorId } = useParams<{ id: string }>();
-  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<DoctorReview[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -22,8 +24,8 @@ export const ReviewFeedPage: React.FC = () => {
       const data = await reviewApi.getDoctorReviews(Number(doctorId), page, 10);
       setReviews(data.reviews || []);
       setTotal(data.total || 0);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to load reviews');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to load reviews'));
     } finally {
       setLoading(false);
     }
@@ -37,7 +39,7 @@ export const ReviewFeedPage: React.FC = () => {
     return '★'.repeat(rating) + '☆'.repeat(5 - rating);
   };
 
-  const startEdit = (review: any) => {
+  const startEdit = (review: DoctorReview) => {
     setEditingId(review.id);
     setEditTitle(review.title || '');
     setEditOverview(review.overview || '');
@@ -55,8 +57,8 @@ export const ReviewFeedPage: React.FC = () => {
       toast.success('Review updated');
       setEditingId(null);
       await loadReviews();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update review');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to update review'));
     }
   };
 
@@ -66,8 +68,8 @@ export const ReviewFeedPage: React.FC = () => {
       await reviewApi.deleteReview(reviewId);
       toast.success('Review deleted');
       await loadReviews();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to delete review');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to delete review'));
     }
   };
 

@@ -25,7 +25,10 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit(e as any);
+      if (input.trim() && !disabled) {
+        onSend(input.trim());
+        setInput('');
+      }
     }
   };
 

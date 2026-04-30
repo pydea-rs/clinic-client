@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Upload, X } from 'lucide-react';
 import { userApi } from '../../../api/user.api';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../../../lib/api/error.utils';
 
 interface AvatarUploaderProps {
   currentAvatar?: string;
@@ -49,8 +50,8 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
       toast.success('Avatar uploaded successfully');
       setFile(null);
       onUploadSuccess?.(result.url);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to upload avatar');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to upload avatar'));
     } finally {
       setUploading(false);
     }

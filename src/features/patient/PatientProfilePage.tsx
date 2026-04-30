@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { userApi } from '../../api/user.api';
+import { userApi, UpdateProfilePayload } from '../../api/user.api';
 import toast from 'react-hot-toast';
 import { Loader2, Upload } from 'lucide-react';
+import { getErrorMessage } from '../../lib/api/error.utils';
 
 export const PatientProfilePage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -18,12 +19,12 @@ export const PatientProfilePage: React.FC = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (payload: any) => userApi.updateProfile(payload),
+    mutationFn: (payload: UpdateProfilePayload) => userApi.updateProfile(payload),
     onSuccess: () => {
       toast.success('Profile updated successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to update profile');
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Failed to update profile'));
     },
   });
 
@@ -34,8 +35,8 @@ export const PatientProfilePage: React.FC = () => {
       setAvatarFile(null);
       setAvatarPreview('');
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to upload avatar');
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Failed to upload avatar'));
     },
   });
 

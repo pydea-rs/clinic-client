@@ -3,9 +3,11 @@ import { consultationApi } from '../../api/consultation.api';
 import { useAuthStore } from '../../lib/stores/auth.store';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { Consultation } from '../../lib/types/api';
+import { getErrorMessage } from '../../lib/api/error.utils';
 
 export const ConsultationListPage: React.FC = () => {
-  const [consultations, setConsultations] = useState<any[]>([]);
+  const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -16,8 +18,8 @@ export const ConsultationListPage: React.FC = () => {
       const data = await consultationApi.getConsultations(page, 10);
       setConsultations(data.consultations || []);
       setTotal(data.total || 0);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to load consultations');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to load consultations'));
     } finally {
       setLoading(false);
     }
@@ -41,7 +43,7 @@ export const ConsultationListPage: React.FC = () => {
     }
   };
 
-  const canViewDetail = (consultation: any) => {
+  const canViewDetail = (consultation: Consultation) => {
     // Patient can view all their consultations
     if (user?.role === 'PATIENT') {
       return consultation.patientId === user.id;

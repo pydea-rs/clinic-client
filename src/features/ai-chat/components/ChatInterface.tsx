@@ -15,7 +15,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onLogout }) => {
     messages,
     connectionStatus,
     isTyping,
-    isSending,
     conversationId,
     initializeChat,
     sendMessage,
