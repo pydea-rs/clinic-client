@@ -27,7 +27,7 @@ export const DoctorProfilePage: React.FC = () => {
       if (!id) {
         throw new Error('Doctor ID is required');
       }
-      return reviewApi.getDoctorRating(id);
+      return reviewApi.getDoctorRating(+id);
     },
     enabled: !!id,
   });
@@ -81,7 +81,7 @@ export const DoctorProfilePage: React.FC = () => {
                       <svg
                         key={i}
                         className={`w-5 h-5 ${
-                          i < Math.round(rating.averageRating)
+                          i < Math.round(rating.averageRating || 0)
                             ? 'fill-yellow-400 text-yellow-400'
                             : 'text-gray-300'
                         }`}
@@ -93,7 +93,7 @@ export const DoctorProfilePage: React.FC = () => {
                     ))}
                   </div>
                   <span className="text-lg font-semibold text-gray-900">
-                    {rating.averageRating.toFixed(1)}
+                    {(rating.averageRating || 0).toFixed(1)}
                   </span>
                   <span className="text-gray-600">({rating.totalReviews} reviews)</span>
                 </div>
@@ -201,7 +201,7 @@ export const DoctorProfilePage: React.FC = () => {
               </div>
               {rating && !ratingLoading ? (
                 <RatingWidget
-                  averageRating={rating.averageRating}
+                  averageRating={rating.averageRating || 0}
                   totalReviews={rating.totalReviews}
                   distribution={rating.distribution}
                 />

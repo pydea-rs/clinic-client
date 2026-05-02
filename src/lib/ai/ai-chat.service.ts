@@ -19,8 +19,12 @@ interface AiAgentSendResponse {
 export class AiChatService {
   // Start a new conversation
   async startConversation(): Promise<string> {
-    const response = await apiClient.post('/ai-agents/start', {});
-    return response.data.id;
+    const response = await apiClient.post<{ id: string }>('/ai-agents/start', {});
+    const id = response.data?.id;
+    if (!id) {
+      throw new Error('Server did not return a conversation ID. Please try again.');
+    }
+    return id;
   }
 
   // Send a message

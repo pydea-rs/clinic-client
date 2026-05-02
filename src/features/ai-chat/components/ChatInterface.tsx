@@ -60,7 +60,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onLogout }) => {
         />
 
         <div className="flex-1 overflow-y-auto bg-gradient-to-b from-white to-gray-50 custom-scrollbar">
-          <div className="h-full">
+          <div className="h-full px-4 py-4">
             {messages.length === 0 && !isTyping && (
               <div className="flex items-center justify-center h-full text-center">
                 <div className="animate-slide-in-up">

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import toast from "react-hot-toast";
-import { Message, ChatState, ConnectionStatus, ApiError } from "../../../lib/types/chat";
+import { Message, ChatState, ConnectionStatus } from "../../../lib/types/chat";
 import { aiChatService } from "../../../lib/ai/ai-chat.service";
 
 export const useChat = () => {
@@ -19,6 +19,7 @@ export const useChat = () => {
   const lastMessageTimeRef = useRef<Date>(new Date());
   const lastUserMessageRef = useRef<string | null>(null);
   const lastUserMessageAtRef = useRef<number>(0);
+  const isInitializingRef = useRef(false); // prevents concurrent initializeChat() calls
 
   const updateConnectionStatus = useCallback(
     (status: Partial<ConnectionStatus>) => {
@@ -114,7 +115,12 @@ export const useChat = () => {
       // Connection confirmation event
       eventSource.addEventListener("connected", (e: MessageEvent) => {
         try {
-          JSON.parse(e.data as string);
+          const data = JSON.parse(e.data as string) as Record<string, unknown>;
+          // Server sends { conversationId, timestamp } — update status with confirmed conversationId
+          if (data?.conversationId && typeof data.conversationId === 'string') {
+            setChatState((prev) => ({ ...prev, conversationId: data.conversationId as string }));
+          }
+          updateConnectionStatus({ connected: true, error: undefined, reconnecting: false });
         } catch {
           setChatState((prev) => ({ ...prev, isTyping: false }));
         }
@@ -311,12 +317,15 @@ export const useChat = () => {
 
         toast.success("Message sent successfully", { duration: 2000 });
       } catch (error) {
-        const apiError = error as ApiError;
-        toast.error(
-          apiError.message || "Failed to send message. Please try again."
-        );
+        const message =
+          error instanceof Error
+            ? error.message
+            : typeof error === 'object' && error !== null && 'message' in error && typeof (error as Record<string, unknown>).message === 'string'
+            ? (error as { message: string }).message
+            : 'Failed to send message. Please try again.';
+        toast.error(message);
         addMessage({
-          text: apiError.message || "Failed to send message. Please try again.",
+          text: message,
           isUser: false,
           timestamp: new Date(),
         });
@@ -328,9 +337,16 @@ export const useChat = () => {
   );
 
   const initializeChat = useCallback(async () => {
-    const conversationId = await startConversation();
-    if (conversationId) {
-      connectSSE(conversationId);
+    // Guard: skip if already initializing (prevents double-calls from React StrictMode / rapid retries)
+    if (isInitializingRef.current) return;
+    isInitializingRef.current = true;
+    try {
+      const conversationId = await startConversation();
+      if (conversationId) {
+        connectSSE(conversationId);
+      }
+    } finally {
+      isInitializingRef.current = false;
     }
   }, [startConversation, connectSSE]);
 
