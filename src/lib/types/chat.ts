@@ -3,6 +3,8 @@ export interface Message {
   text: string;
   isUser: boolean;
   timestamp: Date;
+  /** true while the typewriter animation is still revealing characters */
+  isStreaming?: boolean;
 }
 
 export interface ConnectionStatus {

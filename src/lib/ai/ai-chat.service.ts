@@ -1,18 +1,24 @@
 import { apiClient, getApiBaseUrl } from '../api/client';
 
-interface AiAgentMessage {
+interface BotpressPayload {
+  type?: string;
+  text?: string;
+  markdown?: string;
+}
+
+export interface AiAgentMessage {
   id?: string;
   text?: string;
   markdown?: string;
   title?: string;
   audioUrl?: string;
   fileUrl?: string;
+  payload?: BotpressPayload;
   createdAt?: string;
 }
 
 interface AiAgentSendResponse {
   ok?: boolean;
-  message?: AiAgentMessage;
   [key: string]: unknown;
 }
 
@@ -37,9 +43,12 @@ export class AiChatService {
   }
 
   // Get messages for a conversation (polling fallback)
-  async getMessages(conversationId: string): Promise<AiAgentMessage[]> {
-    const response = await apiClient.get(`/ai-agents/messages/${conversationId}`);
-    return response.data;
+  async getMessages(conversationId: string, since?: Date): Promise<AiAgentMessage[]> {
+    const response = await apiClient.get<AiAgentMessage[]>(
+      `/ai-agents/messages/${conversationId}`,
+      since ? { params: { dateOffset: since.toISOString() } } : {},
+    );
+    return Array.isArray(response.data) ? response.data : [];
   }
 
   // Get stream URL for SSE

@@ -20,7 +20,12 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
             : 'bg-gray-200 text-gray-900 rounded-bl-none'
         }`}
       >
-        <p className="text-sm break-words">{message.text}</p>
+        <p className="text-sm break-words whitespace-pre-wrap">
+          {message.text}
+          {message.isStreaming && (
+            <span className="inline-block w-0.5 h-4 ml-0.5 align-middle bg-current animate-pulse" />
+          )}
+        </p>
         <p className={`text-xs mt-1 ${message.isUser ? 'text-blue-100' : 'text-gray-500'}`}>
           {formatTime(message.timestamp)}
         </p>

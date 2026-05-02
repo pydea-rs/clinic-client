@@ -16,6 +16,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onLogout }) => {
     connectionStatus,
     isTyping,
     conversationId,
+    deliveryMode,
+    toggleDeliveryMode,
     initializeChat,
     sendMessage,
   } = useChat();
@@ -55,8 +57,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onLogout }) => {
       <div className="max-w-4xl mx-auto h-screen flex flex-col">
         <ChatHeader
           connectionStatus={connectionStatus}
+          deliveryMode={deliveryMode}
           onRetry={initializeChat}
           onLogout={() => { void onLogout(); }}
+          onToggleDeliveryMode={toggleDeliveryMode}
         />
 
         <div className="flex-1 overflow-y-auto bg-gradient-to-b from-white to-gray-50 custom-scrollbar">
