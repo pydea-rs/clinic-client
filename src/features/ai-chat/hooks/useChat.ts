@@ -236,6 +236,8 @@ export const useChat = () => {
         }
       };
 
+      // Run first poll immediately, then repeat on interval
+      void poll();
       pollIntervalRef.current = setInterval(() => {
         void poll();
       }, POLLING_INTERVAL_MS);
@@ -263,7 +265,21 @@ export const useChat = () => {
         return;
       }
 
-      if (eventSourceRef.current) return;
+      // Cancel any pending reconnect from a previous onerror cycle.
+      // Without this, a stale timeout can fire after retry and replace
+      // the fresh EventSource with one pointing to the old conversation.
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
+
+      // Close any existing SSE connection before opening a new one.
+      // This prevents the old EventSource from listening to a stale conversation
+      // when the user retries or when a new conversation is started.
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
+      }
 
       const eventSource = new EventSource(
         aiChatService.getStreamUrl(conversationId),
@@ -372,22 +388,31 @@ export const useChat = () => {
         }
       });
 
-      // Application-level error from Botpress
-      eventSource.addEventListener("error", (e: MessageEvent) => {
-        try {
-          const parsed = JSON.parse(e.data as string) as Record<string, unknown>;
+      // Unified error handler — handles BOTH:
+      //   (a) Server-sent `event: error` (has .data with JSON payload) — show toast, don't reconnect
+      //   (b) Transport-level network errors (no .data) — reconnect with backoff
+      // Note: addEventListener("error") fires for BOTH types per the EventSource spec.
+      // We intentionally do NOT set onerror separately to avoid double-handling.
+      eventSource.addEventListener("error", (errorEvent) => {
+        const serverData = (errorEvent as MessageEvent).data;
+
+        // (a) Server-sent application error — recoverable, just show toast
+        if (serverData !== undefined && serverData !== null) {
+          try {
+            const parsed = JSON.parse(serverData as string) as Record<string, unknown>;
+            toast.error("AI service error: " + ((parsed?.message as string) ?? "Unknown"));
+          } catch {
+            // unparseable server error — ignore
+          }
           setChatState((prev) => ({ ...prev, isTyping: false }));
-          toast.error("AI service error: " + ((parsed?.message as string) ?? "Unknown"));
-        } catch {
-          setChatState((prev) => ({ ...prev, isTyping: false }));
+          return;
         }
-      });
 
-      // Unnamed fallback events
-      eventSource.onmessage = (_e: MessageEvent) => {};
+        // (b) Transport error — reconnect with exponential backoff
+        // Guard: skip if this EventSource was already replaced by a newer one
+        // (e.g., user clicked Retry while the old one was closing)
+        if (eventSourceRef.current !== eventSource) return;
 
-      // Transport-level error → reconnect
-      eventSource.onerror = (_error) => {
         updateConnectionStatus({ connected: false, reconnecting: true });
         eventSource.close();
         eventSourceRef.current = null;
@@ -408,16 +433,30 @@ export const useChat = () => {
             });
           }
         }, delay);
-      };
+      });
 
       eventSourceRef.current = eventSource;
     },
     [addBotMessage, updateConnectionStatus, extractMessageText]
   );
 
+  // Use refs for values accessed inside sendMessage to avoid stale closures
+  // and unnecessary re-creations of the callback.
+  const conversationIdRef = useRef<string | null>(null);
+  const isSendingRef = useRef(false);
+
+  // Keep refs in sync with state
+  useEffect(() => {
+    conversationIdRef.current = chatState.conversationId;
+  }, [chatState.conversationId]);
+  useEffect(() => {
+    isSendingRef.current = chatState.isSending;
+  }, [chatState.isSending]);
+
   const sendMessage = useCallback(
     async (text: string) => {
-      if (!chatState.conversationId || chatState.isSending) return;
+      const convId = conversationIdRef.current;
+      if (!convId || isSendingRef.current) return;
 
       setChatState((prev) => ({ ...prev, isSending: true }));
       addMessage({ text, isUser: true, timestamp: new Date() });
@@ -426,21 +465,19 @@ export const useChat = () => {
       lastUserMessageAtRef.current = Date.now();
 
       try {
-        await aiChatService.sendMessage(chatState.conversationId, text);
+        await aiChatService.sendMessage(convId, text);
 
         setChatState((prev) => ({ ...prev, isTyping: true }));
         if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
 
         // Polling fallback: if SSE doesn't deliver a reply, start polling after N ms.
         // In poll mode (forcePollModeRef) skip the delay and poll immediately.
-        const convId = chatState.conversationId;
         isWaitingForBotRef.current = true;
         if (pollTriggerTimeoutRef.current) clearTimeout(pollTriggerTimeoutRef.current);
         if (forcePollModeRef.current) {
           startPolling(convId);
         } else {
           pollTriggerTimeoutRef.current = setTimeout(() => {
-            // Check ref directly — no side effects inside a state updater
             if (isWaitingForBotRef.current) {
               startPolling(convId);
             }
@@ -469,19 +506,21 @@ export const useChat = () => {
         setChatState((prev) => ({ ...prev, isSending: false }));
       }
     },
-    [chatState.conversationId, chatState.isSending, addMessage, startPolling, stopPolling]
+    [addMessage, startPolling, stopPolling]
   );
 
   const initializeChat = useCallback(async () => {
     if (isInitializingRef.current) return;
     isInitializingRef.current = true;
+    // Clear previous error so the UI shows loading state immediately on retry
+    updateConnectionStatus({ error: undefined });
     try {
       const conversationId = await startConversation();
       if (conversationId) connectSSE(conversationId);
     } finally {
       isInitializingRef.current = false;
     }
-  }, [startConversation, connectSSE]);
+  }, [startConversation, connectSSE, updateConnectionStatus]);
 
   const disconnect = useCallback(() => {
     if (eventSourceRef.current) {

@@ -35,8 +35,7 @@ export const AdminDoctorVerificationPage: React.FC = () => {
       try {
         const data = await adminApi.verifications.listPending();
         setPendingDoctors(data || []);
-      } catch (error) {
-        console.error('Failed to load pending doctors:', error);
+      } catch {
         toast.error('Failed to load pending doctors');
       } finally {
         setLoading(false);
@@ -53,8 +52,7 @@ export const AdminDoctorVerificationPage: React.FC = () => {
       toast.success(approved ? 'Doctor verified successfully' : 'Doctor verification rejected');
       setRejectReason('');
       setSelectedDoctor(null);
-    } catch (error) {
-      console.error('Failed to verify doctor:', error);
+    } catch {
       toast.error('Failed to verify doctor');
     } finally {
       setVerifyingDoctorId(null);

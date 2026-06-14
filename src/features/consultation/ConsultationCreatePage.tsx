@@ -27,8 +27,8 @@ export const ConsultationCreatePage: React.FC = () => {
         ]);
         setDoctors(doctorsData.doctors || []);
         setSoaps(soapsData.soaps || []);
-      } catch (error) {
-        console.error('Failed to load data:', error);
+      } catch {
+        // Page renders with empty lists on failure
       } finally {
         setLoading(false);
       }

@@ -23,8 +23,7 @@ export const AdminUserManagementPage: React.FC = () => {
       try {
         const data = await adminApi.users.list();
         setUsers(data.data || []);
-      } catch (error) {
-        console.error('Failed to load users:', error);
+      } catch {
         toast.error('Failed to load users');
       } finally {
         setLoading(false);
@@ -39,8 +38,7 @@ export const AdminUserManagementPage: React.FC = () => {
       setUsers(users.map(u => u.id === id ? updatedUser : u));
       setEditingUser(null);
       toast.success('User updated successfully');
-    } catch (error) {
-      console.error('Failed to update user:', error);
+    } catch {
       toast.error('Failed to update user');
     }
   };
@@ -52,8 +50,7 @@ export const AdminUserManagementPage: React.FC = () => {
       const updatedUser = await adminApi.users.deactivate(id);
       setUsers(users.map(u => u.id === id ? updatedUser : u));
       toast.success('User deactivated successfully');
-    } catch (error) {
-      console.error('Failed to deactivate user:', error);
+    } catch {
       toast.error('Failed to deactivate user');
     }
   };
@@ -65,8 +62,7 @@ export const AdminUserManagementPage: React.FC = () => {
       const updatedUser = await adminApi.adminActions.promote(id);
       setUsers(users.map(u => u.id === id ? updatedUser : u));
       toast.success('User promoted successfully');
-    } catch (error) {
-      console.error('Failed to promote user:', error);
+    } catch {
       toast.error('Failed to promote user');
     }
   };
@@ -78,8 +74,7 @@ export const AdminUserManagementPage: React.FC = () => {
       const updatedUser = await adminApi.adminActions.demote(id);
       setUsers(users.map(u => u.id === id ? updatedUser : u));
       toast.success('User demoted successfully');
-    } catch (error) {
-      console.error('Failed to demote user:', error);
+    } catch {
       toast.error('Failed to demote user');
     }
   };

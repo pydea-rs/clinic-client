@@ -13,8 +13,8 @@ export const AdminDashboardPage: React.FC = () => {
       try {
         const data = await adminApi.stats();
         setStats(data);
-      } catch (error) {
-        console.error('Failed to load stats:', error);
+      } catch {
+        // Dashboard renders without stats on failure
       } finally {
         setLoading(false);
       }

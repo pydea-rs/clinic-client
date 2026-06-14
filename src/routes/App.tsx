@@ -7,7 +7,6 @@ import { AuthGuard, PatientGuard, DoctorGuard, AdminGuard } from '../lib/guards/
 import { Shell } from '../components/Shell';
 const AuthForm = React.lazy(() => import('../features/auth/components/AuthForm').then(m => ({ default: m.AuthForm })));
 const ChatInterface = React.lazy(() => import('../features/ai-chat/components/ChatInterface').then(m => ({ default: m.ChatInterface })));
-const DebugPage = React.lazy(() => import('../features/debug/DebugPage').then(m => ({ default: m.DebugPage })));
 const PatientProfilePage = React.lazy(() => import('../features/patient/PatientProfilePage').then(m => ({ default: m.PatientProfilePage })));
 const PatientConsultationsListPage = React.lazy(() => import('../features/patient/PatientConsultationsListPage').then(m => ({ default: m.PatientConsultationsListPage })));
 const PatientSOAPListPage = React.lazy(() => import('../features/patient/PatientSOAPListPage').then(m => ({ default: m.PatientSOAPListPage })));
@@ -146,9 +145,6 @@ function App() {
           {/* Chat routes */}
           <Route path="/chat" element={<AuthGuard><Shell><LazyPage><ChatListPage /></LazyPage></Shell></AuthGuard>} />
           <Route path="/chat/:id" element={<AuthGuard><Shell><LazyPage><ChatRoomPage /></LazyPage></Shell></AuthGuard>} />
-          
-          {/* Debug routes */}
-          <Route path="/debug/*" element={<AuthGuard><LazyPage><DebugPage /></LazyPage></AuthGuard>} />
           
           {/* Unsupported modules placeholders */}
           <Route path="/calls" element={<CallsPlaceholder />} />

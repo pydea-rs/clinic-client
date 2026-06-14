@@ -13,8 +13,7 @@ export const AdminReviewModerationPage: React.FC = () => {
         // No admin-specific list endpoints exist; use the public review API
         // to fetch reviews for moderation (admin can delete individual reviews)
         setReviews([]);
-      } catch (error) {
-        console.error('Failed to load data:', error);
+      } catch {
         toast.error('Failed to load data');
       } finally {
         setLoading(false);
@@ -30,8 +29,7 @@ export const AdminReviewModerationPage: React.FC = () => {
       await adminApi.reviews.delete(reviewId);
       setReviews(reviews.filter(r => r.id !== reviewId));
       toast.success('Review deleted successfully');
-    } catch (error) {
-      console.error('Failed to delete review:', error);
+    } catch {
       toast.error('Failed to delete review');
     }
   };

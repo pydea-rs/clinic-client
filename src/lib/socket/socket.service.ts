@@ -7,13 +7,6 @@ export interface SocketConnectionStatus {
   lastError?: string;
 }
 
-export interface SocketEventLog {
-  timestamp: Date;
-  type: 'emit' | 'receive';
-  event: string;
-  data?: unknown;
-}
-
 class SocketService {
   private socket: Socket | null = null;
   private baseUrl: string = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
@@ -22,8 +15,6 @@ class SocketService {
     reconnecting: false,
     reconnectAttempts: 0,
   };
-  private eventLogs: SocketEventLog[] = [];
-  private maxLogs = 100;
   private statusListeners: Array<(status: SocketConnectionStatus) => void> = [];
   private onlineUsers: Set<string> = new Set();
 
@@ -43,28 +34,24 @@ class SocketService {
 
     this.socket.on('connect', () => {
       this.updateStatus({ connected: true, reconnecting: false, reconnectAttempts: 0 });
-      this.logEvent('receive', 'connect');
     });
 
-    this.socket.on('disconnect', (reason) => {
+    this.socket.on('disconnect', () => {
       this.updateStatus({ connected: false, reconnecting: false, reconnectAttempts: 0 });
-      this.logEvent('receive', 'disconnect', { reason });
     });
 
     this.socket.on('reconnect_attempt', (attempt) => {
       this.updateStatus({ connected: false, reconnecting: true, reconnectAttempts: attempt });
     });
 
-    this.socket.on('reconnect', (attempt) => {
+    this.socket.on('reconnect', () => {
       this.updateStatus({ connected: true, reconnecting: false, reconnectAttempts: 0 });
-      this.logEvent('receive', 'reconnect', { attempt });
     });
 
     this.socket.on('reconnect_failed', () => {
-      console.error('[Socket] Reconnection failed');
-      this.updateStatus({ 
-        connected: false, 
-        reconnecting: false, 
+      this.updateStatus({
+        connected: false,
+        reconnecting: false,
         reconnectAttempts: 0,
         lastError: 'Reconnection failed after maximum attempts'
       });
@@ -72,16 +59,14 @@ class SocketService {
 
     this.socket.on('error', (error) => {
       console.error('[Socket] Error:', error);
-      this.updateStatus({ 
-        ...this.connectionStatus, 
-        lastError: error.message || 'Unknown error' 
+      this.updateStatus({
+        ...this.connectionStatus,
+        lastError: error.message || 'Unknown error'
       });
-      this.logEvent('receive', 'error', error);
     });
 
     this.socket.on('chat:error', (error) => {
       console.error('[Socket] Chat error:', error);
-      this.logEvent('receive', 'chat:error', error);
     });
 
     // Listen for presence events (backend emits only user:online with isOnline flag)
@@ -91,7 +76,6 @@ class SocketService {
       } else {
         this.onlineUsers.add(data.userId);
       }
-      this.logEvent('receive', 'user:online', data);
     });
 
     return this.socket;
@@ -118,14 +102,6 @@ class SocketService {
     return { ...this.connectionStatus };
   }
 
-  getEventLogs(): SocketEventLog[] {
-    return [...this.eventLogs];
-  }
-
-  clearEventLogs(): void {
-    this.eventLogs = [];
-  }
-
   isUserOnline(userId: string): boolean {
     return this.onlineUsers.has(userId);
   }
@@ -136,7 +112,6 @@ class SocketService {
 
   onStatusChange(callback: (status: SocketConnectionStatus) => void): () => void {
     this.statusListeners.push(callback);
-    // Return unsubscribe function
     return () => {
       this.statusListeners = this.statusListeners.filter(cb => cb !== callback);
     };
@@ -147,38 +122,15 @@ class SocketService {
     this.statusListeners.forEach(listener => listener(this.connectionStatus));
   }
 
-  private logEvent(type: 'emit' | 'receive', event: string, data?: unknown): void {
-    this.eventLogs.push({
-      timestamp: new Date(),
-      type,
-      event,
-      data,
-    });
-    
-    // Keep only last maxLogs entries
-    if (this.eventLogs.length > this.maxLogs) {
-      this.eventLogs = this.eventLogs.slice(-this.maxLogs);
-    }
-  }
-
   emit(event: string, data?: unknown): void {
     if (this.socket?.connected) {
       this.socket.emit(event, data);
-      this.logEvent('emit', event, data);
-    } else {
-      if (import.meta.env.DEV) {
-        console.warn(`[Socket] Cannot emit '${event}' - socket not connected`);
-      }
     }
   }
 
   on(event: string, callback: (...args: unknown[]) => void): void {
     if (this.socket) {
-      const wrappedCallback = (...args: unknown[]) => {
-        this.logEvent('receive', event, args);
-        callback(...args);
-      };
-      this.socket.on(event, wrappedCallback);
+      this.socket.on(event, callback);
     }
   }
 

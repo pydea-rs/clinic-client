@@ -73,7 +73,6 @@ export const ChatListPage: React.FC = () => {
       const data = await chatApi.list();
       setChats(data?.chats || []);
     } catch (error: unknown) {
-      console.error('Failed to load chats:', error);
       toast.error(getErrorMessage(error, 'Failed to load chats'));
     } finally {
       setLoading(false);

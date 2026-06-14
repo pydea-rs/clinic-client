@@ -2,13 +2,12 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../lib/stores/auth.store';
 import { authApi } from '../api/auth.api';
-import { 
-  MessageCircle, 
-  User, 
-  UserCheck, 
-  Shield, 
-  MessageSquare, 
-  Activity, 
+import {
+  MessageCircle,
+  User,
+  UserCheck,
+  Shield,
+  MessageSquare,
   LogOut,
   Menu,
   X
@@ -29,7 +28,6 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
     { label: 'Doctor', icon: UserCheck, path: '/doctor', role: 'DOCTOR' },
     { label: 'Admin', icon: Shield, path: '/admin', role: 'ADMIN' },
     { label: 'Chat', icon: MessageSquare, path: '/chat' },
-    { label: 'Debug', icon: Activity, path: '/debug' },
   ];
 
   const role = user?.role || 'NONE';

@@ -57,7 +57,6 @@ export const ChatRoomPage: React.FC = () => {
       setChatInfo(chatData);
       setMessages(messagesData.messages || []);
     } catch (error: unknown) {
-      console.error('Failed to load chat:', error);
       toast.error(getErrorMessage(error, 'Failed to load chat'));
     } finally {
       setLoading(false);

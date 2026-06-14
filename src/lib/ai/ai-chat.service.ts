@@ -1,5 +1,9 @@
 import { apiClient, getApiBaseUrl } from '../api/client';
 
+// AI endpoints involve Botpress cloud round-trips that are
+// significantly slower than local DB-backed endpoints.
+const AI_TIMEOUT_MS = 60_000;
+
 interface BotpressPayload {
   type?: string;
   text?: string;
@@ -17,15 +21,14 @@ export interface AiAgentMessage {
   createdAt?: string;
 }
 
-interface AiAgentSendResponse {
-  ok?: boolean;
-  [key: string]: unknown;
-}
-
 export class AiChatService {
   // Start a new conversation
   async startConversation(): Promise<string> {
-    const response = await apiClient.post<{ id: string }>('/ai-agents/start', {});
+    const response = await apiClient.post<{ id: string }>(
+      '/ai-agents/start',
+      {},
+      { timeout: AI_TIMEOUT_MS },
+    );
     const id = response.data?.id;
     if (!id) {
       throw new Error('Server did not return a conversation ID. Please try again.');
@@ -34,19 +37,22 @@ export class AiChatService {
   }
 
   // Send a message
-  async sendMessage(conversationId: string, text: string): Promise<AiAgentSendResponse> {
-    const response = await apiClient.post('/ai-agents/message', {
-      conversationId,
-      text,
-    });
-    return response.data;
+  async sendMessage(conversationId: string, text: string): Promise<void> {
+    await apiClient.post(
+      '/ai-agents/message',
+      { conversationId, text },
+      { timeout: AI_TIMEOUT_MS },
+    );
   }
 
   // Get messages for a conversation (polling fallback)
   async getMessages(conversationId: string, since?: Date): Promise<AiAgentMessage[]> {
     const response = await apiClient.get<AiAgentMessage[]>(
       `/ai-agents/messages/${conversationId}`,
-      since ? { params: { dateOffset: since.toISOString() } } : {},
+      {
+        timeout: AI_TIMEOUT_MS,
+        ...(since ? { params: { dateOffset: since.toISOString() } } : {}),
+      },
     );
     return Array.isArray(response.data) ? response.data : [];
   }

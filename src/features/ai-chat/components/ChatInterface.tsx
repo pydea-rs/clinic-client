@@ -4,7 +4,7 @@ import { Message } from './Message';
 import { TypingIndicator } from './TypingIndicator';
 import { MessageInput } from './MessageInput';
 import { useChat } from '../hooks/useChat';
-import { Loader2, MessageCircle } from 'lucide-react';
+import { Loader2, MessageCircle, RefreshCw } from 'lucide-react';
 
 interface ChatInterfaceProps {
   onLogout: () => Promise<void>;
@@ -35,18 +35,33 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onLogout }) => {
   }, [initializeChat]);
 
   if (!conversationId) {
+    const hasError = !!connectionStatus.error;
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center animate-fade-in">
         <div className="text-center animate-slide-in-up">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-xl animate-float">
-            <Loader2 className="w-8 h-8 animate-spin text-white" />
+          <div className={`w-16 h-16 ${hasError ? 'bg-gradient-to-br from-red-500 to-red-600' : 'bg-gradient-to-br from-blue-600 to-blue-700'} rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-xl animate-float`}>
+            {hasError
+              ? <RefreshCw className="w-8 h-8 text-white" />
+              : <Loader2 className="w-8 h-8 animate-spin text-white" />
+            }
           </div>
-          <p className="text-gray-600 font-medium text-lg">🤖 Initializing AI conversation...</p>
-          <div className="mt-4 flex justify-center gap-1">
-            <div className="w-2 h-2 bg-blue-400 rounded-full typing-dot"></div>
-            <div className="w-2 h-2 bg-blue-400 rounded-full typing-dot"></div>
-            <div className="w-2 h-2 bg-blue-400 rounded-full typing-dot"></div>
-          </div>
+          <p className="text-gray-600 font-medium text-lg">
+            {hasError ? connectionStatus.error : 'Initializing AI conversation...'}
+          </p>
+          {hasError ? (
+            <button
+              onClick={initializeChat}
+              className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-md"
+            >
+              Try Again
+            </button>
+          ) : (
+            <div className="mt-4 flex justify-center gap-1">
+              <div className="w-2 h-2 bg-blue-400 rounded-full typing-dot"></div>
+              <div className="w-2 h-2 bg-blue-400 rounded-full typing-dot"></div>
+              <div className="w-2 h-2 bg-blue-400 rounded-full typing-dot"></div>
+            </div>
+          )}
         </div>
       </div>
     );
