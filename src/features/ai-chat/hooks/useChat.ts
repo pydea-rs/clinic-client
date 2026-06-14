@@ -104,12 +104,15 @@ export const useChat = () => {
         typingTimeoutRef.current = null;
       }
 
-      // Insert the message immediately with empty text + isStreaming flag
+      // Insert the message immediately with empty text + isStreaming flag.
+      // Remove any in-progress streaming bot messages first — Botpress may
+      // fire multiple message_created events during composition; we only
+      // want the latest one.
       setChatState((prev) => ({
         ...prev,
         isTyping: false,
         messages: [
-          ...prev.messages,
+          ...prev.messages.filter((m) => !(m.isStreaming && !m.isUser)),
           { id, text: "", isUser: false, timestamp, isStreaming: true },
         ],
       }));
