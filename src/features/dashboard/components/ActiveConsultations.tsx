@@ -9,7 +9,7 @@ const statusColors: Record<string, string> = {
   PENDING_DOCTOR_REVIEW: 'bg-yellow-50 text-yellow-600',
   DOCTOR_DECIDED: 'bg-blue-50 text-blue-600',
   PENDING_PAYMENT: 'bg-orange-50 text-orange-600',
-  PAYMENT_CONFIRMED: 'bg-green-50 text-green-600',
+  PAYMENT_CONFIRMED: 'bg-emerald-50 text-emerald-600',
   IN_PROGRESS: 'bg-indigo-50 text-indigo-600',
   COMPLETED: 'bg-emerald-50 text-emerald-600',
   CANCELLED: 'bg-red-50 text-red-600',
@@ -27,7 +27,7 @@ export const ActiveConsultations: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl border p-5">
+      <div className="bg-white rounded-xl border border-gray-100 p-5">
         <h3 className="font-medium text-sm text-gray-900 mb-3">Active Consultations</h3>
         <div className="space-y-2">
           {[1, 2].map((i) => (
@@ -42,7 +42,7 @@ export const ActiveConsultations: React.FC = () => {
   const active = consultations.filter((c) => c.status !== 'COMPLETED' && c.status !== 'CANCELLED');
 
   return (
-    <div className="bg-white rounded-xl border p-5">
+    <div className="bg-white rounded-xl border border-gray-100 p-5">
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-medium text-sm text-gray-900">Active Consultations</h3>
         <Link to="/consultations" className="text-xs text-blue-600 hover:text-blue-700 font-medium">
@@ -56,7 +56,7 @@ export const ActiveConsultations: React.FC = () => {
           <p className="text-xs text-gray-400">No active consultations</p>
         </div>
       ) : (
-        <div className="space-y-1">
+        <div className="space-y-0.5">
           {active.map((consultation) => (
             <Link
               key={consultation.id}
@@ -76,7 +76,7 @@ export const ActiveConsultations: React.FC = () => {
                   Created {new Date(consultation.createdAt).toLocaleDateString()}
                 </p>
               </div>
-              <ChevronRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-500 flex-shrink-0" />
+              <ChevronRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-500 flex-shrink-0 transition-colors" />
             </Link>
           ))}
         </div>

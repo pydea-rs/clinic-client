@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { aiAgentsApi } from '../../../api/ai-agents.api';
-import { Bot, FileText, ChevronRight, MessageCircle } from 'lucide-react';
+import { Bot, ChevronRight, MessageCircle } from 'lucide-react';
 
 export const ConversationHistory: React.FC = () => {
   const { data, isLoading } = useQuery({
@@ -12,7 +12,7 @@ export const ConversationHistory: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl border p-5">
+      <div className="bg-white rounded-xl border border-gray-100 p-5">
         <h3 className="font-medium text-sm text-gray-900 mb-3">Recent AI Chats</h3>
         <div className="space-y-2">
           {[1, 2, 3].map((i) => (
@@ -26,7 +26,7 @@ export const ConversationHistory: React.FC = () => {
   const conversations = data?.data || [];
 
   return (
-    <div className="bg-white rounded-xl border p-5">
+    <div className="bg-white rounded-xl border border-gray-100 p-5">
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-medium text-sm text-gray-900">Recent AI Chats</h3>
         <Link to="/ai/history" className="text-xs text-blue-600 hover:text-blue-700 font-medium">
@@ -43,7 +43,7 @@ export const ConversationHistory: React.FC = () => {
           </Link>
         </div>
       ) : (
-        <div className="space-y-1">
+        <div className="space-y-0.5">
           {conversations.map((conv) => (
             <Link
               key={conv.id}
@@ -54,7 +54,7 @@ export const ConversationHistory: React.FC = () => {
                 <Bot className="w-3.5 h-3.5 text-blue-600" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-gray-900 truncate">
+                <p className="text-sm text-gray-800 truncate">
                   {conv.topic || `Chat — ${new Date(conv.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`}
                 </p>
                 <p className="text-[11px] text-gray-400">
@@ -62,11 +62,11 @@ export const ConversationHistory: React.FC = () => {
                 </p>
               </div>
               {conv.soap && (
-                <span className="px-1.5 py-0.5 bg-green-50 text-green-600 rounded text-[10px] font-medium flex-shrink-0">
+                <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-600 rounded text-[10px] font-medium flex-shrink-0">
                   SOAP
                 </span>
               )}
-              <ChevronRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-500 flex-shrink-0" />
+              <ChevronRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-500 flex-shrink-0 transition-colors" />
             </Link>
           ))}
         </div>

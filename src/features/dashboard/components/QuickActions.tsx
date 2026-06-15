@@ -9,21 +9,21 @@ export const QuickActions: React.FC = () => {
       description: 'Describe your symptoms',
       icon: Bot,
       to: '/ai/new',
-      color: 'bg-blue-600 hover:bg-blue-700',
+      gradient: 'from-blue-600 to-indigo-600',
     },
     {
       label: 'Find a Doctor',
       description: 'Browse specialists',
       icon: Search,
       to: '/doctors',
-      color: 'bg-emerald-600 hover:bg-emerald-700',
+      gradient: 'from-emerald-600 to-teal-600',
     },
     {
       label: 'Appointments',
       description: 'View your schedule',
       icon: Calendar,
       to: '/appointments',
-      color: 'bg-violet-600 hover:bg-violet-700',
+      gradient: 'from-violet-600 to-purple-600',
     },
   ];
 
@@ -33,9 +33,9 @@ export const QuickActions: React.FC = () => {
         <Link
           key={action.to}
           to={action.to}
-          className={`${action.color} rounded-xl p-4 text-white transition-colors`}
+          className={`bg-gradient-to-br ${action.gradient} rounded-xl p-4 text-white transition-all hover:shadow-lg hover:shadow-black/10 hover:-translate-y-0.5 btn-press`}
         >
-          <action.icon className="w-6 h-6 mb-2 opacity-90" />
+          <action.icon className="w-5 h-5 mb-2.5 opacity-90" />
           <div className="font-medium text-sm">{action.label}</div>
           <div className="text-xs opacity-70 mt-0.5">{action.description}</div>
         </Link>

@@ -18,7 +18,7 @@ export const ConversationHistoryPage: React.FC = () => {
   const totalPages = Math.ceil(total / limit);
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
+    <div className="p-6 max-w-3xl mx-auto animate-fade-in">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-xl font-semibold text-gray-900">Chat History</h1>
@@ -26,7 +26,7 @@ export const ConversationHistoryPage: React.FC = () => {
         </div>
         <Link
           to="/ai/new"
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition-colors btn-press"
         >
           <Plus className="w-4 h-4" />
           New Chat
@@ -50,7 +50,7 @@ export const ConversationHistoryPage: React.FC = () => {
         </div>
       ) : (
         <>
-          <div className="bg-white rounded-xl border divide-y">
+          <div className="bg-white rounded-xl border border-gray-100 divide-y divide-gray-50">
             {conversations.map((conv) => (
               <Link
                 key={conv.id}

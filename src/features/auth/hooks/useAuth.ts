@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '../../../lib/stores/auth.store';
 import { authApi } from '../../../api/auth.api';
+import { queryClient } from '../../../lib/queryClient';
 import { User } from '../../../lib/types/api';
 
 export const useAuth = (): {
@@ -63,6 +64,7 @@ export const useAuth = (): {
     try {
       await authApi.logout();
     } finally {
+      queryClient.clear();
       clearAuth();
       setIsLoading(false);
     }

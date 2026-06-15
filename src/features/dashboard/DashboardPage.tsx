@@ -11,13 +11,13 @@ export const DashboardPage: React.FC = () => {
   const isPatient = user?.role === 'PATIENT';
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-6">
+    <div className="p-6 max-w-6xl mx-auto space-y-5 animate-fade-in">
       {/* Welcome */}
       <div>
         <h1 className="text-xl font-semibold text-gray-900">
           Welcome back, {user?.firstname || 'User'}
         </h1>
-        <p className="text-sm text-gray-400 mt-0.5">
+        <p className="text-sm text-gray-500 mt-0.5">
           {isPatient
             ? 'Chat with AI about your symptoms or connect with a doctor.'
             : 'Manage your consultations and schedule.'}
@@ -27,7 +27,7 @@ export const DashboardPage: React.FC = () => {
       <QuickActions />
 
       {isPatient && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           <ConversationHistory />
           <RecentSOAPs />
         </div>

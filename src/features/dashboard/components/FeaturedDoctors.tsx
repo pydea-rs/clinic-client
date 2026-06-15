@@ -12,7 +12,7 @@ export const FeaturedDoctors: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl border p-5">
+      <div className="bg-white rounded-xl border border-gray-100 p-5">
         <h3 className="font-medium text-sm text-gray-900 mb-3">Featured Doctors</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {[1, 2, 3, 4].map((i) => (
@@ -27,7 +27,7 @@ export const FeaturedDoctors: React.FC = () => {
   if (doctors.length === 0) return null;
 
   return (
-    <div className="bg-white rounded-xl border p-5">
+    <div className="bg-white rounded-xl border border-gray-100 p-5">
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-medium text-sm text-gray-900">Featured Doctors</h3>
         <Link to="/doctors" className="text-xs text-blue-600 hover:text-blue-700 font-medium">
@@ -40,7 +40,7 @@ export const FeaturedDoctors: React.FC = () => {
           <Link
             key={doctor.id}
             to={`/doctor/${doctor.id}`}
-            className="border rounded-lg p-3 hover:border-blue-200 hover:bg-blue-50/30 transition-all group"
+            className="border border-gray-100 rounded-lg p-3 hover:border-blue-200 hover:bg-blue-50/30 transition-all group"
           >
             <div className="flex items-center gap-2 mb-1.5">
               <div className="w-7 h-7 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
