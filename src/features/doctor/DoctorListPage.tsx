@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { doctorApi } from '../../api/doctor.api';
-import { Link } from 'react-router-dom';
-import { Loader2, MapPin, Star, Search } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { Loader2, MapPin, Star, Search, FileText } from 'lucide-react';
 
 export const DoctorListPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const soapId = searchParams.get('soapId');
+  const initialSpecialty = searchParams.get('specialty') || '';
+
   const [page, setPage] = useState(1);
-  const [specialty, setSpecialty] = useState('');
+  const [specialty, setSpecialty] = useState(initialSpecialty);
   const [visitMethod, setVisitMethod] = useState('');
   const [location, setLocation] = useState('');
   const [search, setSearch] = useState('');
@@ -38,6 +42,16 @@ export const DoctorListPage: React.FC = () => {
       </div>
 
       <div className="max-w-6xl mx-auto px-6 py-8">
+        {/* SOAP Context Banner */}
+        {soapId && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex items-center gap-3">
+            <FileText className="w-5 h-5 text-blue-600 flex-shrink-0" />
+            <p className="text-blue-800 text-sm font-medium">
+              Based on your AI consultation{specialty ? `, we recommend a ${specialty.replace(/_/g, ' ')} specialist` : ', find a suitable doctor below'}.
+            </p>
+          </div>
+        )}
+
         {/* Filters */}
         <div className="bg-white rounded-lg shadow p-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -142,7 +156,7 @@ export const DoctorListPage: React.FC = () => {
                   {data?.doctors.map((doctor) => (
                     <Link
                       key={doctor.id}
-                      to={`/doctor/${doctor.id}`}
+                      to={`/doctor/${doctor.id}${soapId ? `?soapId=${soapId}` : ''}`}
                       className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow overflow-hidden"
                     >
                       <div className="p-6">

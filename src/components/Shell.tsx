@@ -3,14 +3,18 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../lib/stores/auth.store';
 import { authApi } from '../api/auth.api';
 import {
-  MessageCircle,
+  Home,
+  Bot,
+  Search,
+  Calendar,
   User,
   UserCheck,
   Shield,
   MessageSquare,
   LogOut,
   Menu,
-  X
+  X,
+  MessageCircle,
 } from 'lucide-react';
 
 interface ShellProps {
@@ -23,11 +27,14 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
   const navItems = [
-    { label: 'AI Chat', icon: MessageCircle, path: '/ai' },
+    { label: 'Dashboard', icon: Home, path: '/dashboard' },
+    { label: 'AI Chat', icon: Bot, path: '/ai' },
+    { label: 'Doctors', icon: Search, path: '/doctors' },
+    { label: 'Appointments', icon: Calendar, path: '/appointments', role: 'PATIENT' },
     { label: 'Patient', icon: User, path: '/patient', role: 'PATIENT' },
     { label: 'Doctor', icon: UserCheck, path: '/doctor', role: 'DOCTOR' },
-    { label: 'Admin', icon: Shield, path: '/admin', role: 'ADMIN' },
     { label: 'Chat', icon: MessageSquare, path: '/chat' },
+    { label: 'Admin', icon: Shield, path: '/admin', role: 'ADMIN' },
   ];
 
   const role = user?.role || 'NONE';

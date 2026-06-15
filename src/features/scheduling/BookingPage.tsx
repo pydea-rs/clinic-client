@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { schedulingApi } from '../../api/scheduling.api';
+import { consultationApi } from '../../api/consultation.api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../lib/api/error.utils';
 
@@ -12,6 +13,7 @@ interface BookingLocationState {
   };
   duration?: number;
   price?: number;
+  soapId?: string | null;
 }
 
 export const BookingPage: React.FC = () => {
@@ -48,12 +50,32 @@ export const BookingPage: React.FC = () => {
     setSlotDisplay(`${state.slot.date} ${state.slot.startTime} - ${state.slot.endTime}`);
   }, [location.state, doctorId, navigate]);
 
+  const soapId = (location.state as BookingLocationState | null)?.soapId;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
       await schedulingApi.bookAppointment(formData);
-      toast.success('Appointment booked successfully');
+
+      // If SOAP context exists, auto-create a consultation linking it
+      if (soapId) {
+        try {
+          const consultation = await consultationApi.create({
+            doctorId: formData.doctorId,
+            soapId,
+          });
+          toast.success('Appointment booked and consultation created!');
+          navigate(`/consultation/${consultation.id}`);
+          return;
+        } catch {
+          // Consultation link failed — still show appointment success
+          toast.success('Appointment booked! (Could not auto-link consultation)');
+        }
+      } else {
+        toast.success('Appointment booked successfully');
+      }
+
       navigate('/appointments');
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Failed to book appointment'));

@@ -57,6 +57,34 @@ export class AiChatService {
     return Array.isArray(response.data) ? response.data : [];
   }
 
+  // Start a brand-new conversation (ignore existing)
+  async startNewConversation(): Promise<string> {
+    const response = await apiClient.post<{ id: string }>(
+      '/ai-agents/start/new',
+      {},
+      { timeout: AI_TIMEOUT_MS },
+    );
+    const id = response.data?.id;
+    if (!id) {
+      throw new Error('Server did not return a conversation ID.');
+    }
+    return id;
+  }
+
+  // Resume a specific conversation by ID
+  async resumeConversation(conversationId: string): Promise<string> {
+    const response = await apiClient.post<{ id: string }>(
+      `/ai-agents/start/${conversationId}`,
+      {},
+      { timeout: AI_TIMEOUT_MS },
+    );
+    const id = response.data?.id;
+    if (!id) {
+      throw new Error('Server did not return a conversation ID.');
+    }
+    return id;
+  }
+
   // Get stream URL for SSE
   getStreamUrl(conversationId: string): string {
     const baseUrl = getApiBaseUrl();

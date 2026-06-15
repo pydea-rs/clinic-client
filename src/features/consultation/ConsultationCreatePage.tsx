@@ -38,8 +38,12 @@ export const ConsultationCreatePage: React.FC = () => {
 
   useEffect(() => {
     const doctorIdFromQuery = searchParams.get('doctorId');
+    const soapIdFromQuery = searchParams.get('soapId');
     if (doctorIdFromQuery) {
       setSelectedDoctor(doctorIdFromQuery);
+    }
+    if (soapIdFromQuery) {
+      setSelectedSoap(soapIdFromQuery);
     }
   }, [searchParams]);
 

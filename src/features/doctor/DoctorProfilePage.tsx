@@ -1,14 +1,16 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { doctorApi } from '../../api/doctor.api';
 import { reviewApi } from '../../api/review.api';
-import { Loader2, MapPin, CheckCircle, MessageSquare } from 'lucide-react';
+import { Loader2, MapPin, CheckCircle, MessageSquare, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { RatingWidget } from '../review/RatingWidget';
 
 export const DoctorProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const soapId = searchParams.get('soapId');
 
   const { data: doctor, isLoading: doctorLoading } = useQuery({
     queryKey: ['doctor', id],
@@ -100,13 +102,22 @@ export const DoctorProfilePage: React.FC = () => {
               )}
             </div>
 
-            <Link
-              to={`/patient/consultations/create?doctorId=${doctor.id}`}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center gap-2"
-            >
-              <MessageSquare className="w-5 h-5" />
-              Book Consultation
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                to={`/slots/${doctor.id}${soapId ? `?soapId=${soapId}` : ''}`}
+                className="px-5 py-3 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 font-medium flex items-center gap-2"
+              >
+                <Calendar className="w-5 h-5" />
+                View Slots
+              </Link>
+              <Link
+                to={`/patient/consultations/create?doctorId=${doctor.id}${soapId ? `&soapId=${soapId}` : ''}`}
+                className="px-5 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center gap-2"
+              >
+                <MessageSquare className="w-5 h-5" />
+                Book Consultation
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -217,10 +228,16 @@ export const DoctorProfilePage: React.FC = () => {
           <div className="col-span-1">
             {/* CTA */}
             <Link
-              to={`/patient/consultations/create?doctorId=${doctor.id}`}
-              className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-center block mb-6"
+              to={`/patient/consultations/create?doctorId=${doctor.id}${soapId ? `&soapId=${soapId}` : ''}`}
+              className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-center block mb-4"
             >
               Book Consultation
+            </Link>
+            <Link
+              to={`/slots/${doctor.id}${soapId ? `?soapId=${soapId}` : ''}`}
+              className="w-full px-6 py-3 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 font-medium text-center block mb-6"
+            >
+              View Available Slots
             </Link>
           </div>
         </div>

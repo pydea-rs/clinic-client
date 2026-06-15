@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { schedulingApi } from '../../api/scheduling.api';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { SlotDuration } from '../../lib/types/api';
 import { getErrorMessage } from '../../lib/api/error.utils';
@@ -8,6 +8,8 @@ import { getErrorMessage } from '../../lib/api/error.utils';
 export const SlotExplorer: React.FC = () => {
   const { doctorId } = useParams<{ doctorId: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const soapId = searchParams.get('soapId');
   const [slots, setSlots] = useState<Array<{ date: string; startTime: string; endTime: string; durationMinutes: number }>>([]);
   const [durations, setDurations] = useState<SlotDuration[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,7 +51,7 @@ export const SlotExplorer: React.FC = () => {
   const handleBook = () => {
     if (selectedSlot) {
       const selectedDurationPrice = durations.find((d) => d.minutes === selectedDuration)?.price;
-      navigate(`/booking/${doctorId}`, { state: { slot: selectedSlot, duration: selectedDuration, price: Number(selectedDurationPrice || 0) } });
+      navigate(`/booking/${doctorId}`, { state: { slot: selectedSlot, duration: selectedDuration, price: Number(selectedDurationPrice || 0), soapId } });
     }
   };
 

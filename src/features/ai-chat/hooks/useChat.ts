@@ -10,7 +10,14 @@ const POLLING_TRIGGER_DELAY_MS = 8000;
 const POLLING_INTERVAL_MS = 3000;
 const MAX_POLL_ATTEMPTS = 6;
 
-export const useChat = () => {
+export interface UseChatOptions {
+  conversationId?: string; // Resume a specific conversation
+  forceNew?: boolean;      // Force-start a brand-new conversation
+}
+
+type SoapReadyCallback = (data: { soapId: string; conversationId: string }) => void;
+
+export const useChat = (options?: UseChatOptions) => {
   const [chatState, setChatState] = useState<ChatState>({
     messages: [],
     conversationId: null,
@@ -27,14 +34,13 @@ export const useChat = () => {
   const lastUserMessageAtRef = useRef<number>(0);
   const isInitializingRef = useRef(false);
 
+  // SOAP ready callback ref
+  const soapReadyCallbackRef = useRef<SoapReadyCallback | null>(null);
+
   // ─── Delivery mode: 'sse' (default) or 'poll' ────────────────────────────────
-  // 'sse'  – long-lived SSE connection via listenConversation()
-  // 'poll' – client polls GET /ai-agents/messages/:id after every send
-  // Persisted to localStorage so the choice survives page reloads.
   const [deliveryMode, setDeliveryMode] = useState<'sse' | 'poll'>(
     () => (localStorage.getItem('bp_delivery_mode') as 'sse' | 'poll') ?? 'sse'
   );
-  // Ref mirrors state so callbacks always read the current value without stale closure
   const deliveryModeRef = useRef(deliveryMode);
 
   // Polling fallback
@@ -43,8 +49,6 @@ export const useChat = () => {
   const pollAttemptRef = useRef(0);
   const pollSinceRef = useRef<Date | null>(null);
   const isWaitingForBotRef = useRef(false);
-  // forcePollModeRef: set when server sends mode=poll via SSE
-  // (separate from user-chosen deliveryModeRef so both paths set poll mode)
   const forcePollModeRef = useRef(deliveryMode === 'poll');
 
   // Typewriter animation
@@ -104,10 +108,6 @@ export const useChat = () => {
         typingTimeoutRef.current = null;
       }
 
-      // Insert the message immediately with empty text + isStreaming flag.
-      // Remove any in-progress streaming bot messages first — Botpress may
-      // fire multiple message_created events during composition; we only
-      // want the latest one.
       setChatState((prev) => ({
         ...prev,
         isTyping: false,
@@ -190,7 +190,6 @@ export const useChat = () => {
     []
   );
 
-  // ─── Extract text from a raw Botpress message object (has .payload.text) ─────
   const extractBotMessageText = useCallback(
     (msgData: AiAgentMessage): string | null => {
       if (msgData.payload) {
@@ -206,7 +205,7 @@ export const useChat = () => {
   const startPolling = useCallback(
     (conversationId: string) => {
       if (pollIntervalRef.current) return;
-      pollSinceRef.current = new Date(Date.now() - 10000); // look back 10s to catch any missed reply
+      pollSinceRef.current = new Date(Date.now() - 10000);
       pollAttemptRef.current = 0;
 
       const poll = async () => {
@@ -225,7 +224,7 @@ export const useChat = () => {
                 text,
                 timestamp: first.createdAt ? new Date(first.createdAt) : new Date(),
               });
-              return; // addBotMessage calls stopPolling
+              return;
             }
           }
         } catch {
@@ -239,7 +238,6 @@ export const useChat = () => {
         }
       };
 
-      // Run first poll immediately, then repeat on interval
       void poll();
       pollIntervalRef.current = setInterval(() => {
         void poll();
@@ -248,37 +246,63 @@ export const useChat = () => {
     [addBotMessage, extractBotMessageText, stopPolling]
   );
 
+  // ─── Start conversation (supports resume, new, and default) ──────────────────
   const startConversation = useCallback(async () => {
     try {
-      const conversationId = await aiChatService.startConversation();
+      let conversationId: string;
+
+      if (options?.forceNew) {
+        conversationId = await aiChatService.startNewConversation();
+      } else if (options?.conversationId) {
+        conversationId = await aiChatService.resumeConversation(options.conversationId);
+      } else {
+        conversationId = await aiChatService.startConversation();
+      }
+
       if (!conversationId) throw new Error("No conversationId returned by server");
       setChatState((prev) => ({ ...prev, conversationId }));
+
+      // Load existing messages when resuming a conversation
+      if (options?.conversationId) {
+        try {
+          const existingMessages = await aiChatService.getMessages(conversationId);
+          if (existingMessages.length > 0) {
+            const formattedMessages: Message[] = existingMessages.map((msg) => {
+              const text = extractBotMessageText(msg) || '';
+              return {
+                id: msg.id || Date.now().toString() + Math.random().toString(36).substring(2, 11),
+                text,
+                isUser: false,
+                timestamp: msg.createdAt ? new Date(msg.createdAt) : new Date(),
+              };
+            });
+            setChatState((prev) => ({ ...prev, messages: formattedMessages }));
+          }
+        } catch {
+          // Not critical — user can still chat
+        }
+      }
+
       return conversationId;
     } catch {
       toast.error("Failed to start conversation. Please check your connection.");
       updateConnectionStatus({ error: "Failed to start conversation" });
     }
-  }, [updateConnectionStatus]);
+  }, [updateConnectionStatus, options?.forceNew, options?.conversationId, extractBotMessageText]);
 
+  // ─── SSE connection ──────────────────────────────────────────────────────────
   const connectSSE = useCallback(
     (conversationId: string) => {
-      // ── Poll mode: no EventSource needed, mark as connected and return ──────
       if (deliveryModeRef.current === 'poll') {
         updateConnectionStatus({ connected: true, error: undefined, reconnecting: false });
         return;
       }
 
-      // Cancel any pending reconnect from a previous onerror cycle.
-      // Without this, a stale timeout can fire after retry and replace
-      // the fresh EventSource with one pointing to the old conversation.
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
         reconnectTimeoutRef.current = null;
       }
 
-      // Close any existing SSE connection before opening a new one.
-      // This prevents the old EventSource from listening to a stale conversation
-      // when the user retries or when a new conversation is started.
       if (eventSourceRef.current) {
         eventSourceRef.current.close();
         eventSourceRef.current = null;
@@ -294,7 +318,6 @@ export const useChat = () => {
         reconnectAttempts.current = 0;
       };
 
-      // Connection confirmation
       eventSource.addEventListener("connected", (e: MessageEvent) => {
         try {
           const data = JSON.parse(e.data as string) as Record<string, unknown>;
@@ -310,9 +333,6 @@ export const useChat = () => {
         }
       });
 
-      // Server-side delivery mode switch:
-      // If BOTPRESS_DELIVERY_MODE=poll is set, the server sends this event and
-      // closes the SSE connection immediately. We switch to pure polling.
       eventSource.addEventListener("mode", (e: MessageEvent) => {
         try {
           const data = JSON.parse(e.data as string) as Record<string, unknown>;
@@ -330,7 +350,6 @@ export const useChat = () => {
         }
       });
 
-      // Bot reply via SSE
       eventSource.addEventListener("message_created", (e: MessageEvent) => {
         try {
           const messageData = JSON.parse(e.data as string) as Record<string, unknown>;
@@ -361,7 +380,6 @@ export const useChat = () => {
         }
       });
 
-      // Incremental update to existing bot message
       eventSource.addEventListener("message_updated", (e: MessageEvent) => {
         try {
           const messageData = JSON.parse(e.data as string) as Record<string, unknown>;
@@ -391,15 +409,19 @@ export const useChat = () => {
         }
       });
 
-      // Unified error handler — handles BOTH:
-      //   (a) Server-sent `event: error` (has .data with JSON payload) — show toast, don't reconnect
-      //   (b) Transport-level network errors (no .data) — reconnect with backoff
-      // Note: addEventListener("error") fires for BOTH types per the EventSource spec.
-      // We intentionally do NOT set onerror separately to avoid double-handling.
+      // ─── SOAP ready event ─────────────────────────────────────────────────────
+      eventSource.addEventListener("soap_ready", (e: MessageEvent) => {
+        try {
+          const data = JSON.parse(e.data as string) as { soapId: string; conversationId: string };
+          soapReadyCallbackRef.current?.(data);
+        } catch {
+          // ignore
+        }
+      });
+
       eventSource.addEventListener("error", (errorEvent) => {
         const serverData = (errorEvent as MessageEvent).data;
 
-        // (a) Server-sent application error — recoverable, just show toast
         if (serverData !== undefined && serverData !== null) {
           try {
             const parsed = JSON.parse(serverData as string) as Record<string, unknown>;
@@ -411,9 +433,6 @@ export const useChat = () => {
           return;
         }
 
-        // (b) Transport error — reconnect with exponential backoff
-        // Guard: skip if this EventSource was already replaced by a newer one
-        // (e.g., user clicked Retry while the old one was closing)
         if (eventSourceRef.current !== eventSource) return;
 
         updateConnectionStatus({ connected: false, reconnecting: true });
@@ -444,11 +463,9 @@ export const useChat = () => {
   );
 
   // Use refs for values accessed inside sendMessage to avoid stale closures
-  // and unnecessary re-creations of the callback.
   const conversationIdRef = useRef<string | null>(null);
   const isSendingRef = useRef(false);
 
-  // Keep refs in sync with state
   useEffect(() => {
     conversationIdRef.current = chatState.conversationId;
   }, [chatState.conversationId]);
@@ -473,8 +490,6 @@ export const useChat = () => {
         setChatState((prev) => ({ ...prev, isTyping: true }));
         if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
 
-        // Polling fallback: if SSE doesn't deliver a reply, start polling after N ms.
-        // In poll mode (forcePollModeRef) skip the delay and poll immediately.
         isWaitingForBotRef.current = true;
         if (pollTriggerTimeoutRef.current) clearTimeout(pollTriggerTimeoutRef.current);
         if (forcePollModeRef.current) {
@@ -487,7 +502,6 @@ export const useChat = () => {
           }, POLLING_TRIGGER_DELAY_MS);
         }
 
-        // Hard timeout: give up after 60s regardless
         typingTimeoutRef.current = setTimeout(() => {
           stopPolling();
           setChatState((prev) => ({ ...prev, isTyping: false }));
@@ -515,7 +529,6 @@ export const useChat = () => {
   const initializeChat = useCallback(async () => {
     if (isInitializingRef.current) return;
     isInitializingRef.current = true;
-    // Clear previous error so the UI shows loading state immediately on retry
     updateConnectionStatus({ error: undefined });
     try {
       const conversationId = await startConversation();
@@ -541,5 +554,17 @@ export const useChat = () => {
     return () => { disconnect(); };
   }, [disconnect]);
 
-  return { ...chatState, deliveryMode, toggleDeliveryMode, initializeChat, sendMessage, disconnect };
+  const setSoapReadyCallback = useCallback((cb: SoapReadyCallback | null) => {
+    soapReadyCallbackRef.current = cb;
+  }, []);
+
+  return {
+    ...chatState,
+    deliveryMode,
+    toggleDeliveryMode,
+    initializeChat,
+    sendMessage,
+    disconnect,
+    setSoapReadyCallback,
+  };
 };
