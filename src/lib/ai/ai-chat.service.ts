@@ -10,6 +10,13 @@ interface BotpressPayload {
   markdown?: string;
 }
 
+export interface ConversationHistoryMessage {
+  id: string;
+  role: 'user' | 'bot';
+  text: string;
+  createdAt: string;
+}
+
 export interface AiAgentMessage {
   id?: string;
   text?: string;
@@ -45,7 +52,7 @@ export class AiChatService {
     );
   }
 
-  // Get messages for a conversation (polling fallback)
+  // Get messages for a conversation (polling fallback — bot messages only)
   async getMessages(conversationId: string, since?: Date): Promise<AiAgentMessage[]> {
     const response = await apiClient.get<AiAgentMessage[]>(
       `/ai-agents/messages/${conversationId}`,
@@ -53,6 +60,15 @@ export class AiChatService {
         timeout: AI_TIMEOUT_MS,
         ...(since ? { params: { dateOffset: since.toISOString() } } : {}),
       },
+    );
+    return Array.isArray(response.data) ? response.data : [];
+  }
+
+  // Get full conversation history (user + bot messages, chronological)
+  async getConversationHistory(conversationId: string): Promise<ConversationHistoryMessage[]> {
+    const response = await apiClient.get<ConversationHistoryMessage[]>(
+      `/ai-agents/history/${conversationId}`,
+      { timeout: AI_TIMEOUT_MS },
     );
     return Array.isArray(response.data) ? response.data : [];
   }

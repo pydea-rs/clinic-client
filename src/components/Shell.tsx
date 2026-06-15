@@ -14,7 +14,7 @@ import {
   LogOut,
   Menu,
   X,
-  MessageCircle,
+  Stethoscope,
 } from 'lucide-react';
 
 interface ShellProps {
@@ -56,77 +56,80 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="h-screen flex flex-col bg-gray-50 overflow-hidden">
       {/* Mobile Header */}
-      <div className="lg:hidden bg-white border-b p-4 flex items-center justify-between">
+      <div className="lg:hidden bg-white border-b px-4 py-3 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-2">
-          <MessageCircle className="w-6 h-6 text-blue-600" />
+          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+            <Stethoscope className="w-4 h-4 text-white" />
+          </div>
           <span className="font-bold text-lg">AI-Clinic</span>
         </div>
-        <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-2">
-          {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-2 hover:bg-gray-100 rounded-lg">
+          {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
       </div>
 
-      <div className="flex">
+      <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
-        <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r transform transition-transform duration-300 lg:translate-x-0 ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-          <div className="p-6 border-b flex items-center gap-2">
-            <MessageCircle className="w-6 h-6 text-blue-600" />
-            <span className="font-bold text-xl">AI-Clinic</span>
+        <aside className={`fixed lg:relative inset-y-0 left-0 z-50 w-64 bg-white border-r flex flex-col transform transition-transform duration-300 lg:translate-x-0 flex-shrink-0 ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+          {/* Logo - hidden on mobile since mobile header shows it */}
+          <div className="hidden lg:flex p-5 border-b items-center gap-2.5">
+            <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center">
+              <Stethoscope className="w-5 h-5 text-white" />
+            </div>
+            <span className="font-bold text-lg text-gray-900">AI-Clinic</span>
           </div>
 
-          <nav className="p-4 space-y-1">
+          <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
             {filteredNavItems.map((item) => {
-              const isActive = location.pathname === item.path || location.pathname.startsWith(item.path);
+              const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
+              const isExactOrChild = location.pathname === item.path || location.pathname.startsWith(item.path);
               return (
                 <Link
                   key={item.path}
                   to={item.path}
                   onClick={() => setIsMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                    isActive 
-                      ? 'bg-blue-50 text-blue-600 font-medium' 
-                      : 'text-gray-600 hover:bg-gray-50'
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                    isExactOrChild
+                      ? 'bg-blue-50 text-blue-700 font-medium'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                   }`}
                 >
-                  <item.icon className="w-5 h-5" />
+                  <item.icon className={`w-[18px] h-[18px] ${isActive ? 'text-blue-600' : ''}`} />
                   {item.label}
                 </Link>
               );
             })}
           </nav>
 
-          <div className="absolute bottom-0 w-full p-4 border-t">
+          <div className="p-3 border-t mt-auto">
             {isAuthenticated && user && (
-              <div className="mb-4">
-                <div className="text-sm text-gray-500 mb-1">Logged in as</div>
-                <div className="font-medium">{user.firstname} {user.lastname}</div>
-                <div className="text-xs text-gray-400">{user.role}</div>
+              <div className="px-3 py-2 mb-2">
+                <div className="font-medium text-sm text-gray-900">{user.firstname} {user.lastname}</div>
+                <div className="text-xs text-gray-400 mt-0.5">{user.role}</div>
               </div>
             )}
             <button
-              onClick={() => {
-                void handleLogout();
-              }}
-              className="flex items-center gap-2 w-full px-4 py-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              onClick={() => { void handleLogout(); }}
+              className="flex items-center gap-2.5 w-full px-3 py-2.5 text-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
             >
-              <LogOut className="w-5 h-5" />
+              <LogOut className="w-[18px] h-[18px]" />
               Logout
             </button>
           </div>
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 lg:ml-64">
+        <main className="flex-1 overflow-auto">
           {children}
         </main>
       </div>
 
       {/* Overlay for mobile */}
       {isMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+        <div
+          className="fixed inset-0 bg-black/40 z-40 lg:hidden"
           onClick={() => setIsMenuOpen(false)}
         />
       )}

@@ -265,17 +265,18 @@ export const useChat = (options?: UseChatOptions) => {
       // Load existing messages when resuming a conversation
       if (options?.conversationId) {
         try {
-          const existingMessages = await aiChatService.getMessages(conversationId);
-          if (existingMessages.length > 0) {
-            const formattedMessages: Message[] = existingMessages.map((msg) => {
-              const text = extractBotMessageText(msg) || '';
-              return {
-                id: msg.id || Date.now().toString() + Math.random().toString(36).substring(2, 11),
-                text,
-                isUser: false,
-                timestamp: msg.createdAt ? new Date(msg.createdAt) : new Date(),
-              };
-            });
+          const history = await aiChatService.getConversationHistory(conversationId);
+          if (history.length > 0) {
+            const formattedMessages: Message[] = history.map((msg) => ({
+              id: msg.id,
+              text: msg.text,
+              isUser: msg.role === 'user',
+              timestamp: new Date(msg.createdAt),
+            }));
+            // Mark all these as seen so typewriter doesn't animate them
+            for (const msg of history) {
+              if (msg.role === 'bot') seenBotMessageIds.current.add(msg.id);
+            }
             setChatState((prev) => ({ ...prev, messages: formattedMessages }));
           }
         } catch {
@@ -288,7 +289,7 @@ export const useChat = (options?: UseChatOptions) => {
       toast.error("Failed to start conversation. Please check your connection.");
       updateConnectionStatus({ error: "Failed to start conversation" });
     }
-  }, [updateConnectionStatus, options?.forceNew, options?.conversationId, extractBotMessageText]);
+  }, [updateConnectionStatus, options?.forceNew, options?.conversationId]);
 
   // ─── SSE connection ──────────────────────────────────────────────────────────
   const connectSSE = useCallback(

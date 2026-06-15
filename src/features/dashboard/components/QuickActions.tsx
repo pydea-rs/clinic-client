@@ -6,41 +6,38 @@ export const QuickActions: React.FC = () => {
   const actions = [
     {
       label: 'New AI Chat',
-      description: 'Describe your symptoms to our AI assistant',
+      description: 'Describe your symptoms',
       icon: Bot,
       to: '/ai/new',
-      color: 'from-blue-500 to-blue-600',
-      hoverColor: 'hover:from-blue-600 hover:to-blue-700',
+      color: 'bg-blue-600 hover:bg-blue-700',
     },
     {
       label: 'Find a Doctor',
-      description: 'Browse our network of specialists',
+      description: 'Browse specialists',
       icon: Search,
       to: '/doctors',
-      color: 'from-green-500 to-green-600',
-      hoverColor: 'hover:from-green-600 hover:to-green-700',
+      color: 'bg-emerald-600 hover:bg-emerald-700',
     },
     {
-      label: 'My Appointments',
-      description: 'View upcoming and past appointments',
+      label: 'Appointments',
+      description: 'View your schedule',
       icon: Calendar,
       to: '/appointments',
-      color: 'from-purple-500 to-purple-600',
-      hoverColor: 'hover:from-purple-600 hover:to-purple-700',
+      color: 'bg-violet-600 hover:bg-violet-700',
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
       {actions.map((action) => (
         <Link
           key={action.to}
           to={action.to}
-          className={`group relative overflow-hidden rounded-xl bg-gradient-to-br ${action.color} ${action.hoverColor} p-5 text-white shadow-md transition-all hover:shadow-lg`}
+          className={`${action.color} rounded-xl p-4 text-white transition-colors`}
         >
-          <action.icon className="w-8 h-8 mb-3 opacity-90" />
-          <h3 className="font-semibold text-lg">{action.label}</h3>
-          <p className="text-sm opacity-80 mt-1">{action.description}</p>
+          <action.icon className="w-6 h-6 mb-2 opacity-90" />
+          <div className="font-medium text-sm">{action.label}</div>
+          <div className="text-xs opacity-70 mt-0.5">{action.description}</div>
         </Link>
       ))}
     </div>
