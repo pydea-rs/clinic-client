@@ -278,7 +278,21 @@ export const useChat = (options?: UseChatOptions) => {
               text: msg.text,
               isUser: msg.role === 'user',
               timestamp: new Date(msg.createdAt),
+              choices: msg.choices?.map((c) => ({ label: c.label, value: c.value })),
             }));
+            // Detect which quick reply options were selected by matching user replies
+            for (let i = 0; i < formattedMessages.length - 1; i++) {
+              const botMsg = formattedMessages[i];
+              const nextMsg = formattedMessages[i + 1];
+              if (!botMsg.isUser && botMsg.choices?.length && nextMsg.isUser) {
+                const match = botMsg.choices.find((c) => c.value === nextMsg.text);
+                if (match) {
+                  botMsg.selectedChoice = match.value;
+                  nextMsg.isQuickReply = true;
+                  nextMsg.text = match.label;
+                }
+              }
+            }
             // Mark all these as seen so typewriter doesn't animate them
             for (const msg of history) {
               if (msg.role === 'bot') seenBotMessageIds.current.add(msg.id);
@@ -482,18 +496,33 @@ export const useChat = (options?: UseChatOptions) => {
   }, [chatState.isSending]);
 
   const sendMessage = useCallback(
-    async (text: string) => {
+    async (text: string, quickReply?: { value: string; label: string }) => {
       const convId = conversationIdRef.current;
       if (!convId || isSendingRef.current) return;
 
-      setChatState((prev) => ({ ...prev, isSending: true }));
-      addMessage({ text, isUser: true, timestamp: new Date() });
+      const displayText = quickReply?.label ?? text;
+      const apiText = quickReply?.value ?? text;
 
-      lastUserMessageRef.current = text;
+      // Close all open quick replies on bot messages
+      setChatState((prev) => {
+        const messages = [...prev.messages];
+        for (let i = messages.length - 1; i >= 0; i--) {
+          if (!messages[i].isUser && messages[i].choices?.length && !messages[i].selectedChoice) {
+            messages[i] = {
+              ...messages[i],
+              selectedChoice: quickReply?.value ?? '__closed__',
+            };
+          }
+        }
+        return { ...prev, messages, isSending: true };
+      });
+      addMessage({ text: displayText, isUser: true, timestamp: new Date(), isQuickReply: !!quickReply });
+
+      lastUserMessageRef.current = apiText;
       lastUserMessageAtRef.current = Date.now();
 
       try {
-        await aiChatService.sendMessage(convId, text);
+        await aiChatService.sendMessage(convId, apiText);
 
         setChatState((prev) => ({ ...prev, isTyping: true }));
         if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);

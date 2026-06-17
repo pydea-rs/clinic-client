@@ -10,6 +10,8 @@ export interface Message {
   timestamp: Date;
   isStreaming?: boolean;
   choices?: MessageChoice[];
+  isQuickReply?: boolean;
+  selectedChoice?: string;
 }
 
 export interface ConnectionStatus {

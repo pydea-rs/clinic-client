@@ -32,6 +32,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ forceNew }) => {
   const [soapData, setSoapData] = useState<{ id: string; assessment?: string; suggestedSpecialty?: string | null; triageLevel?: string | null } | null>(null);
   const [isNearBottom, setIsNearBottom] = useState(true);
 
+  const handleChoiceSelect = useCallback((value: string, label: string) => {
+    sendMessage(value, { value, label });
+  }, [sendMessage]);
+
   const handleSoapReady = useCallback(async (data: { soapId: string; conversationId: string }) => {
     try {
       const soap = await soapApi.getById(data.soapId);
@@ -146,7 +150,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ forceNew }) => {
 
           {/* Message list */}
           {messages.map((message) => (
-            <Message key={message.id} message={message} onChoiceSelect={sendMessage} />
+            <Message key={message.id} message={message} onChoiceSelect={handleChoiceSelect} />
           ))}
           {isTyping && <TypingIndicator />}
           <div ref={messagesEndRef} />

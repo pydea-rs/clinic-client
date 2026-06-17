@@ -13,6 +13,7 @@ export interface ConversationHistoryMessage {
   role: 'user' | 'bot';
   text: string;
   createdAt: string;
+  choices?: { label: string; value: string }[];
 }
 
 export interface AiAgentMessage {

@@ -6,7 +6,7 @@ import { Message as MessageType } from '../../../lib/types/chat';
 
 interface MessageProps {
   message: MessageType;
-  onChoiceSelect?: (value: string) => void;
+  onChoiceSelect?: (value: string, label: string) => void;
 }
 
 const CopyButton: React.FC<{ text: string }> = ({ text }) => {
@@ -112,17 +112,23 @@ export const Message: React.FC<MessageProps> = ({ message, onChoiceSelect }) => 
   };
 
   if (message.isUser) {
+    const bubbleClass = message.isQuickReply
+      ? 'bg-emerald-600 text-white'
+      : 'bg-blue-600 text-white';
+    const avatarBg = message.isQuickReply ? 'bg-emerald-100' : 'bg-blue-100';
+    const avatarIcon = message.isQuickReply ? 'text-emerald-600' : 'text-blue-600';
+
     return (
       <div className="flex justify-end mb-5 animate-msg-in">
         <div className="flex items-end gap-2.5 max-w-[85%] sm:max-w-[75%] lg:max-w-[65%]">
           <div>
-            <div className="bg-blue-600 text-white px-4 py-3 rounded-2xl rounded-br-sm shadow-sm">
+            <div className={`${bubbleClass} px-4 py-3 rounded-2xl rounded-br-sm shadow-sm`}>
               <p className="text-[14px] leading-relaxed whitespace-pre-wrap break-words">{message.text}</p>
             </div>
             <p className="text-[10px] text-gray-400 mt-1 text-right pr-1">{formatTime(message.timestamp)}</p>
           </div>
-          <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mb-5">
-            <User className="w-3.5 h-3.5 text-blue-600" />
+          <div className={`w-7 h-7 rounded-full ${avatarBg} flex items-center justify-center flex-shrink-0 mb-5`}>
+            <User className={`w-3.5 h-3.5 ${avatarIcon}`} />
           </div>
         </div>
       </div>
@@ -145,15 +151,38 @@ export const Message: React.FC<MessageProps> = ({ message, onChoiceSelect }) => 
             </div>
             {message.choices && message.choices.length > 0 && !message.isStreaming && (
               <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-100">
-                {message.choices.map((c) => (
-                  <button
-                    key={c.value}
-                    onClick={() => onChoiceSelect?.(c.value)}
-                    className="px-3.5 py-1.5 text-[13px] font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-full hover:bg-blue-100 hover:border-blue-300 transition-colors btn-press"
-                  >
-                    {c.label}
-                  </button>
-                ))}
+                {message.choices.map((c) => {
+                  const isSelected = message.selectedChoice === c.value;
+                  const isClosed = message.selectedChoice === '__closed__';
+                  const hasSelection = !!message.selectedChoice;
+
+                  if (hasSelection) {
+                    return (
+                      <span
+                        key={c.value}
+                        className={`px-3.5 py-1.5 text-[13px] font-medium rounded-full border ${
+                          isSelected
+                            ? 'text-emerald-700 bg-emerald-50 border-emerald-300'
+                            : isClosed
+                              ? 'text-gray-400 bg-gray-50 border-gray-200'
+                              : 'text-gray-400 bg-gray-50 border-gray-200 line-through'
+                        }`}
+                      >
+                        {c.label}
+                      </span>
+                    );
+                  }
+
+                  return (
+                    <button
+                      key={c.value}
+                      onClick={() => onChoiceSelect?.(c.value, c.label)}
+                      className="px-3.5 py-1.5 text-[13px] font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-full hover:bg-blue-100 hover:border-blue-300 transition-colors btn-press"
+                    >
+                      {c.label}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
