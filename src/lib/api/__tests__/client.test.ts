@@ -64,7 +64,7 @@ describe('API Client', () => {
   describe('Request Configuration', () => {
     it('should have correct base configuration', () => {
       expect(apiClient.defaults.baseURL).toBeDefined();
-      expect(apiClient.defaults.timeout).toBe(10000);
+      expect(apiClient.defaults.timeout).toBe(30000);
       expect(apiClient.defaults.withCredentials).toBe(true);
       expect(apiClient.defaults.headers['Content-Type']).toBe('application/json');
     });

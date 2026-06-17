@@ -22,8 +22,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ forceNew }) => {
     connectionStatus,
     isTyping,
     conversationId,
-    deliveryMode,
-    toggleDeliveryMode,
     initializeChat,
     sendMessage,
     setSoapReadyCallback,
@@ -111,9 +109,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ forceNew }) => {
     <div className="h-full flex flex-col bg-gray-50/80">
       <ChatHeader
         connectionStatus={connectionStatus}
-        deliveryMode={deliveryMode}
         onRetry={initializeChat}
-        onToggleDeliveryMode={toggleDeliveryMode}
       />
 
       {/* Messages area */}

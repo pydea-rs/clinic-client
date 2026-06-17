@@ -1,7 +1,5 @@
 import { apiClient, getApiBaseUrl } from '../api/client';
 
-// AI endpoints involve Botpress cloud round-trips that are
-// significantly slower than local DB-backed endpoints.
 const AI_TIMEOUT_MS = 60_000;
 
 interface BotpressPayload {
@@ -29,7 +27,6 @@ export interface AiAgentMessage {
 }
 
 export class AiChatService {
-  // Start a new conversation
   async startConversation(): Promise<string> {
     const response = await apiClient.post<{ id: string }>(
       '/ai-agents/start',
@@ -43,7 +40,6 @@ export class AiChatService {
     return id;
   }
 
-  // Send a message
   async sendMessage(conversationId: string, text: string): Promise<void> {
     await apiClient.post(
       '/ai-agents/message',
@@ -52,7 +48,6 @@ export class AiChatService {
     );
   }
 
-  // Get messages for a conversation (polling fallback — bot messages only)
   async getMessages(conversationId: string, since?: Date): Promise<AiAgentMessage[]> {
     const response = await apiClient.get<AiAgentMessage[]>(
       `/ai-agents/messages/${conversationId}`,
@@ -64,7 +59,6 @@ export class AiChatService {
     return Array.isArray(response.data) ? response.data : [];
   }
 
-  // Get full conversation history (user + bot messages, chronological)
   async getConversationHistory(conversationId: string): Promise<ConversationHistoryMessage[]> {
     const response = await apiClient.get<ConversationHistoryMessage[]>(
       `/ai-agents/history/${conversationId}`,
@@ -73,7 +67,6 @@ export class AiChatService {
     return Array.isArray(response.data) ? response.data : [];
   }
 
-  // Start a brand-new conversation (ignore existing)
   async startNewConversation(): Promise<string> {
     const response = await apiClient.post<{ id: string }>(
       '/ai-agents/start/new',
@@ -87,7 +80,6 @@ export class AiChatService {
     return id;
   }
 
-  // Resume a specific conversation by ID
   async resumeConversation(conversationId: string): Promise<string> {
     const response = await apiClient.post<{ id: string }>(
       `/ai-agents/start/${conversationId}`,
@@ -101,7 +93,6 @@ export class AiChatService {
     return id;
   }
 
-  // Get stream URL for SSE
   getStreamUrl(conversationId: string): string {
     const baseUrl = getApiBaseUrl();
     return `${baseUrl}/ai-agents/stream/${conversationId}`;

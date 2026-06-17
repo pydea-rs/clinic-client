@@ -3,9 +3,7 @@ import toast from "react-hot-toast";
 import { Message, MessageChoice, ChatState, ConnectionStatus } from "../../../lib/types/chat";
 import { aiChatService, AiAgentMessage } from "../../../lib/ai/ai-chat.service";
 
-// ─── Typewriter speed (ms between characters) ────────────────────────────────
 const TYPEWRITER_SPEED_MS = 14;
-// ─── Polling: start N ms after send if no SSE reply ──────────────────────────
 const POLLING_TRIGGER_DELAY_MS = 8000;
 const POLLING_INTERVAL_MS = 3000;
 const MAX_POLL_ATTEMPTS = 6;
@@ -34,16 +32,13 @@ export const useChat = (options?: UseChatOptions) => {
   const lastUserMessageAtRef = useRef<number>(0);
   const isInitializingRef = useRef(false);
 
-  // SOAP ready callback ref
   const soapReadyCallbackRef = useRef<SoapReadyCallback | null>(null);
 
-  // ─── Delivery mode: 'sse' (default) or 'poll' ────────────────────────────────
   const [deliveryMode, setDeliveryMode] = useState<'sse' | 'poll'>(
     () => (localStorage.getItem('bp_delivery_mode') as 'sse' | 'poll') ?? 'sse'
   );
   const deliveryModeRef = useRef(deliveryMode);
 
-  // Polling fallback
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const pollTriggerTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pollAttemptRef = useRef(0);
@@ -51,11 +46,9 @@ export const useChat = (options?: UseChatOptions) => {
   const isWaitingForBotRef = useRef(false);
   const forcePollModeRef = useRef(deliveryMode === 'poll');
 
-  // Typewriter animation
   const typewriterIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const seenBotMessageIds = useRef<Set<string>>(new Set());
 
-  // ─── Stop polling ─────────────────────────────────────────────────────────────
   const stopPolling = useCallback(() => {
     isWaitingForBotRef.current = false;
     if (pollIntervalRef.current) {
@@ -69,7 +62,6 @@ export const useChat = (options?: UseChatOptions) => {
     pollAttemptRef.current = 0;
   }, []);
 
-  // ─── Stop typewriter ──────────────────────────────────────────────────────────
   const stopTypewriter = useCallback(() => {
     if (typewriterIntervalRef.current) {
       clearInterval(typewriterIntervalRef.current);
@@ -87,7 +79,6 @@ export const useChat = (options?: UseChatOptions) => {
     []
   );
 
-  // ─── Toggle delivery mode (UI switch) ────────────────────────────────────────
   const toggleDeliveryMode = useCallback(() => {
     setDeliveryMode((prev) => {
       const next = prev === 'sse' ? 'poll' : 'sse';
@@ -98,7 +89,6 @@ export const useChat = (options?: UseChatOptions) => {
     });
   }, []);
 
-  // ─── Typewriter: reveal bot text character-by-character ───────────────────────
   const startTypewriter = useCallback(
     (id: string, fullText: string, timestamp: Date, choices?: MessageChoice[]) => {
       stopTypewriter();
@@ -142,7 +132,6 @@ export const useChat = (options?: UseChatOptions) => {
     [stopTypewriter]
   );
 
-  // ─── Add a bot message (deduplicates, stops poll, starts typewriter) ──────────
   const addBotMessage = useCallback(
     (msg: { id?: string; text: string; timestamp?: Date; choices?: MessageChoice[] }) => {
       const id =
@@ -158,7 +147,6 @@ export const useChat = (options?: UseChatOptions) => {
     [stopPolling, startTypewriter]
   );
 
-  // ─── Add a user message (no animation) ───────────────────────────────────────
   const addMessage = useCallback((message: Omit<Message, "id"> | Message) => {
     const newMessage: Message = {
       ...message,
@@ -220,7 +208,6 @@ export const useChat = (options?: UseChatOptions) => {
     [extractChoices]
   );
 
-  // ─── Polling fallback ─────────────────────────────────────────────────────────
   const startPolling = useCallback(
     (conversationId: string) => {
       if (pollIntervalRef.current) return;
@@ -263,10 +250,9 @@ export const useChat = (options?: UseChatOptions) => {
         void poll();
       }, POLLING_INTERVAL_MS);
     },
-    [addBotMessage, extractBotMessageText, stopPolling]
+    [addBotMessage, extractBotMessageText, extractBotMessageChoices, stopPolling]
   );
 
-  // ─── Start conversation (supports resume, new, and default) ──────────────────
   const startConversation = useCallback(async () => {
     try {
       let conversationId: string;
@@ -311,7 +297,6 @@ export const useChat = (options?: UseChatOptions) => {
     }
   }, [updateConnectionStatus, options?.forceNew, options?.conversationId]);
 
-  // ─── SSE connection ──────────────────────────────────────────────────────────
   const connectSSE = useCallback(
     (conversationId: string) => {
       if (deliveryModeRef.current === 'poll') {

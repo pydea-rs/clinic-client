@@ -5,9 +5,7 @@ import { ConnectionStatus as ConnectionStatusType } from '../../../lib/types/cha
 
 interface ChatHeaderProps {
   connectionStatus: ConnectionStatusType;
-  deliveryMode: 'sse' | 'poll';
   onRetry: () => void;
-  onToggleDeliveryMode: () => void;
 }
 
 export const ChatHeader: React.FC<ChatHeaderProps> = ({
