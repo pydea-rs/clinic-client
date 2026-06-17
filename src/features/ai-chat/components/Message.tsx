@@ -6,6 +6,7 @@ import { Message as MessageType } from '../../../lib/types/chat';
 
 interface MessageProps {
   message: MessageType;
+  onChoiceSelect?: (value: string) => void;
 }
 
 const CopyButton: React.FC<{ text: string }> = ({ text }) => {
@@ -104,7 +105,7 @@ const MarkdownContent: React.FC<{ text: string }> = ({ text }) => {
   );
 };
 
-export const Message: React.FC<MessageProps> = ({ message }) => {
+export const Message: React.FC<MessageProps> = ({ message, onChoiceSelect }) => {
   const formatTime = (date: Date) => {
     const d = new Date(date);
     return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -142,6 +143,19 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
                 <span className="inline-block w-0.5 h-4 ml-0.5 align-middle bg-blue-500 animate-pulse rounded-full" />
               )}
             </div>
+            {message.choices && message.choices.length > 0 && !message.isStreaming && (
+              <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-100">
+                {message.choices.map((c) => (
+                  <button
+                    key={c.value}
+                    onClick={() => onChoiceSelect?.(c.value)}
+                    className="px-3.5 py-1.5 text-[13px] font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-full hover:bg-blue-100 hover:border-blue-300 transition-colors btn-press"
+                  >
+                    {c.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           <p className="text-[10px] text-gray-400 mt-1 pl-1">{formatTime(message.timestamp)}</p>
         </div>

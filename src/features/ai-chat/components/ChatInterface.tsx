@@ -150,7 +150,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ forceNew }) => {
 
           {/* Message list */}
           {messages.map((message) => (
-            <Message key={message.id} message={message} />
+            <Message key={message.id} message={message} onChoiceSelect={sendMessage} />
           ))}
           {isTyping && <TypingIndicator />}
           <div ref={messagesEndRef} />

@@ -1,3 +1,8 @@
+export interface MessageChoice {
+  label: string;
+  value: string;
+}
+
 export interface Message {
   id: string;
   text: string;
@@ -5,6 +10,8 @@ export interface Message {
   timestamp: Date;
   /** true while the typewriter animation is still revealing characters */
   isStreaming?: boolean;
+  /** Quick-reply / choice options sent by the bot */
+  choices?: MessageChoice[];
 }
 
 export interface ConnectionStatus {

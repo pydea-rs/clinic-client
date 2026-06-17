@@ -8,16 +8,6 @@
   </head>
   <body>
     <div id="root"></div>
-    <script>
-      // Catch module loading errors (fires before React mounts)
-      window.addEventListener('error', function(e) {
-        var root = document.getElementById('root');
-        if (root && !root.hasChildNodes()) {
-          root.innerHTML = '<pre style="color:red;padding:2rem;white-space:pre-wrap;font-size:14px">'
-            + 'App failed to load:\n' + (e.error ? e.error.stack : e.message) + '</pre>';
-        }
-      });
-    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

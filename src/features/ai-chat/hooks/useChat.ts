@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import toast from "react-hot-toast";
-import { Message, ChatState, ConnectionStatus } from "../../../lib/types/chat";
+import { Message, MessageChoice, ChatState, ConnectionStatus } from "../../../lib/types/chat";
 import { aiChatService, AiAgentMessage } from "../../../lib/ai/ai-chat.service";
 
 // ─── Typewriter speed (ms between characters) ────────────────────────────────
@@ -100,7 +100,7 @@ export const useChat = (options?: UseChatOptions) => {
 
   // ─── Typewriter: reveal bot text character-by-character ───────────────────────
   const startTypewriter = useCallback(
-    (id: string, fullText: string, timestamp: Date) => {
+    (id: string, fullText: string, timestamp: Date, choices?: MessageChoice[]) => {
       stopTypewriter();
 
       if (typingTimeoutRef.current) {
@@ -113,7 +113,7 @@ export const useChat = (options?: UseChatOptions) => {
         isTyping: false,
         messages: [
           ...prev.messages.filter((m) => !(m.isStreaming && !m.isUser)),
-          { id, text: "", isUser: false, timestamp, isStreaming: true },
+          { id, text: "", isUser: false, timestamp, isStreaming: true, choices },
         ],
       }));
 
@@ -144,7 +144,7 @@ export const useChat = (options?: UseChatOptions) => {
 
   // ─── Add a bot message (deduplicates, stops poll, starts typewriter) ──────────
   const addBotMessage = useCallback(
-    (msg: { id?: string; text: string; timestamp?: Date }) => {
+    (msg: { id?: string; text: string; timestamp?: Date; choices?: MessageChoice[] }) => {
       const id =
         msg.id ??
         Date.now().toString() + Math.random().toString(36).substring(2, 11);
@@ -153,7 +153,7 @@ export const useChat = (options?: UseChatOptions) => {
       seenBotMessageIds.current.add(id);
 
       stopPolling();
-      startTypewriter(id, msg.text, msg.timestamp ?? new Date());
+      startTypewriter(id, msg.text, msg.timestamp ?? new Date(), msg.choices);
     },
     [stopPolling, startTypewriter]
   );
@@ -190,6 +190,18 @@ export const useChat = (options?: UseChatOptions) => {
     []
   );
 
+  const extractChoices = useCallback(
+    (payload: Record<string, unknown> | null | undefined): MessageChoice[] | undefined => {
+      if (!payload) return undefined;
+      const opts = payload.options;
+      if (!Array.isArray(opts) || opts.length === 0) return undefined;
+      return opts
+        .filter((o: any) => typeof o?.label === "string" && typeof o?.value === "string")
+        .map((o: any) => ({ label: o.label as string, value: o.value as string }));
+    },
+    []
+  );
+
   const extractBotMessageText = useCallback(
     (msgData: AiAgentMessage): string | null => {
       if (msgData.payload) {
@@ -199,6 +211,13 @@ export const useChat = (options?: UseChatOptions) => {
       return extractMessageText(msgData as unknown as Record<string, unknown>);
     },
     [extractMessageText]
+  );
+
+  const extractBotMessageChoices = useCallback(
+    (msgData: AiAgentMessage): MessageChoice[] | undefined => {
+      return extractChoices(msgData.payload as Record<string, unknown> | undefined);
+    },
+    [extractChoices]
   );
 
   // ─── Polling fallback ─────────────────────────────────────────────────────────
@@ -223,6 +242,7 @@ export const useChat = (options?: UseChatOptions) => {
                 id: first.id,
                 text,
                 timestamp: first.createdAt ? new Date(first.createdAt) : new Date(),
+                choices: extractBotMessageChoices(first),
               });
               return;
             }
@@ -354,8 +374,9 @@ export const useChat = (options?: UseChatOptions) => {
       eventSource.addEventListener("message_created", (e: MessageEvent) => {
         try {
           const messageData = JSON.parse(e.data as string) as Record<string, unknown>;
+          const payload = messageData?.payload as Record<string, unknown> | undefined;
           const text =
-            extractMessageText(messageData?.payload as Record<string, unknown>) ??
+            extractMessageText(payload) ??
             extractMessageText(messageData);
           if (!text) return;
 
@@ -375,6 +396,7 @@ export const useChat = (options?: UseChatOptions) => {
             timestamp: messageData.createdAt
               ? new Date(messageData.createdAt as string)
               : new Date(),
+            choices: extractChoices(payload),
           });
         } catch {
           // ignore
