@@ -1,8 +1,19 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { patientApi } from '../../api/patient.api';
 import { Loader2, FileText, Calendar, Tag } from 'lucide-react';
+
+const mdComponents = {
+  p: ({ children }: any) => <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>,
+  strong: ({ children }: any) => <strong className="font-semibold">{children}</strong>,
+  em: ({ children }: any) => <em className="italic">{children}</em>,
+  ul: ({ children }: any) => <ul className="mb-2 last:mb-0 ml-4 space-y-0.5 list-disc">{children}</ul>,
+  ol: ({ children }: any) => <ol className="mb-2 last:mb-0 ml-4 space-y-0.5 list-decimal">{children}</ol>,
+  li: ({ children }: any) => <li className="leading-relaxed">{children}</li>,
+};
 
 export const SOAPDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -79,7 +90,9 @@ export const SOAPDetailPage: React.FC = () => {
             <Tag className="w-5 h-5 text-blue-600" />
             <h2 className="text-xl font-bold text-gray-900">Subjective</h2>
           </div>
-          <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{soap.subjective}</p>
+          <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{soap.subjective}</ReactMarkdown>
+          </div>
         </div>
 
         {/* Objective */}
@@ -88,7 +101,9 @@ export const SOAPDetailPage: React.FC = () => {
             <Tag className="w-5 h-5 text-green-600" />
             <h2 className="text-xl font-bold text-gray-900">Objective</h2>
           </div>
-          <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{soap.objective}</p>
+          <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{soap.objective}</ReactMarkdown>
+          </div>
         </div>
 
         {/* Assessment */}
@@ -97,7 +112,9 @@ export const SOAPDetailPage: React.FC = () => {
             <Tag className="w-5 h-5 text-purple-600" />
             <h2 className="text-xl font-bold text-gray-900">Assessment</h2>
           </div>
-          <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{soap.assessment}</p>
+          <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{soap.assessment}</ReactMarkdown>
+          </div>
         </div>
 
         {/* Plan */}
@@ -106,7 +123,9 @@ export const SOAPDetailPage: React.FC = () => {
             <Tag className="w-5 h-5 text-orange-600" />
             <h2 className="text-xl font-bold text-gray-900">Plan</h2>
           </div>
-          <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{soap.plan}</p>
+          <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{soap.plan}</ReactMarkdown>
+          </div>
         </div>
 
         {/* Triage */}
@@ -116,7 +135,9 @@ export const SOAPDetailPage: React.FC = () => {
               <Tag className="w-5 h-5 text-red-600" />
               <h2 className="text-xl font-bold text-gray-900">Triage</h2>
             </div>
-            <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{soap.triage}</p>
+            <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
+              <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{soap.triage}</ReactMarkdown>
+            </div>
           </div>
         )}
 

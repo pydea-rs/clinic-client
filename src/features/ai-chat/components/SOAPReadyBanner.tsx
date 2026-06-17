@@ -1,4 +1,6 @@
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { FileText, Search, X, AlertTriangle, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface SOAPReadyBannerProps {
@@ -52,7 +54,9 @@ export const SOAPReadyBanner: React.FC<SOAPReadyBannerProps> = ({
                 )}
               </div>
               {assessment && (
-                <p className="text-xs text-gray-500 mt-1 line-clamp-2">{assessment}</p>
+                <div className="text-xs text-gray-500 mt-1 line-clamp-2 [&_p]:mb-0 [&_strong]:font-semibold">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ p: ({ children }: any) => <span>{children}</span> }}>{assessment}</ReactMarkdown>
+                </div>
               )}
               <div className="flex gap-2 mt-2.5">
                 <button

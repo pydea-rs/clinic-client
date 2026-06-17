@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { soapApi } from '../../../api/soap.api';
 import { FileText, Search, AlertTriangle, CheckCircle, AlertCircle } from 'lucide-react';
 
@@ -70,7 +72,9 @@ export const RecentSOAPs: React.FC = () => {
                   </span>
                 </div>
                 {soap.assessment && (
-                  <p className="text-xs text-gray-500 line-clamp-2 mb-2">{soap.assessment}</p>
+                  <div className="text-xs text-gray-500 line-clamp-2 mb-2 [&_p]:mb-0 [&_strong]:font-semibold">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ p: ({ children }: any) => <span>{children}</span> }}>{soap.assessment}</ReactMarkdown>
+                  </div>
                 )}
                 <div className="flex gap-3">
                   <Link
