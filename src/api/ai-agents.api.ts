@@ -55,4 +55,15 @@ export const aiAgentsApi = {
     );
     return response.data;
   },
+
+  renameConversation: async (
+    conversationId: string,
+    topic: string,
+  ): Promise<AiConversation> => {
+    const response = await apiClient.patch(
+      `/ai-agents/conversations/${conversationId}/rename`,
+      { topic },
+    );
+    return response.data;
+  },
 };
