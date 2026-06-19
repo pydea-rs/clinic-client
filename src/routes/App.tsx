@@ -129,8 +129,8 @@ function App() {
 
           {/* Unsupported modules placeholders */}
           <Route path="/calls" element={<AuthGuard><Shell><PlaceholderPage title="Calls & WebRTC" phase="Phase 6 pending" /></Shell></AuthGuard>} />
-          <Route path="/notifications" element={<AuthGuard><Shell><PlaceholderPage title="Notifications" phase="Phase 7 pending" /></Shell></AuthGuard>} />
-          <Route path="/payment" element={<AuthGuard><Shell><PlaceholderPage title="Payment" phase="Phase 8 pending" /></Shell></AuthGuard>} />
+          <Route path="/notifications" element={<AuthGuard><Shell><PlaceholderPage title="Notifications" phase="Frontend pending" /></Shell></AuthGuard>} />
+          <Route path="/payment" element={<AuthGuard><Shell><PlaceholderPage title="Payment" phase="Frontend pending" /></Shell></AuthGuard>} />
           <Route path="/nurse" element={<AuthGuard><Shell><PlaceholderPage title="Nurse Management" phase="Phase 9 pending" /></Shell></AuthGuard>} />
 
           {/* 404 */}

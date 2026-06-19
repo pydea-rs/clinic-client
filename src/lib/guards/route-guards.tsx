@@ -76,7 +76,7 @@ export const AdminGuard: React.FC<GuardProps> = ({ children }) => {
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
-  if (!user?.isAdmin) {
+  if (!user?.isAdmin && !user?.isSuperAdmin) {
     return <Navigate to="/" replace />;
   }
 
