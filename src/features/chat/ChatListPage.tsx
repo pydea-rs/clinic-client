@@ -5,35 +5,10 @@ import { socketService } from '../../lib/socket/socket.service';
 import { useAuthStore } from '../../lib/stores/auth.store';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../lib/api/error.utils';
-
-interface ChatWithParticipants {
-  id: string;
-  topic?: string;
-  consultationId?: string;
-  createdAt: string;
-  updatedAt: string;
-  closedAt?: string;
-  participants?: Array<{
-    userId: string;
-    user?: {
-      id: string;
-      firstname: string;
-      lastname: string;
-      email: string;
-    };
-    joinedAt: string;
-    lastSeenAt?: string;
-  }>;
-  lastMessage?: {
-    content: string;
-    createdAt: string;
-    senderId: string;
-  };
-  unreadCount?: number;
-}
+import { Chat } from '../../lib/types/api';
 
 export const ChatListPage: React.FC = () => {
-  const [chats, setChats] = useState<ChatWithParticipants[]>([]);
+  const [chats, setChats] = useState<Chat[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newChatParticipantId, setNewChatParticipantId] = useState('');
@@ -103,7 +78,7 @@ export const ChatListPage: React.FC = () => {
     }
   };
 
-  const getOtherParticipant = (chat: ChatWithParticipants) => {
+  const getOtherParticipant = (chat: Chat) => {
     if (!chat.participants || !user) return null;
     return chat.participants.find(p => p.userId !== user.id);
   };

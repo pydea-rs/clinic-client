@@ -12,22 +12,6 @@ interface TypingUser {
   name?: string;
 }
 
-type ChatParticipant = {
-  userId: string;
-  joinedAt: string;
-  lastSeenAt?: string;
-  user?: {
-    id: string;
-    firstname: string;
-    lastname: string;
-    email: string;
-  };
-};
-
-type ChatWithParticipants = Chat & {
-  participants?: ChatParticipant[];
-};
-
 export const ChatRoomPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -38,8 +22,9 @@ export const ChatRoomPage: React.FC = () => {
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
-  const [chatInfo, setChatInfo] = useState<ChatWithParticipants | null>(null);
+  const [chatInfo, setChatInfo] = useState<Chat | null>(null);
   const [onlineParticipants, setOnlineParticipants] = useState<Set<string>>(new Set());
+  const [socketConnected, setSocketConnected] = useState(socketService.isConnected());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastTypingStateRef = useRef<boolean>(false);
@@ -175,8 +160,13 @@ export const ChatRoomPage: React.FC = () => {
     socket.on('chat:deleted', handleDeleted);
     socket.on('user:online', handleUserOnline);
 
+    const unsubStatus = socketService.onStatusChange((status) => {
+      setSocketConnected(status.connected);
+    });
+
     return () => {
       socketService.leaveRoom(id);
+      unsubStatus();
 
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
@@ -354,7 +344,7 @@ export const ChatRoomPage: React.FC = () => {
         </div>
         
         <div className="text-sm text-gray-500">
-          {socketService.isConnected() ? (
+          {socketConnected ? (
             <span className="text-green-600">● Connected</span>
           ) : (
             <span className="text-red-600">● Disconnected</span>

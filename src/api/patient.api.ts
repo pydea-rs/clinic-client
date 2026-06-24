@@ -34,11 +34,10 @@ export const patientApi = {
     return response.data;
   },
 
-  // Get patient consultations
-  getConsultations: async (page?: number, limit?: number): Promise<{ consultations: Consultation[]; total: number }> => {
+  getConsultations: async (page?: number, limit?: number, status?: string): Promise<{ consultations: Consultation[]; total: number }> => {
     const skip = page ? (page - 1) * (limit || 20) : undefined;
     const response = await apiClient.get('/patient/consultations', {
-      params: { skip, take: limit },
+      params: { skip, take: limit, status: status || undefined },
     });
     const result = response.data;
     return { consultations: result?.data || (Array.isArray(result) ? result : []), total: result?.total || 0 };

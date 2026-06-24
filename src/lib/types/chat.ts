@@ -3,7 +3,7 @@ export interface MessageChoice {
   value: string;
 }
 
-export interface Message {
+export interface AiChatMessage {
   id: string;
   text: string;
   isUser: boolean;
@@ -21,42 +21,9 @@ export interface ConnectionStatus {
 }
 
 export interface ChatState {
-  messages: Message[];
+  messages: AiChatMessage[];
   conversationId: string | null;
   connectionStatus: ConnectionStatus;
   isTyping: boolean;
   isSending: boolean;
-}
-
-export interface User {
-  id: string | number;
-  email: string;
-  name?: string;
-}
-
-export interface AuthState {
-  user: User | null;
-  isAuthenticated: boolean;
-}
-
-// API Types
-export interface StartConversationResponse {
-  id: string;
-}
-
-export interface SendMessageRequest {
-  conversationId: string;
-  text: string;
-}
-
-export interface SendMessageResponse {
-  success: boolean;
-  message?: string;
-}
-
-export interface ApiError {
-  message: string;
-  status?: number;
-  path?: string;
-  timestamp?: string;
 }

@@ -11,7 +11,7 @@ export const PatientConsultationsListPage: React.FC = () => {
 
   const { data, isLoading } = useQuery({
     queryKey: ['consultations', page, statusFilter],
-    queryFn: () => patientApi.getConsultations(page, limit),
+    queryFn: () => patientApi.getConsultations(page, limit, statusFilter || undefined),
   });
 
   const getStatusBadgeColor = (status: string) => {
@@ -36,9 +36,7 @@ export const PatientConsultationsListPage: React.FC = () => {
     );
   }
 
-  const filteredConsultations = statusFilter
-    ? data?.consultations.filter((c) => c.status === statusFilter) || []
-    : data?.consultations || [];
+  const consultations = data?.consultations || [];
 
   const totalPages = data ? Math.ceil(data.total / limit) : 1;
 
@@ -58,7 +56,7 @@ export const PatientConsultationsListPage: React.FC = () => {
       {/* Status Filter */}
       <div className="mb-6 flex gap-2">
         <button
-          onClick={() => setStatusFilter('')}
+          onClick={() => { setStatusFilter(''); setPage(1); }}
           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
             statusFilter === ''
               ? 'bg-blue-600 text-white'
@@ -70,7 +68,7 @@ export const PatientConsultationsListPage: React.FC = () => {
         {['CREATED', 'PENDING_DOCTOR_REVIEW', 'DOCTOR_DECIDED', 'PENDING_PAYMENT', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'].map((status) => (
           <button
             key={status}
-            onClick={() => setStatusFilter(status)}
+            onClick={() => { setStatusFilter(status); setPage(1); }}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               statusFilter === status
                 ? 'bg-blue-600 text-white'
@@ -96,14 +94,14 @@ export const PatientConsultationsListPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {filteredConsultations.length === 0 ? (
+              {consultations.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
                     No consultations found
                   </td>
                 </tr>
               ) : (
-                filteredConsultations.map((consultation) => (
+                consultations.map((consultation) => (
                   <tr key={consultation.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 text-sm font-mono text-gray-600">
                       {consultation.id.substring(0, 8)}...
@@ -134,7 +132,7 @@ export const PatientConsultationsListPage: React.FC = () => {
         </div>
 
         {/* Pagination */}
-        {filteredConsultations.length > 0 && (
+        {consultations.length > 0 && (
           <div className="px-6 py-4 border-t flex items-center justify-between">
             <p className="text-sm text-gray-600">
               Showing {(page - 1) * limit + 1} to {Math.min(page * limit, data?.total || 0)} of {data?.total || 0}

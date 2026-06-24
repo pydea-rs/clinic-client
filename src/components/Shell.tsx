@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../lib/stores/auth.store';
 import { authApi } from '../api/auth.api';
 import { queryClient } from '../lib/queryClient';
+import { socketService } from '../lib/socket/socket.service';
 import {
   Home,
   Bot,
@@ -45,6 +46,7 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
     try {
       await authApi.logout();
     } finally {
+      socketService.disconnect();
       queryClient.clear();
       clearAuth();
     }

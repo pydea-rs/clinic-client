@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import toast from "react-hot-toast";
-import { Message, MessageChoice, ChatState, ConnectionStatus } from "../../../lib/types/chat";
+import { AiChatMessage, MessageChoice, ChatState, ConnectionStatus } from "../../../lib/types/chat";
 import { aiChatService, AiAgentMessage } from "../../../lib/ai/ai-chat.service";
 
 const TYPEWRITER_SPEED_MS = 14;
@@ -147,8 +147,8 @@ export const useChat = (options?: UseChatOptions) => {
     [stopPolling, startTypewriter]
   );
 
-  const addMessage = useCallback((message: Omit<Message, "id"> | Message) => {
-    const newMessage: Message = {
+  const addMessage = useCallback((message: Omit<AiChatMessage, "id"> | AiChatMessage) => {
+    const newMessage: AiChatMessage = {
       ...message,
       id:
         ("id" in message ? message.id : undefined) ??
@@ -273,7 +273,7 @@ export const useChat = (options?: UseChatOptions) => {
         try {
           const history = await aiChatService.getConversationHistory(conversationId);
           if (history.length > 0) {
-            const formattedMessages: Message[] = history.map((msg) => ({
+            const formattedMessages: AiChatMessage[] = history.map((msg) => ({
               id: msg.id,
               text: msg.text,
               isUser: msg.role === 'user',

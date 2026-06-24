@@ -2,10 +2,10 @@ import React, { useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Bot, User, Copy, Check } from 'lucide-react';
-import { Message as MessageType } from '../../../lib/types/chat';
+import { AiChatMessage } from '../../../lib/types/chat';
 
 interface MessageProps {
-  message: MessageType;
+  message: AiChatMessage;
   onChoiceSelect?: (value: string, label: string) => void;
 }
 
@@ -13,9 +13,13 @@ const CopyButton: React.FC<{ text: string }> = ({ text }) => {
   const [copied, setCopied] = React.useState(false);
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard API may be unavailable in insecure contexts
+    }
   };
 
   return (

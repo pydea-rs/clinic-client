@@ -13,16 +13,27 @@ type UserUpdatePayload = {
 
 export const AdminUserManagementPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('');
+  const [page, setPage] = useState(1);
+  const limit = 20;
 
   useEffect(() => {
     const loadUsers = async () => {
+      setLoading(true);
       try {
-        const data = await adminApi.users.list();
+        const skip = (page - 1) * limit;
+        const data = await adminApi.users.list({
+          skip,
+          take: limit,
+          role: roleFilter || undefined,
+          search: searchTerm || undefined,
+        });
         setUsers(data.data || []);
+        setTotal(data.total || 0);
       } catch {
         toast.error('Failed to load users');
       } finally {
@@ -30,7 +41,7 @@ export const AdminUserManagementPage: React.FC = () => {
       }
     };
     loadUsers();
-  }, []);
+  }, [page, roleFilter, searchTerm]);
 
   const handleUpdateUser = async (id: string, payload: UserUpdatePayload) => {
     try {
@@ -79,14 +90,7 @@ export const AdminUserManagementPage: React.FC = () => {
     }
   };
 
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = 
-      user.firstname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.lastname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = roleFilter ? user.role === roleFilter : true;
-    return matchesSearch && matchesRole;
-  });
+  const totalPages = Math.ceil(total / limit);
 
   if (loading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
@@ -102,12 +106,12 @@ export const AdminUserManagementPage: React.FC = () => {
           type="text"
           placeholder="Search users..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
           className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
         />
         <select
           value={roleFilter}
-          onChange={(e) => setRoleFilter(e.target.value)}
+          onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}
           className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
         >
           <option value="">All Roles</option>
@@ -131,7 +135,7 @@ export const AdminUserManagementPage: React.FC = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {filteredUsers.map((user) => (
+            {users.map((user) => (
               <tr key={user.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3 text-sm font-medium">
                   {user.firstname} {user.lastname}
@@ -193,12 +197,39 @@ export const AdminUserManagementPage: React.FC = () => {
           </tbody>
         </table>
         
-        {filteredUsers.length === 0 && (
+        {users.length === 0 && (
           <div className="p-8 text-center text-gray-500">
             No users found matching your criteria
           </div>
         )}
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4">
+          <p className="text-sm text-gray-600">
+            Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)} of {total}
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <span className="px-3 py-1 text-sm text-gray-600">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Edit User Modal */}
       {editingUser && (

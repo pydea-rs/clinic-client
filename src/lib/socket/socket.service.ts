@@ -17,6 +17,7 @@ class SocketService {
   };
   private statusListeners: Array<(status: SocketConnectionStatus) => void> = [];
   private onlineUsers: Set<string> = new Set();
+  private pendingListeners: Array<{ event: string; callback: (...args: unknown[]) => void }> = [];
 
   connect(): Socket {
     if (this.socket?.connected) {
@@ -64,18 +65,16 @@ class SocketService {
     });
 
     this.socket.on('error', (error) => {
-      console.error('[Socket] Error:', error);
       this.updateStatus({
         ...this.connectionStatus,
         lastError: error.message || 'Unknown error'
       });
     });
 
-    this.socket.on('chat:error', (error) => {
-      console.error('[Socket] Chat error:', error);
+    this.socket.on('chat:error', () => {
+      // Error already visible via status listeners
     });
 
-    // Listen for presence events (backend emits only user:online with isOnline flag)
     this.socket.on('user:online', (data: { userId: string; isOnline?: boolean }) => {
       if (data.isOnline === false) {
         this.onlineUsers.delete(data.userId);
@@ -84,14 +83,22 @@ class SocketService {
       }
     });
 
+    // Flush any listeners that were registered before socket existed
+    for (const { event, callback } of this.pendingListeners) {
+      this.socket.on(event, callback);
+    }
+    this.pendingListeners = [];
+
     return this.socket;
   }
 
   disconnect(): void {
     if (this.socket) {
+      this.socket.removeAllListeners();
       this.socket.disconnect();
       this.socket = null;
       this.onlineUsers.clear();
+      this.pendingListeners = [];
       this.updateStatus({ connected: false, reconnecting: false, reconnectAttempts: 0 });
     }
   }
@@ -137,12 +144,19 @@ class SocketService {
   on(event: string, callback: (...args: unknown[]) => void): void {
     if (this.socket) {
       this.socket.on(event, callback);
+    } else {
+      this.pendingListeners.push({ event, callback });
     }
   }
 
   off(event: string, callback?: (...args: unknown[]) => void): void {
     if (this.socket) {
       this.socket.off(event, callback);
+    }
+    if (callback) {
+      this.pendingListeners = this.pendingListeners.filter(
+        p => !(p.event === event && p.callback === callback)
+      );
     }
   }
 

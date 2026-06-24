@@ -1,57 +1,9 @@
 import { apiClient } from '../lib/api/client';
+import { DoctorProfile, DoctorRating, DoctorDocument } from '../lib/types/api';
 
-export interface DoctorProfile {
-  id: number;
-  userId: string;
-  specialty: string;
-  secondarySpecialties?: string[];
-  startedAt?: string;
-  visitMethods?: string[];
-  visitTypes?: string[];
-  bio?: string;
-  clinicLocation?: string;
-  rating?: number;
-  totalReviews?: number;
-  verified?: boolean;
-  createdAt: string;
-  updatedAt: string;
-  user?: {
-    id: string;
-    firstname: string;
-    lastname: string;
-    email: string;
-    avatar?: string;
-  };
-}
-
-export interface DoctorRating {
-  averageRating: number | null;
-  totalReviews: number;
-  distribution: {
-    1: number;
-    2: number;
-    3: number;
-    4: number;
-    5: number;
-  };
-}
-
-export interface DoctorDocument {
-  id: number;
-  doctorId: number;
-  type: string;
-  fileUrl: string;
-  fileName?: string;
-  status: string;
-  reviewedAt?: string;
-  reviewedBy?: string;
-  rejectionReason?: string;
-  createdAt: string;
-  updatedAt: string;
-}
+export type { DoctorProfile, DoctorRating, DoctorDocument };
 
 export const doctorApi = {
-  // Get all doctors with filters
   getDoctors: async (params?: {
     specialty?: string;
     visitMethod?: string;
@@ -67,31 +19,26 @@ export const doctorApi = {
     return { doctors: result?.data || (Array.isArray(result) ? result : []), total: result?.total || 0 };
   },
 
-  // Get doctor by ID
   getDoctorById: async (doctorId: number | string): Promise<DoctorProfile> => {
     const response = await apiClient.get(`/doctor/${doctorId}`);
     return response.data;
   },
 
-  // Get doctor rating
   getDoctorRating: async (doctorId: number | string): Promise<DoctorRating> => {
     const response = await apiClient.get(`/doctor/${doctorId}/rating`);
     return response.data;
   },
 
-  // Create doctor profile
   createProfile: async (payload: Partial<DoctorProfile>): Promise<DoctorProfile> => {
     const response = await apiClient.post('/doctor', payload);
     return response.data;
   },
 
-  // Update doctor profile
   updateProfile: async (payload: Partial<DoctorProfile>): Promise<DoctorProfile> => {
     const response = await apiClient.patch('/doctor/profile', payload);
     return response.data;
   },
 
-  // Upload document
   uploadDocument: async (file: File, documentType: string): Promise<DoctorDocument> => {
     const formData = new FormData();
     formData.append('file', file);
@@ -100,13 +47,11 @@ export const doctorApi = {
     return response.data;
   },
 
-  // Get doctor documents
   getDocuments: async (): Promise<DoctorDocument[]> => {
     const response = await apiClient.get('/doctor/documents');
     return response.data;
   },
 
-  // Delete a doctor document
   deleteDocument: async (documentId: number): Promise<void> => {
     await apiClient.delete(`/doctor/documents/${documentId}`);
   },
