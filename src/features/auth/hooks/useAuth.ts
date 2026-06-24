@@ -9,7 +9,7 @@ export const useAuth = (): {
   isAuthenticated: boolean;
   initializing: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (payload: { firstname: string; lastname?: string; email: string; password: string; role?: string }) => Promise<void>;
+  register: (payload: { firstname: string; lastname: string; email: string; password: string; role?: string }) => Promise<void>;
   logout: () => Promise<void>;
 } => {
   const { user, isAuthenticated, initializing, setUser, setAuthenticated, setInitializing, clearAuth } = useAuthStore();
@@ -42,18 +42,24 @@ export const useAuth = (): {
       const me = await authApi.me();
       setUser(me);
       setAuthenticated(true);
+    } catch (error) {
+      clearAuth();
+      throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const register = async (payload: { firstname: string; lastname?: string; email: string; password: string; role?: string }) => {
+  const register = async (payload: { firstname: string; lastname: string; email: string; password: string; role?: string }) => {
     setIsLoading(true);
     try {
       await authApi.register(payload);
       const me = await authApi.me();
       setUser(me);
       setAuthenticated(true);
+    } catch (error) {
+      clearAuth();
+      throw error;
     } finally {
       setIsLoading(false);
     }

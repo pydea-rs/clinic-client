@@ -96,7 +96,7 @@ export class AiChatService {
 
   getStreamUrl(conversationId: string): string {
     const baseUrl = getApiBaseUrl();
-    return `${baseUrl}/ai-agents/stream/${conversationId}`;
+    return `${baseUrl}/ai-agents/stream/${encodeURIComponent(conversationId)}`;
   }
 }
 

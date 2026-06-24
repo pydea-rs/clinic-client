@@ -67,14 +67,14 @@ export const PatientSOAPListPage: React.FC = () => {
               {soap.subjective && (
                 <div>
                   <p className="text-gray-600">
-                    <span className="font-medium">Subjective:</span> {stripMarkdown(soap.subjective).substring(0, 100)}...
+                    <span className="font-medium">Subjective:</span> {stripMarkdown(soap.subjective).substring(0, 100)}{stripMarkdown(soap.subjective).length > 100 ? '...' : ''}
                   </p>
                 </div>
               )}
               {soap.assessment && (
                 <div>
                   <p className="text-gray-600">
-                    <span className="font-medium">Assessment:</span> {stripMarkdown(soap.assessment).substring(0, 100)}...
+                    <span className="font-medium">Assessment:</span> {stripMarkdown(soap.assessment).substring(0, 100)}{stripMarkdown(soap.assessment).length > 100 ? '...' : ''}
                   </p>
                 </div>
               )}

@@ -23,6 +23,12 @@ class SocketService {
       return this.socket;
     }
 
+    if (this.socket) {
+      this.socket.removeAllListeners();
+      this.socket.disconnect();
+      this.socket = null;
+    }
+
     this.socket = io(`${this.baseUrl}/chat`, {
       withCredentials: true,
       reconnection: true,

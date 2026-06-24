@@ -91,7 +91,11 @@ export const SOAPDetailPage: React.FC = () => {
             <h2 className="text-xl font-bold text-gray-900">Subjective</h2>
           </div>
           <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
-            <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{soap.subjective}</ReactMarkdown>
+            {soap.subjective ? (
+              <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{soap.subjective}</ReactMarkdown>
+            ) : (
+              <p className="text-gray-400 italic">No data available</p>
+            )}
           </div>
         </div>
 
@@ -102,7 +106,11 @@ export const SOAPDetailPage: React.FC = () => {
             <h2 className="text-xl font-bold text-gray-900">Objective</h2>
           </div>
           <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
-            <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{soap.objective}</ReactMarkdown>
+            {soap.objective ? (
+              <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{soap.objective}</ReactMarkdown>
+            ) : (
+              <p className="text-gray-400 italic">No data available</p>
+            )}
           </div>
         </div>
 
@@ -113,7 +121,11 @@ export const SOAPDetailPage: React.FC = () => {
             <h2 className="text-xl font-bold text-gray-900">Assessment</h2>
           </div>
           <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
-            <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{soap.assessment}</ReactMarkdown>
+            {soap.assessment ? (
+              <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{soap.assessment}</ReactMarkdown>
+            ) : (
+              <p className="text-gray-400 italic">No data available</p>
+            )}
           </div>
         </div>
 
@@ -124,7 +136,11 @@ export const SOAPDetailPage: React.FC = () => {
             <h2 className="text-xl font-bold text-gray-900">Plan</h2>
           </div>
           <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
-            <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{soap.plan}</ReactMarkdown>
+            {soap.plan ? (
+              <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{soap.plan}</ReactMarkdown>
+            ) : (
+              <p className="text-gray-400 italic">No data available</p>
+            )}
           </div>
         </div>
 

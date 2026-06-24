@@ -52,6 +52,24 @@ export const consultationApi = {
     return response.data;
   },
 
+  // Advance consultation to pending payment
+  advancePayment: async (consultationId: string): Promise<Consultation> => {
+    const response = await apiClient.patch(`/consultation/${consultationId}/advance-payment`);
+    return response.data;
+  },
+
+  // Confirm payment for consultation
+  confirmPayment: async (consultationId: string): Promise<Consultation> => {
+    const response = await apiClient.patch(`/consultation/${consultationId}/confirm-payment`);
+    return response.data;
+  },
+
+  // Start consultation (doctor)
+  start: async (consultationId: string): Promise<Consultation> => {
+    const response = await apiClient.patch(`/consultation/${consultationId}/start`);
+    return response.data;
+  },
+
   // Cancel consultation
   cancel: async (consultationId: string): Promise<Consultation> => {
     const response = await apiClient.patch(`/consultation/${consultationId}/cancel`);

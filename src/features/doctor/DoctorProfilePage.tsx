@@ -61,7 +61,9 @@ export const DoctorProfilePage: React.FC = () => {
           <div className="flex items-start justify-between">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold text-gray-900">Dr. {doctor.specialty}</h1>
+                <h1 className="text-3xl font-bold text-gray-900">
+                  Dr. {doctor.user ? `${doctor.user.firstname} ${doctor.user.lastname}` : doctor.specialty}
+                </h1>
                 {doctor.verified && (
                   <CheckCircle className="w-6 h-6 text-green-600" />
                 )}

@@ -156,13 +156,15 @@ export const DoctorListPage: React.FC = () => {
                   {data?.doctors.map((doctor) => (
                     <Link
                       key={doctor.id}
-                      to={`/doctor/${doctor.id}${soapId ? `?soapId=${soapId}` : ''}`}
+                      to={`/doctor/${doctor.id}${soapId ? `?soapId=${encodeURIComponent(soapId)}` : ''}`}
                       className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow overflow-hidden"
                     >
                       <div className="p-6">
                         <div className="flex items-start justify-between mb-4">
                           <div>
-                            <h3 className="font-bold text-lg text-gray-900">Dr. {doctor.specialty}</h3>
+                            <h3 className="font-bold text-lg text-gray-900">
+                              Dr. {doctor.user ? `${doctor.user.firstname} ${doctor.user.lastname}` : doctor.specialty}
+                            </h3>
                             <p className="text-sm text-gray-600">{doctor.specialty}</p>
                           </div>
                           {doctor.verified && (

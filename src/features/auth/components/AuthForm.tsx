@@ -38,13 +38,14 @@ export const AuthForm: React.FC<AuthFormProps> = ({
                 const [firstname, ...lastnameParts] = name
                     ?.trim()
                     ?.split(/ /g) ?? [undefined, undefined];
-                if (!firstname?.length || !lastnameParts?.length) {
+                const lastname = lastnameParts?.join(" ").trim();
+                if (!firstname?.length || !lastname?.length) {
                     toast.error("Firstname & lastname are both required!");
                     return;
                 }
                 await onRegister({
                     firstname,
-                    lastname: lastnameParts.join(" "),
+                    lastname,
                     email: email.trim(),
                     password,
                     role: "PATIENT",

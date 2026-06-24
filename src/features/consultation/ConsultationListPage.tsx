@@ -44,16 +44,13 @@ export const ConsultationListPage: React.FC = () => {
   };
 
   const canViewDetail = (consultation: Consultation) => {
-    // Patient can view all their consultations
+    if (user?.isAdmin) return true;
     if (user?.role === 'PATIENT') {
       return consultation.patientId === user.id;
     }
-    // Doctor can view consultations assigned to them
-    if (user?.role === 'DOCTOR') {
-      return consultation.doctorId === Number(user.id);
-    }
-    // Admin can view all
-    return user?.isAdmin;
+    // Doctors see all consultations assigned to them (backend filters by role)
+    if (user?.role === 'DOCTOR') return true;
+    return false;
   };
 
   if (loading) {

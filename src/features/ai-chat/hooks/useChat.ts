@@ -481,7 +481,7 @@ export const useChat = (options?: UseChatOptions) => {
 
       eventSourceRef.current = eventSource;
     },
-    [addBotMessage, updateConnectionStatus, extractMessageText]
+    [addBotMessage, updateConnectionStatus, extractMessageText, extractChoices]
   );
 
   // Use refs for values accessed inside sendMessage to avoid stale closures

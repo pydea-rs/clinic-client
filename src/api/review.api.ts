@@ -47,6 +47,19 @@ export const reviewApi = {
     return { reviews: result?.data || (Array.isArray(result) ? result : []), total: result?.total || 0 };
   },
 
+  // List all reviews (admin only)
+  getAllReviews: async (
+    page?: number,
+    limit?: number,
+  ): Promise<{ reviews: DoctorReview[]; total: number }> => {
+    const skip = page ? (page - 1) * (limit || 20) : undefined;
+    const response = await apiClient.get('/review/admin/all', {
+      params: { skip, take: limit },
+    });
+    const result = response.data;
+    return { reviews: result?.data || [], total: result?.total || 0 };
+  },
+
   // Get doctor rating
   getDoctorRating: async (doctorId: number): Promise<DoctorRating> => {
     const response = await apiClient.get(`/review/doctor/${doctorId}/rating`);

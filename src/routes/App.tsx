@@ -18,6 +18,7 @@ const DoctorWorkspacePage = React.lazy(() => import('../features/doctor/DoctorWo
 const DoctorDocumentsPage = React.lazy(() => import('../features/doctor/DoctorDocumentsPage').then(m => ({ default: m.DoctorDocumentsPage })));
 const DoctorListPage = React.lazy(() => import('../features/doctor/DoctorListPage').then(m => ({ default: m.DoctorListPage })));
 const DoctorProfilePage = React.lazy(() => import('../features/doctor/DoctorProfilePage').then(m => ({ default: m.DoctorProfilePage })));
+const DoctorProfileForm = React.lazy(() => import('../features/doctor/DoctorProfileForm').then(m => ({ default: m.DoctorProfileForm })));
 const ConsultationCreatePage = React.lazy(() => import('../features/consultation/ConsultationCreatePage').then(m => ({ default: m.ConsultationCreatePage })));
 const ConsultationListPage = React.lazy(() => import('../features/consultation/ConsultationListPage').then(m => ({ default: m.ConsultationListPage })));
 const ConsultationDetailPage = React.lazy(() => import('../features/consultation/ConsultationDetailPage').then(m => ({ default: m.ConsultationDetailPage })));
@@ -91,10 +92,8 @@ function App() {
           {/* Doctor routes */}
           <Route path="/doctor" element={<DoctorGuard><Navigate to="/doctor/workspace" replace /></DoctorGuard>} />
           <Route path="/doctors" element={<AuthGuard><Shell><LazyPage><DoctorListPage /></LazyPage></Shell></AuthGuard>} />
-          <Route path="/doctor/:id" element={<AuthGuard><Shell><LazyPage><DoctorProfilePage /></LazyPage></Shell></AuthGuard>} />
-          <Route path="/doctor/:id/review" element={<PatientGuard><Shell><LazyPage><ReviewCreatePage /></LazyPage></Shell></PatientGuard>} />
           <Route path="/doctor/workspace" element={<DoctorGuard><Shell><LazyPage><DoctorWorkspacePage /></LazyPage></Shell></DoctorGuard>} />
-          <Route path="/doctor/profile" element={<DoctorGuard><Shell><LazyPage><DoctorProfilePage /></LazyPage></Shell></DoctorGuard>} />
+          <Route path="/doctor/profile" element={<DoctorGuard><Shell><LazyPage><DoctorProfileForm /></LazyPage></Shell></DoctorGuard>} />
           <Route path="/doctor/documents" element={<DoctorGuard><Shell><LazyPage><DoctorDocumentsPage /></LazyPage></Shell></DoctorGuard>} />
           <Route path="/doctor/consultations" element={<DoctorGuard><Shell><LazyPage><ConsultationListPage /></LazyPage></Shell></DoctorGuard>} />
           <Route path="/doctor/scheduling" element={<DoctorGuard><Shell><LazyPage><SchedulingPage /></LazyPage></Shell></DoctorGuard>} />
@@ -103,6 +102,8 @@ function App() {
           <Route path="/doctor/scheduling/exceptions" element={<DoctorGuard><Shell><LazyPage><ExceptionsPanel /></LazyPage></Shell></DoctorGuard>} />
           <Route path="/doctor/chat" element={<DoctorGuard><Shell><LazyPage><ChatListPage /></LazyPage></Shell></DoctorGuard>} />
           <Route path="/doctor/settings" element={<DoctorGuard><Shell><div className="p-6 text-center text-gray-500">Settings Coming Soon</div></Shell></DoctorGuard>} />
+          <Route path="/doctor/:id/review" element={<PatientGuard><Shell><LazyPage><ReviewCreatePage /></LazyPage></Shell></PatientGuard>} />
+          <Route path="/doctor/:id" element={<AuthGuard><Shell><LazyPage><DoctorProfilePage /></LazyPage></Shell></AuthGuard>} />
 
           {/* Consultation routes */}
           <Route path="/consultations" element={<AuthGuard><Shell><LazyPage><ConsultationListPage /></LazyPage></Shell></AuthGuard>} />

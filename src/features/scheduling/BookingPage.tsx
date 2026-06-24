@@ -40,7 +40,7 @@ export const BookingPage: React.FC = () => {
     }
     setFormData({
       doctorId: Number(doctorId),
-      dateTime: `${state.slot.date}T${state.slot.startTime}:00.000Z`,
+      dateTime: new Date(`${state.slot.date}T${state.slot.startTime}`).toISOString(),
       durationMinutes: state.duration || 30,
       price: Number(state.price || 0),
       method: 'CHAT',

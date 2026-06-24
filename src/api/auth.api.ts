@@ -11,7 +11,7 @@ export const authApi = {
   // Register
   register: async (payload: {
     firstname: string;
-    lastname?: string;
+    lastname: string;
     email: string;
     password: string;
     role?: 'PATIENT' | 'DOCTOR';

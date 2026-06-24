@@ -35,7 +35,6 @@ export const ChatRoomPage: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
-  const [sending, setSending] = useState(false);
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
@@ -77,14 +76,23 @@ export const ChatRoomPage: React.FC = () => {
     const handleNewMessage = (data: { message: Message }) => {
       if (data?.message?.chatId === id) {
         setMessages(prev => {
-          // Avoid duplicates
           if (prev.some(m => String(m.id) === String(data.message.id))) {
             return prev;
+          }
+          // Replace optimistic message from same sender with real one
+          if (data.message.senderId === user?.id) {
+            const optimisticIdx = prev.findIndex(m =>
+              String(m.id).startsWith('temp-') && m.senderId === user?.id && m.content === data.message.content
+            );
+            if (optimisticIdx !== -1) {
+              const updated = [...prev];
+              updated[optimisticIdx] = data.message;
+              return updated;
+            }
           }
           return [...prev, data.message];
         });
 
-        // Mark as read if not from current user
         if (data.message.senderId !== user?.id) {
           socketService.markAsRead(id, String(data.message.id));
         }
@@ -168,8 +176,12 @@ export const ChatRoomPage: React.FC = () => {
     socket.on('user:online', handleUserOnline);
 
     return () => {
-      // Leave the chat room
       socketService.leaveRoom(id);
+
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
 
       socket.off('chat:message', handleNewMessage);
       socket.off('chat:typing', handleTyping);
@@ -217,20 +229,23 @@ export const ChatRoomPage: React.FC = () => {
   };
 
   const handleSend = async () => {
-    if (!content.trim() || !id) return;
-    
-    setSending(true);
+    if (!content.trim() || !id || !user) return;
+
+    const trimmed = content.trim();
     handleTyping(false);
-    
-    try {
-      // Send via REST API (will also trigger WebSocket event)
-      await chatApi.sendMessage(id, { content: content.trim() });
-      setContent('');
-    } catch (error: unknown) {
-      toast.error(getErrorMessage(error, 'Failed to send message'));
-    } finally {
-      setSending(false);
-    }
+
+    const optimisticMsg: Message = {
+      id: `temp-${Date.now()}`,
+      chatId: id,
+      senderId: user.id,
+      content: trimmed,
+      type: 'TEXT',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    setMessages(prev => [...prev, optimisticMsg]);
+    socketService.sendMessage(id, trimmed);
+    setContent('');
   };
 
   const handleEdit = (message: Message) => {
@@ -313,7 +328,7 @@ export const ChatRoomPage: React.FC = () => {
   const messageGroups = groupMessagesByDate();
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 animate-fade-in">
+    <div className="flex flex-col h-full bg-gray-50 animate-fade-in">
       {/* Header */}
       <div className="bg-white border-b px-6 py-4 flex items-center justify-between animate-slide-in-down">
         <div className="flex items-center gap-4">
@@ -466,14 +481,13 @@ export const ChatRoomPage: React.FC = () => {
             onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
             className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all-smooth"
             placeholder="Type a message..."
-            disabled={sending}
           />
           <button
             onClick={handleSend}
-            disabled={sending || !content.trim()}
+            disabled={!content.trim()}
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300 transition-all-smooth hover-lift btn-press"
           >
-            {sending ? 'Sending...' : 'Send'}
+            Send
           </button>
         </div>
       </div>

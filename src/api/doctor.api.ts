@@ -15,6 +15,13 @@ export interface DoctorProfile {
   verified?: boolean;
   createdAt: string;
   updatedAt: string;
+  user?: {
+    id: string;
+    firstname: string;
+    lastname: string;
+    email: string;
+    avatar?: string;
+  };
 }
 
 export interface DoctorRating {
@@ -89,9 +96,7 @@ export const doctorApi = {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('type', documentType);
-    const response = await apiClient.post('/doctor/documents', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    const response = await apiClient.post('/doctor/documents', formData);
     return response.data;
   },
 
@@ -99,5 +104,10 @@ export const doctorApi = {
   getDocuments: async (): Promise<DoctorDocument[]> => {
     const response = await apiClient.get('/doctor/documents');
     return response.data;
+  },
+
+  // Delete a doctor document
+  deleteDocument: async (documentId: number): Promise<void> => {
+    await apiClient.delete(`/doctor/documents/${documentId}`);
   },
 };

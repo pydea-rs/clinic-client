@@ -97,9 +97,9 @@ export const ConsultationDetailPage: React.FC = () => {
   };
 
   const canDecide = user?.role === 'DOCTOR' && consultation?.status === 'PENDING_DOCTOR_REVIEW';
-  const canComplete = user?.role === 'DOCTOR' && consultation?.status === 'DOCTOR_DECIDED';
-  const canCancel = (user?.role === 'PATIENT' || user?.role === 'DOCTOR') && 
-    ['CREATED', 'PENDING_DOCTOR_REVIEW', 'DOCTOR_DECIDED'].includes(consultation?.status);
+  const canComplete = user?.role === 'DOCTOR' && consultation?.status === 'IN_PROGRESS';
+  const canCancel = (user?.role === 'PATIENT' || user?.role === 'DOCTOR') &&
+    !!consultation?.status && ['CREATED', 'PENDING_DOCTOR_REVIEW', 'DOCTOR_DECIDED'].includes(consultation.status);
 
   if (loading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
