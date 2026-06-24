@@ -37,7 +37,7 @@ export const DoctorProfilePage: React.FC = () => {
   if (doctorLoading || ratingLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-brand-600" />
       </div>
     );
   }
@@ -56,7 +56,7 @@ export const DoctorProfilePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b">
+      <div className="card border-b rounded-none animate-fade-in">
         <div className="max-w-4xl mx-auto px-6 py-8">
           <div className="flex items-start justify-between">
             <div>
@@ -65,7 +65,7 @@ export const DoctorProfilePage: React.FC = () => {
                   Dr. {doctor.user ? `${doctor.user.firstname} ${doctor.user.lastname}` : doctor.specialty}
                 </h1>
                 {doctor.verified && (
-                  <CheckCircle className="w-6 h-6 text-green-600" />
+                  <CheckCircle className="w-6 h-6 text-emerald-500" />
                 )}
               </div>
               <p className="text-lg text-gray-600 mb-4">{doctor.specialty}</p>
@@ -107,14 +107,14 @@ export const DoctorProfilePage: React.FC = () => {
             <div className="flex items-center gap-2">
               <Link
                 to={`/slots/${doctor.id}${soapId ? `?soapId=${soapId}` : ''}`}
-                className="px-5 py-3 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 font-medium flex items-center gap-2"
+                className="btn-secondary px-5 py-3 flex items-center gap-2"
               >
                 <Calendar className="w-5 h-5" />
                 View Slots
               </Link>
               <Link
                 to={`/patient/consultations/create?doctorId=${doctor.id}${soapId ? `&soapId=${soapId}` : ''}`}
-                className="px-5 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center gap-2"
+                className="btn-primary px-5 py-3 flex items-center gap-2"
               >
                 <MessageSquare className="w-5 h-5" />
                 Book Consultation
@@ -131,14 +131,14 @@ export const DoctorProfilePage: React.FC = () => {
           <div className="col-span-2 space-y-8">
             {/* Bio */}
             {doctor.bio && (
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="card p-6 animate-slide-in-up" style={{ animationDelay: '0ms' }}>
                 <h2 className="text-xl font-bold text-gray-900 mb-4">About</h2>
                 <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{doctor.bio}</p>
               </div>
             )}
 
             {/* Specialties */}
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="card p-6 animate-slide-in-up" style={{ animationDelay: '50ms' }}>
               <h2 className="text-xl font-bold text-gray-900 mb-4">Specialties</h2>
               <div className="space-y-3">
                 <div>
@@ -150,7 +150,7 @@ export const DoctorProfilePage: React.FC = () => {
                     <p className="text-sm text-gray-600 mb-2">Secondary</p>
                     <div className="flex flex-wrap gap-2">
                       {doctor.secondarySpecialties.map((spec) => (
-                        <span key={spec} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                        <span key={spec} className="badge badge-blue">
                           {spec}
                         </span>
                       ))}
@@ -161,7 +161,7 @@ export const DoctorProfilePage: React.FC = () => {
             </div>
 
             {/* Visit Information */}
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="card p-6 animate-slide-in-up" style={{ animationDelay: '100ms' }}>
               <h2 className="text-xl font-bold text-gray-900 mb-4">Visit Information</h2>
               <div className="grid grid-cols-2 gap-6">
                 {doctor.visitMethods && doctor.visitMethods.length > 0 && (
@@ -169,7 +169,7 @@ export const DoctorProfilePage: React.FC = () => {
                     <p className="text-sm text-gray-600 mb-2">Visit Methods</p>
                     <div className="flex flex-wrap gap-2">
                       {doctor.visitMethods.map((method) => (
-                        <span key={method} className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                        <span key={method} className="badge badge-green">
                           {method}
                         </span>
                       ))}
@@ -181,7 +181,7 @@ export const DoctorProfilePage: React.FC = () => {
                     <p className="text-sm text-gray-600 mb-2">Visit Types</p>
                     <div className="flex flex-wrap gap-2">
                       {doctor.visitTypes.map((type) => (
-                        <span key={type} className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
+                        <span key={type} className="badge badge-purple">
                           {type}
                         </span>
                       ))}
@@ -193,7 +193,7 @@ export const DoctorProfilePage: React.FC = () => {
 
             {/* Experience */}
             {doctor.startedAt && (
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="card p-6 animate-slide-in-up" style={{ animationDelay: '150ms' }}>
                 <h2 className="text-xl font-bold text-gray-900 mb-4">Experience</h2>
                 <p className="text-gray-700">
                   Practicing since {new Date(doctor.startedAt).getFullYear()}
@@ -202,12 +202,12 @@ export const DoctorProfilePage: React.FC = () => {
             )}
 
             {/* Reviews Section */}
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="card p-6 animate-slide-in-up" style={{ animationDelay: '200ms' }}>
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-gray-900">Reviews</h2>
                 <Link
                   to={`/doctor/${id}/reviews`}
-                  className="text-blue-600 hover:underline"
+                  className="text-brand-600 hover:text-brand-700 hover:underline font-medium transition-colors"
                 >
                   View all reviews
                 </Link>
@@ -231,13 +231,13 @@ export const DoctorProfilePage: React.FC = () => {
             {/* CTA */}
             <Link
               to={`/patient/consultations/create?doctorId=${doctor.id}${soapId ? `&soapId=${soapId}` : ''}`}
-              className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-center block mb-4"
+              className="btn-primary w-full px-6 py-3 text-center block mb-4"
             >
               Book Consultation
             </Link>
             <Link
               to={`/slots/${doctor.id}${soapId ? `?soapId=${soapId}` : ''}`}
-              className="w-full px-6 py-3 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 font-medium text-center block mb-6"
+              className="btn-secondary w-full px-6 py-3 text-center block mb-6"
             >
               View Available Slots
             </Link>

@@ -78,12 +78,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ forceNew }) => {
   if (!conversationId) {
     const hasError = !!connectionStatus.error;
     return (
-      <div className="flex items-center justify-center h-full bg-gray-50">
-        <div className="text-center animate-fade-in">
-          <div className={`w-14 h-14 ${hasError ? 'bg-red-50' : 'bg-blue-50'} rounded-2xl flex items-center justify-center mx-auto mb-4`}>
+      <div className="flex items-center justify-center h-full bg-gradient-to-b from-gray-50 to-brand-50/30">
+        <div className="text-center animate-scale-in">
+          <div className={`w-14 h-14 ${hasError ? 'bg-red-50 ring-1 ring-red-100' : 'bg-brand-50 ring-1 ring-brand-100'} rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-soft`}>
             {hasError
               ? <RefreshCw className="w-6 h-6 text-red-500" />
-              : <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+              : <Loader2 className="w-6 h-6 animate-spin text-brand-600" />
             }
           </div>
           <p className="text-gray-600 text-sm font-medium">
@@ -92,7 +92,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ forceNew }) => {
           {hasError && (
             <button
               onClick={initializeChat}
-              className="mt-3 px-5 py-2 bg-blue-600 text-white text-sm rounded-lg font-medium hover:bg-blue-700 transition-colors btn-press"
+              className="mt-4 btn-primary px-6 py-2.5 text-sm"
             >
               Retry
             </button>
@@ -110,7 +110,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ forceNew }) => {
   ];
 
   return (
-    <div className="h-full flex flex-col bg-gray-50/80">
+    <div className="h-full flex flex-col bg-gradient-to-b from-gray-50/80 to-brand-50/20">
       <ChatHeader
         connectionStatus={connectionStatus}
         onRetry={initializeChat}
@@ -126,21 +126,23 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ forceNew }) => {
           {/* Welcome state */}
           {messages.length === 0 && !isTyping && (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center animate-fade-in">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-blue-500/20">
+              <div className="w-16 h-16 bg-gradient-to-br from-brand-500 to-brand-700 rounded-2xl flex items-center justify-center mb-6 shadow-soft-lg shadow-brand-500/20 animate-float">
                 <Stethoscope className="w-8 h-8 text-white" />
               </div>
               <h2 className="text-xl font-semibold text-gray-900 mb-2">How can I help you today?</h2>
               <p className="text-sm text-gray-500 max-w-md mb-8 leading-relaxed">
                 Describe your symptoms or health concerns. I'll help assess your condition and guide you to the right care.
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full max-w-lg">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-lg stagger-children">
                 {suggestions.map((s) => (
                   <button
                     key={s.text}
                     onClick={() => sendMessage(s.text)}
-                    className="flex items-center gap-3 p-3.5 text-left text-sm text-gray-600 bg-white border border-gray-200 rounded-xl hover:border-blue-300 hover:bg-blue-50/50 hover:text-gray-900 transition-all group btn-press"
+                    className="card-interactive group flex items-center gap-3 p-4 text-left text-sm text-gray-600 hover:text-gray-900 animate-slide-in-up"
                   >
-                    <s.icon className="w-4 h-4 text-gray-400 group-hover:text-blue-500 flex-shrink-0 transition-colors" />
+                    <div className="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center flex-shrink-0 group-hover:bg-brand-100 transition-colors duration-200">
+                      <s.icon className="w-4 h-4 text-brand-400 group-hover:text-brand-600 flex-shrink-0 transition-colors duration-200" />
+                    </div>
                     <span className="leading-snug">{s.text}</span>
                   </button>
                 ))}

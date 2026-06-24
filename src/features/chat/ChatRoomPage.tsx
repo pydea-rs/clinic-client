@@ -192,7 +192,7 @@ export const ChatRoomPage: React.FC = () => {
 
   const handleTyping = (isTyping: boolean) => {
     if (!id) return;
-    
+
     // Only send if state changed
     if (lastTypingStateRef.current !== isTyping) {
       socketService.sendTyping(id, isTyping);
@@ -245,7 +245,7 @@ export const ChatRoomPage: React.FC = () => {
 
   const handleSaveEdit = async () => {
     if (!editContent.trim() || !id || editingMessageId === null) return;
-    
+
     try {
       socketService.editMessage(id, editingMessageId, editContent.trim());
       setEditingMessageId(null);
@@ -258,7 +258,7 @@ export const ChatRoomPage: React.FC = () => {
 
   const handleDelete = async (messageId: string) => {
     if (!id || !confirm('Are you sure you want to delete this message?')) return;
-    
+
     try {
       socketService.deleteMessage(id, messageId);
       toast.success('Message deleted');
@@ -297,7 +297,7 @@ export const ChatRoomPage: React.FC = () => {
 
   const groupMessagesByDate = () => {
     const groups: { [key: string]: Message[] } = {};
-    
+
     messages.forEach(msg => {
       const dateKey = formatDate(msg.createdAt);
       if (!groups[dateKey]) {
@@ -305,12 +305,35 @@ export const ChatRoomPage: React.FC = () => {
       }
       groups[dateKey].push(msg);
     });
-    
+
     return groups;
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return (
+      <div className="flex flex-col h-full bg-gray-50 animate-fade-in">
+        {/* Shimmer header */}
+        <div className="glass shadow-soft border-t-0 px-6 py-4 flex items-center gap-4 animate-slide-in-down">
+          <div className="shimmer h-8 w-16 rounded-lg"></div>
+          <div className="space-y-2">
+            <div className="shimmer h-5 w-36 rounded"></div>
+            <div className="shimmer h-3 w-20 rounded"></div>
+          </div>
+        </div>
+        {/* Shimmer messages */}
+        <div className="flex-1 px-6 py-4 space-y-4">
+          <div className="flex justify-start"><div className="shimmer h-12 w-52 rounded-2xl"></div></div>
+          <div className="flex justify-end"><div className="shimmer h-12 w-64 rounded-2xl"></div></div>
+          <div className="flex justify-start"><div className="shimmer h-16 w-48 rounded-2xl"></div></div>
+          <div className="flex justify-end"><div className="shimmer h-12 w-56 rounded-2xl"></div></div>
+          <div className="flex justify-start"><div className="shimmer h-12 w-44 rounded-2xl"></div></div>
+        </div>
+        {/* Shimmer input */}
+        <div className="px-6 py-4">
+          <div className="shimmer h-12 w-full rounded-xl"></div>
+        </div>
+      </div>
+    );
   }
 
   const otherParticipant = getOtherParticipant();
@@ -320,55 +343,61 @@ export const ChatRoomPage: React.FC = () => {
   return (
     <div className="flex flex-col h-full bg-gray-50 animate-fade-in">
       {/* Header */}
-      <div className="bg-white border-b px-6 py-4 flex items-center justify-between animate-slide-in-down">
+      <div className="glass shadow-soft px-6 py-4 flex items-center justify-between animate-slide-in-down">
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/chat')}
-            className="text-gray-600 hover:text-gray-800 transition-all-smooth btn-press"
+            className="btn-press text-gray-500 hover:text-gray-800 transition-colors"
           >
             ← Back
           </button>
           <div>
-            <h1 className="text-xl font-bold">
-              {chatInfo?.topic || (otherParticipant?.user 
+            <h1 className="text-xl font-bold text-gray-900">
+              {chatInfo?.topic || (otherParticipant?.user
                 ? `${otherParticipant.user.firstname} ${otherParticipant.user.lastname}`
                 : 'Chat')}
             </h1>
             {isOnline && (
-              <p className="text-sm text-green-600 flex items-center gap-1">
-                <span className="w-2 h-2 bg-green-600 rounded-full"></span>
+              <p className="text-sm text-green-600 flex items-center gap-1.5 font-medium">
+                <span className="status-dot status-dot-online"></span>
                 Online
               </p>
             )}
           </div>
         </div>
-        
-        <div className="text-sm text-gray-500">
+
+        <div className="text-sm">
           {socketConnected ? (
-            <span className="text-green-600">● Connected</span>
+            <span className="text-emerald-500 flex items-center gap-1.5 font-medium">
+              <span className="status-dot status-dot-online"></span>
+              Connected
+            </span>
           ) : (
-            <span className="text-red-600">● Disconnected</span>
+            <span className="text-red-500 flex items-center gap-1.5 font-medium">
+              <span className="status-dot bg-red-500"></span>
+              Disconnected
+            </span>
           )}
         </div>
       </div>
-      
+
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar">
         {Object.entries(messageGroups).map(([date, msgs]) => (
           <div key={date}>
             <div className="text-center my-4">
-              <span className="px-3 py-1 bg-gray-200 text-gray-600 text-xs rounded-full">
+              <span className="px-4 py-1.5 bg-brand-50 text-brand-700 text-xs font-medium rounded-full shadow-sm">
                 {date}
               </span>
             </div>
-            
+
             {msgs.map((msg) => {
               const isOwn = msg.senderId === user?.id;
               const isEditing = editingMessageId === msg.id;
               const isDeleted = !!msg.deletedAt;
-              
+
               return (
-                <div key={msg.id} className={`flex mb-4 animate-slide-in-up ${isOwn ? 'justify-end' : 'justify-start'}`}>
+                <div key={msg.id} className={`flex mb-4 animate-msg-in ${isOwn ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-md ${isOwn ? 'items-end' : 'items-start'} flex flex-col`}>
                     {isEditing ? (
                       <div className="w-full">
@@ -376,7 +405,7 @@ export const ChatRoomPage: React.FC = () => {
                           type="text"
                           value={editContent}
                           onChange={(e) => setEditContent(e.target.value)}
-                          className="w-full px-3 py-2 border rounded-lg mb-2"
+                          className="w-full px-3 py-2 border input-focus mb-2"
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') handleSaveEdit();
                             if (e.key === 'Escape') {
@@ -388,7 +417,7 @@ export const ChatRoomPage: React.FC = () => {
                         <div className="flex gap-2">
                           <button
                             onClick={handleSaveEdit}
-                            className="px-3 py-1 bg-blue-600 text-white text-sm rounded"
+                            className="btn-primary px-3 py-1 text-sm"
                           >
                             Save
                           </button>
@@ -397,7 +426,7 @@ export const ChatRoomPage: React.FC = () => {
                               setEditingMessageId(null);
                               setEditContent('');
                             }}
-                            className="px-3 py-1 bg-gray-300 text-gray-700 text-sm rounded"
+                            className="btn-secondary px-3 py-1 text-sm"
                           >
                             Cancel
                           </button>
@@ -405,35 +434,35 @@ export const ChatRoomPage: React.FC = () => {
                       </div>
                     ) : (
                       <>
-                        <div className={`px-4 py-2 rounded-lg ${
-                          isOwn 
-                            ? 'bg-blue-600 text-white' 
-                            : 'bg-white text-gray-800 border'
-                        } ${isDeleted ? 'opacity-50 italic' : ''} transition-all-smooth`}>
+                        <div className={`px-4 py-2.5 ${
+                          isOwn
+                            ? 'bg-gradient-to-r from-brand-600 to-brand-500 text-white rounded-2xl rounded-br-md shadow-sm'
+                            : 'bg-white text-gray-800 border border-gray-100 shadow-soft rounded-2xl rounded-bl-md'
+                        } ${isDeleted ? 'opacity-50 italic' : ''} transition-all duration-200 ease-spring`}>
                           <p>{msg.content}</p>
                           {msg.editedAt && !isDeleted && (
                             <p className="text-xs opacity-70 mt-1">(edited)</p>
                           )}
                         </div>
-                        
+
                         <div className="flex items-center gap-2 mt-1 text-xs opacity-70">
                           <span>{formatTime(msg.createdAt)}</span>
-                          
+
                           {isOwn && msg.readBy && msg.readBy.length > 0 && (
-                            <span className="text-blue-600">✓✓ Read</span>
+                            <span className="text-brand-400 font-medium">✓✓ Read</span>
                           )}
-                          
+
                           {isOwn && !isDeleted && (
                             <div className="flex gap-2 ml-2">
                               <button
                                 onClick={() => handleEdit(msg)}
-                                className="text-blue-600 hover:underline transition-all-smooth btn-press"
+                                className="text-brand-500 hover:text-brand-700 transition-colors btn-press"
                               >
                                 Edit
                               </button>
                               <button
                                 onClick={() => handleDelete(String(msg.id))}
-                                className="text-red-600 hover:underline transition-all-smooth btn-press"
+                                className="text-red-500 hover:text-red-700 transition-colors btn-press"
                               >
                                 Delete
                               </button>
@@ -448,34 +477,43 @@ export const ChatRoomPage: React.FC = () => {
             })}
           </div>
         ))}
-        
+
         {/* Typing indicator */}
         {typingUsers.length > 0 && (
-          <div className="flex justify-start mb-4">
-            <div className="px-4 py-2 bg-gray-200 rounded-lg text-gray-600 text-sm animate-pulse-slow">
-              {typingUsers.map(u => u.name || 'Someone').join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
+          <div className="flex justify-start mb-4 animate-msg-in">
+            <div className="bg-white border border-gray-100 shadow-soft rounded-2xl rounded-bl-md px-4 py-3">
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1">
+                  <span className="typing-dot w-1.5 h-1.5 rounded-full bg-gray-400 inline-block"></span>
+                  <span className="typing-dot w-1.5 h-1.5 rounded-full bg-gray-400 inline-block"></span>
+                  <span className="typing-dot w-1.5 h-1.5 rounded-full bg-gray-400 inline-block"></span>
+                </div>
+                <span className="text-xs text-gray-500 ml-1">
+                  {typingUsers.map(u => u.name || 'Someone').join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing
+                </span>
+              </div>
             </div>
           </div>
         )}
-        
+
         <div ref={messagesEndRef} />
       </div>
-      
+
       {/* Input */}
-      <div className="bg-white border-t px-6 py-4">
-        <div className="flex gap-2">
+      <div className="glass border-t-0 shadow-soft-lg px-6 py-4">
+        <div className="flex gap-3">
           <input
             type="text"
             value={content}
             onChange={(e) => handleContentChange(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-            className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all-smooth"
+            className="flex-1 input-focus px-4 py-2.5 border"
             placeholder="Type a message..."
           />
           <button
             onClick={handleSend}
             disabled={!content.trim()}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300 transition-all-smooth hover-lift btn-press"
+            className="btn-primary px-6 py-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Send
           </button>

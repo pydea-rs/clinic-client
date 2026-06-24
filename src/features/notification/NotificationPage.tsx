@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { notificationApi } from '../../api/notification.api';
 import { useNavigate } from 'react-router-dom';
 import {
-  Loader2, Bell, CheckCheck, MessageSquare, Calendar, FileText,
+  Loader2, Bell, BellRing, CheckCheck, MessageSquare, Calendar, FileText,
   Star, Shield, UserCheck, CreditCard, AlertCircle, Info,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -60,7 +60,7 @@ const NotificationItem: React.FC<{
     <div
       onClick={() => onClick(notification)}
       className={`flex items-start gap-3 p-4 cursor-pointer transition-colors ${
-        notification.isRead ? 'bg-white' : 'bg-blue-50/50'
+        notification.isRead ? 'bg-white' : 'bg-brand-50/50'
       } hover:bg-gray-50 border-b border-gray-100 last:border-b-0`}
     >
       <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${config.color}`}>
@@ -74,7 +74,7 @@ const NotificationItem: React.FC<{
           {!notification.isRead && (
             <button
               onClick={(e) => { e.stopPropagation(); onRead(notification.id); }}
-              className="text-xs text-blue-600 hover:text-blue-700 whitespace-nowrap flex-shrink-0"
+              className="text-xs text-brand-600 hover:text-brand-700 whitespace-nowrap flex-shrink-0"
             >
               Mark read
             </button>
@@ -84,7 +84,7 @@ const NotificationItem: React.FC<{
         <p className="text-[11px] text-gray-400 mt-1">{timeAgo}</p>
       </div>
       {!notification.isRead && (
-        <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2" />
+        <div className="w-2 h-2 bg-brand-500 animate-breathe rounded-full flex-shrink-0 mt-2" />
       )}
     </div>
   );
@@ -149,18 +149,21 @@ export const NotificationPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-brand-600" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
+    <div className="max-w-2xl mx-auto p-6 animate-fade-in">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold">Notifications</h1>
+          <div className="w-10 h-10 bg-gradient-to-br from-brand-600 to-blue-500 rounded-xl flex items-center justify-center shadow-soft">
+            <BellRing className="w-5 h-5 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
           {(unreadCount ?? 0) > 0 && (
-            <span className="px-2.5 py-0.5 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+            <span className="badge badge-blue">
               {unreadCount} unread
             </span>
           )}
@@ -169,14 +172,14 @@ export const NotificationPage: React.FC = () => {
           <button
             onClick={() => markAllReadMutation.mutate()}
             disabled={markAllReadMutation.isPending}
-            className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium"
+            className="flex items-center gap-1.5 text-sm text-brand-600 hover:text-brand-700 font-medium"
           >
             <CheckCheck className="w-4 h-4" /> Mark all read
           </button>
         )}
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="card overflow-hidden">
         {notifications.length === 0 ? (
           <div className="p-12 text-center">
             <Bell className="w-12 h-12 text-gray-300 mx-auto mb-3" />
@@ -204,15 +207,15 @@ export const NotificationPage: React.FC = () => {
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50"
+              className="btn-secondary px-3 py-1.5 text-sm disabled:opacity-50"
             >
               Previous
             </button>
-            <span className="px-3 py-1 text-sm text-gray-600">Page {page} of {totalPages}</span>
+            <span className="px-3 py-1.5 text-sm text-gray-600">Page {page} of {totalPages}</span>
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50"
+              className="btn-secondary px-3 py-1.5 text-sm disabled:opacity-50"
             >
               Next
             </button>

@@ -45,16 +45,31 @@ const NotificationPage = React.lazy(() => import('../features/notification/Notif
 
 // Placeholder components for unsupported modules
 const PlaceholderPage: React.FC<{ title: string; phase: string }> = ({ title, phase }) => (
-  <div className="flex items-center justify-center h-full min-h-[60vh]">
+  <div className="flex items-center justify-center h-full min-h-[60vh] animate-fade-in">
     <div className="text-center">
-      <h2 className="text-2xl font-bold mb-2">{title}</h2>
-      <p className="text-gray-600">Not available in current backend ({phase})</p>
+      <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gray-100 flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
+      </div>
+      <h2 className="text-xl font-bold text-gray-900 mb-1">{title}</h2>
+      <p className="text-sm text-gray-500">Coming soon — {phase}</p>
+    </div>
+  </div>
+);
+
+const PageLoader: React.FC = () => (
+  <div className="flex items-center justify-center min-h-[60vh] animate-fade-in">
+    <div className="flex flex-col items-center gap-3">
+      <div className="relative w-10 h-10">
+        <div className="absolute inset-0 rounded-full border-2 border-brand-100" />
+        <div className="absolute inset-0 rounded-full border-2 border-brand-500 border-t-transparent animate-spin" />
+      </div>
+      <span className="text-xs font-medium text-gray-400 tracking-wider uppercase">Loading</span>
     </div>
   </div>
 );
 
 const LazyPage: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <React.Suspense fallback={<div className="flex items-center justify-center min-h-[60vh]">Loading...</div>}>
+  <React.Suspense fallback={<PageLoader />}>
     {children}
   </React.Suspense>
 );
@@ -63,7 +78,21 @@ function App() {
   const { isAuthenticated, initializing, login, register } = useAuth();
 
   if (initializing) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 via-white to-brand-50">
+        <div className="flex flex-col items-center gap-4 animate-fade-in">
+          <div className="w-14 h-14 bg-gradient-to-br from-brand-600 via-brand-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-xl shadow-brand-500/20 animate-breathe">
+            <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342" />
+            </svg>
+          </div>
+          <div className="text-center">
+            <h1 className="text-lg font-bold text-gray-900 tracking-tight">AI-Clinic</h1>
+            <p className="text-xs text-gray-400 mt-0.5">Loading your experience...</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

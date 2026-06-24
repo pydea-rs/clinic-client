@@ -19,7 +19,7 @@ export const PatientSOAPListPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-brand-600" />
       </div>
     );
   }
@@ -28,18 +28,20 @@ export const PatientSOAPListPage: React.FC = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <div className="flex items-center gap-3 mb-8">
-        <FileText className="w-8 h-8 text-blue-600" />
-        <h1 className="text-3xl font-bold">My SOAP Notes</h1>
+      <div className="flex items-center gap-3 mb-8 animate-slide-in-up">
+        <div className="w-10 h-10 bg-gradient-to-br from-brand-500 to-emerald-500 rounded-xl flex items-center justify-center shadow-soft">
+          <FileText className="w-5 h-5 text-white" />
+        </div>
+        <h1 className="text-3xl font-bold gradient-text">My SOAP Notes</h1>
       </div>
 
       {/* SOAP Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 stagger-children">
         {data?.soaps.map((soap) => (
           <Link
             key={soap.id}
             to={`/soap/${soap.id}`}
-            className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-6 border-l-4 border-blue-600"
+            className="card-interactive group p-6 border-l-4 border-brand-500 hover:border-brand-600 animate-slide-in-up"
           >
             <div className="flex items-start justify-between mb-4">
               <div>
@@ -52,12 +54,12 @@ export const PatientSOAPListPage: React.FC = () => {
                   })}
                 </p>
               </div>
-              <ChevronRight className="w-5 h-5 text-gray-400" />
+              <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-brand-500 transition-colors" />
             </div>
 
             {soap.specialty && (
               <div className="mb-3">
-                <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium">
+                <span className="badge badge-blue">
                   {soap.specialty}
                 </span>
               </div>
@@ -84,7 +86,7 @@ export const PatientSOAPListPage: React.FC = () => {
       </div>
 
       {data?.soaps.length === 0 && (
-        <div className="text-center py-12">
+        <div className="text-center py-12 animate-fade-in">
           <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-600">No SOAP notes yet</p>
         </div>
@@ -100,7 +102,7 @@ export const PatientSOAPListPage: React.FC = () => {
             <button
               onClick={() => setPage(Math.max(1, page - 1))}
               disabled={page === 1}
-              className="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-secondary px-3 py-1.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Previous
             </button>
@@ -110,7 +112,7 @@ export const PatientSOAPListPage: React.FC = () => {
             <button
               onClick={() => setPage(Math.min(totalPages, page + 1))}
               disabled={page === totalPages}
-              className="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-secondary px-3 py-1.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next
             </button>

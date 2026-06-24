@@ -52,7 +52,7 @@ export const DoctorProfileForm: React.FC<DoctorProfileFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-8 space-y-6">
+    <form onSubmit={handleSubmit} className="card p-8 space-y-6 animate-slide-in-up">
       <div className="grid grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Primary Specialty *</label>
@@ -61,7 +61,7 @@ export const DoctorProfileForm: React.FC<DoctorProfileFormProps> = ({
             required
             value={formData.specialty || ''}
             onChange={(e) => setFormData({ ...formData, specialty: e.target.value })}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 input-focus"
             placeholder="e.g., Cardiology"
           />
         </div>
@@ -72,7 +72,7 @@ export const DoctorProfileForm: React.FC<DoctorProfileFormProps> = ({
             type="date"
             value={formData.startedAt ? formData.startedAt.split('T')[0] : ''}
             onChange={(e) => setFormData({ ...formData, startedAt: e.target.value })}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 input-focus"
           />
         </div>
       </div>
@@ -104,7 +104,7 @@ export const DoctorProfileForm: React.FC<DoctorProfileFormProps> = ({
           type="text"
           value={formData.clinicLocation || ''}
           onChange={(e) => setFormData({ ...formData, clinicLocation: e.target.value })}
-          className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-4 py-2 input-focus"
           placeholder="e.g., 123 Medical Center, New York, NY"
         />
       </div>
@@ -114,7 +114,7 @@ export const DoctorProfileForm: React.FC<DoctorProfileFormProps> = ({
         <textarea
           value={formData.bio || ''}
           onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-          className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          className="w-full px-4 py-2 input-focus resize-none"
           rows={4}
           placeholder="Tell patients about yourself, your experience, and approach to care"
         />
@@ -123,7 +123,7 @@ export const DoctorProfileForm: React.FC<DoctorProfileFormProps> = ({
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:bg-blue-300 font-medium"
+        className="btn-primary w-full py-3 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading ? 'Saving...' : 'Save Profile'}
       </button>

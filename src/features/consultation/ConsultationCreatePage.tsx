@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { DoctorProfile } from '../../api/doctor.api';
 import { PatientSOAP } from '../../lib/types/api';
 import { getErrorMessage } from '../../lib/api/error.utils';
+import { Loader2, PlusCircle } from 'lucide-react';
 
 export const ConsultationCreatePage: React.FC = () => {
   const navigate = useNavigate();
@@ -70,20 +71,29 @@ export const ConsultationCreatePage: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin text-brand-600" />
+      </div>
+    );
   }
 
   return (
     <div className="p-6 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Create Consultation</h1>
+      <div className="flex items-center gap-3 mb-8 animate-slide-in-up">
+        <div className="w-10 h-10 bg-gradient-to-br from-brand-500 to-violet-500 rounded-xl flex items-center justify-center shadow-soft">
+          <PlusCircle className="w-5 h-5 text-white" />
+        </div>
+        <h1 className="text-3xl font-bold gradient-text">Create Consultation</h1>
+      </div>
       
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6">
+      <form onSubmit={handleSubmit} className="card p-8 space-y-6 animate-slide-in-up" style={{ animationDelay: '60ms' }}>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Select Doctor</label>
           <select
             value={selectedDoctor}
             onChange={(e) => setSelectedDoctor(e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg"
+            className="w-full px-4 py-2.5 input-focus"
             required
           >
             <option value="">Select a doctor</option>
@@ -101,7 +111,7 @@ export const ConsultationCreatePage: React.FC = () => {
             <select
               value={selectedSoap}
               onChange={(e) => setSelectedSoap(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg"
+              className="w-full px-4 py-2.5 input-focus"
             >
               <option value="">No SOAP</option>
               {soaps.map((soap) => (
@@ -116,7 +126,7 @@ export const ConsultationCreatePage: React.FC = () => {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:bg-blue-300"
+          className="w-full btn-primary py-2.5 disabled:opacity-50"
         >
           {submitting ? 'Creating...' : 'Create Consultation'}
         </button>

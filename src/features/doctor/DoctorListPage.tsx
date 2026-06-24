@@ -34,8 +34,9 @@ export const DoctorListPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-12">
-        <div className="max-w-6xl mx-auto px-6">
+      <div className="bg-gradient-to-r from-brand-600 to-brand-700 text-white py-12">
+        <div className="max-w-6xl mx-auto px-6 animate-fade-in">
+          <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mb-4"><Search className="w-5 h-5" /></div>
           <h1 className="text-4xl font-bold mb-4">Find a Doctor</h1>
           <p className="text-blue-100 text-lg">Browse our network of verified healthcare professionals</p>
         </div>
@@ -44,16 +45,16 @@ export const DoctorListPage: React.FC = () => {
       <div className="max-w-6xl mx-auto px-6 py-8">
         {/* SOAP Context Banner */}
         {soapId && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex items-center gap-3">
-            <FileText className="w-5 h-5 text-blue-600 flex-shrink-0" />
-            <p className="text-blue-800 text-sm font-medium">
+          <div className="card border-brand-100 bg-brand-50/50 p-4 mb-6 flex items-center gap-3 animate-slide-in-up">
+            <FileText className="w-5 h-5 text-brand-600 flex-shrink-0" />
+            <p className="text-brand-800 text-sm font-medium">
               Based on your AI consultation{specialty ? `, we recommend a ${specialty.replace(/_/g, ' ')} specialist` : ', find a suitable doctor below'}.
             </p>
           </div>
         )}
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
+        <div className="card p-6 mb-8 animate-slide-in-up" style={{ animationDelay: '50ms' }}>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
@@ -67,7 +68,7 @@ export const DoctorListPage: React.FC = () => {
                     setPage(1);
                   }}
                   placeholder="Doctor name..."
-                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-10 pr-4 py-2 input-focus"
                 />
               </div>
             </div>
@@ -82,7 +83,7 @@ export const DoctorListPage: React.FC = () => {
                   setPage(1);
                 }}
                 placeholder="e.g., Cardiology"
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 input-focus"
               />
             </div>
 
@@ -94,7 +95,7 @@ export const DoctorListPage: React.FC = () => {
                   setVisitMethod(e.target.value);
                   setPage(1);
                 }}
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 input-focus"
               >
                 <option value="">All Methods</option>
                 <option value="CHAT">Chat</option>
@@ -114,7 +115,7 @@ export const DoctorListPage: React.FC = () => {
                   setPage(1);
                 }}
                 placeholder="City or area..."
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 input-focus"
               />
             </div>
 
@@ -127,7 +128,7 @@ export const DoctorListPage: React.FC = () => {
                   setLocation('');
                   setPage(1);
                 }}
-                className="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium"
+                className="w-full px-4 py-2 btn-secondary font-medium"
               >
                 Clear
               </button>
@@ -138,7 +139,7 @@ export const DoctorListPage: React.FC = () => {
         {/* Results */}
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            <Loader2 className="w-8 h-8 animate-spin text-brand-600" />
           </div>
         ) : (
           <>
@@ -147,17 +148,17 @@ export const DoctorListPage: React.FC = () => {
             </div>
 
             {data?.doctors.length === 0 ? (
-              <div className="text-center py-12">
+              <div className="text-center py-12 animate-fade-in">
                 <p className="text-gray-600 text-lg">No doctors found matching your criteria</p>
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 stagger-children">
                   {data?.doctors.map((doctor) => (
                     <Link
                       key={doctor.id}
                       to={`/doctor/${doctor.id}${soapId ? `?soapId=${encodeURIComponent(soapId)}` : ''}`}
-                      className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow overflow-hidden"
+                      className="card-interactive overflow-hidden animate-slide-in-up"
                     >
                       <div className="p-6">
                         <div className="flex items-start justify-between mb-4">
@@ -168,7 +169,7 @@ export const DoctorListPage: React.FC = () => {
                             <p className="text-sm text-gray-600">{doctor.specialty}</p>
                           </div>
                           {doctor.verified && (
-                            <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">
+                            <span className="badge badge-green">
                               Verified
                             </span>
                           )}
@@ -210,7 +211,7 @@ export const DoctorListPage: React.FC = () => {
                             {doctor.visitMethods.slice(0, 2).map((method) => (
                               <span
                                 key={method}
-                                className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded"
+                                className="badge badge-blue"
                               >
                                 {method}
                               </span>
@@ -227,7 +228,7 @@ export const DoctorListPage: React.FC = () => {
                   <button
                     onClick={() => setPage(Math.max(1, page - 1))}
                     disabled={page === 1}
-                    className="px-4 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="btn-secondary px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Previous
                   </button>
@@ -237,7 +238,7 @@ export const DoctorListPage: React.FC = () => {
                   <button
                     onClick={() => setPage(Math.min(totalPages, page + 1))}
                     disabled={page === totalPages}
-                    className="px-4 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="btn-secondary px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Next
                   </button>

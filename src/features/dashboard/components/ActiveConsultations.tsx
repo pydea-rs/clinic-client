@@ -2,17 +2,17 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { consultationApi } from '../../../api/consultation.api';
-import { ClipboardList, ChevronRight } from 'lucide-react';
+import { ClipboardList, ChevronRight, Activity } from 'lucide-react';
 
-const statusColors: Record<string, string> = {
-  CREATED: 'bg-gray-50 text-gray-600',
-  PENDING_DOCTOR_REVIEW: 'bg-yellow-50 text-yellow-600',
-  DOCTOR_DECIDED: 'bg-blue-50 text-blue-600',
-  PENDING_PAYMENT: 'bg-orange-50 text-orange-600',
-  PAYMENT_CONFIRMED: 'bg-emerald-50 text-emerald-600',
-  IN_PROGRESS: 'bg-indigo-50 text-indigo-600',
-  COMPLETED: 'bg-emerald-50 text-emerald-600',
-  CANCELLED: 'bg-red-50 text-red-600',
+const statusConfig: Record<string, { color: string; ring: string; dot: string }> = {
+  CREATED: { color: 'bg-gray-50 text-gray-700', ring: 'ring-gray-500/10', dot: 'bg-gray-400' },
+  PENDING_DOCTOR_REVIEW: { color: 'bg-amber-50 text-amber-700', ring: 'ring-amber-500/10', dot: 'bg-amber-400' },
+  DOCTOR_DECIDED: { color: 'bg-blue-50 text-blue-700', ring: 'ring-blue-500/10', dot: 'bg-blue-400' },
+  PENDING_PAYMENT: { color: 'bg-orange-50 text-orange-700', ring: 'ring-orange-500/10', dot: 'bg-orange-400' },
+  PAYMENT_CONFIRMED: { color: 'bg-emerald-50 text-emerald-700', ring: 'ring-emerald-500/10', dot: 'bg-emerald-400' },
+  IN_PROGRESS: { color: 'bg-indigo-50 text-indigo-700', ring: 'ring-indigo-500/10', dot: 'bg-indigo-400 animate-pulse' },
+  COMPLETED: { color: 'bg-emerald-50 text-emerald-700', ring: 'ring-emerald-500/10', dot: 'bg-emerald-400' },
+  CANCELLED: { color: 'bg-red-50 text-red-700', ring: 'ring-red-500/10', dot: 'bg-red-400' },
 };
 
 function formatStatus(status: string): string {
@@ -27,11 +27,11 @@ export const ActiveConsultations: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl border border-gray-100 p-5">
-        <h3 className="font-medium text-sm text-gray-900 mb-3">Active Consultations</h3>
+      <div className="card p-5">
+        <h3 className="font-semibold text-sm text-gray-900 mb-3">Active Consultations</h3>
         <div className="space-y-2">
           {[1, 2].map((i) => (
-            <div key={i} className="h-14 bg-gray-50 rounded-lg shimmer" />
+            <div key={i} className="h-14 rounded-xl shimmer" />
           ))}
         </div>
       </div>
@@ -42,43 +42,54 @@ export const ActiveConsultations: React.FC = () => {
   const active = consultations.filter((c) => c.status !== 'COMPLETED' && c.status !== 'CANCELLED');
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-5">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="font-medium text-sm text-gray-900">Active Consultations</h3>
-        <Link to="/consultations" className="text-xs text-blue-600 hover:text-blue-700 font-medium">
+    <div className="card p-5">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 bg-gradient-to-br from-brand-500 to-purple-500 rounded-lg flex items-center justify-center">
+            <Activity className="w-3.5 h-3.5 text-white" />
+          </div>
+          <h3 className="font-semibold text-sm text-gray-900">Active Consultations</h3>
+        </div>
+        <Link to="/consultations" className="text-xs text-brand-600 hover:text-brand-700 font-semibold transition-colors">
           View all
         </Link>
       </div>
 
       {active.length === 0 ? (
         <div className="text-center py-8">
-          <ClipboardList className="w-8 h-8 text-gray-200 mx-auto mb-2" />
-          <p className="text-xs text-gray-400">No active consultations</p>
+          <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
+            <ClipboardList className="w-6 h-6 text-gray-300" />
+          </div>
+          <p className="text-sm text-gray-400">No active consultations</p>
         </div>
       ) : (
-        <div className="space-y-0.5">
-          {active.map((consultation) => (
-            <Link
-              key={consultation.id}
-              to={`/consultation/${consultation.id}`}
-              className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 transition-colors group"
-            >
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${statusColors[consultation.status] || 'bg-gray-50 text-gray-600'}`}>
-                    {formatStatus(consultation.status)}
-                  </span>
-                  {consultation.visitMethod && (
-                    <span className="text-[11px] text-gray-400">{consultation.visitMethod.replace(/_/g, ' ')}</span>
-                  )}
+        <div className="space-y-1">
+          {active.map((consultation) => {
+            const config = statusConfig[consultation.status] || statusConfig.CREATED;
+            return (
+              <Link
+                key={consultation.id}
+                to={`/consultation/${consultation.id}`}
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50/80 transition-all duration-200 group"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] font-semibold ring-1 ${config.color} ${config.ring}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
+                      {formatStatus(consultation.status)}
+                    </span>
+                    {consultation.visitMethod && (
+                      <span className="text-[11px] text-gray-400 font-medium">{consultation.visitMethod.replace(/_/g, ' ')}</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Created {new Date(consultation.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </p>
                 </div>
-                <p className="text-xs text-gray-400">
-                  Created {new Date(consultation.createdAt).toLocaleDateString()}
-                </p>
-              </div>
-              <ChevronRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-500 flex-shrink-0 transition-colors" />
-            </Link>
-          ))}
+                <ChevronRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-brand-500 group-hover:translate-x-0.5 flex-shrink-0 transition-all duration-200" />
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>

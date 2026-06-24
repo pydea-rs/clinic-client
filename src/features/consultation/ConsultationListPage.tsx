@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Consultation } from '../../lib/types/api';
 import { getErrorMessage } from '../../lib/api/error.utils';
+import { Loader2, ClipboardList, ChevronRight } from 'lucide-react';
 
 export const ConsultationListPage: React.FC = () => {
   const [consultations, setConsultations] = useState<Consultation[]>([]);
@@ -31,15 +32,15 @@ export const ConsultationListPage: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'CREATED': return 'bg-gray-100 text-gray-800';
-      case 'PENDING_DOCTOR_REVIEW': return 'bg-yellow-100 text-yellow-800';
-      case 'DOCTOR_DECIDED': return 'bg-blue-100 text-blue-800';
-      case 'PENDING_PAYMENT': return 'bg-orange-100 text-orange-800';
-      case 'PAYMENT_CONFIRMED': return 'bg-green-100 text-green-800';
-      case 'IN_PROGRESS': return 'bg-purple-100 text-purple-800';
-      case 'COMPLETED': return 'bg-green-100 text-green-800';
-      case 'CANCELLED': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'CREATED': return 'badge-gray';
+      case 'PENDING_DOCTOR_REVIEW': return 'badge-yellow';
+      case 'DOCTOR_DECIDED': return 'badge-blue';
+      case 'PENDING_PAYMENT': return 'badge-yellow';
+      case 'PAYMENT_CONFIRMED': return 'badge-green';
+      case 'IN_PROGRESS': return 'badge-purple';
+      case 'COMPLETED': return 'badge-green';
+      case 'CANCELLED': return 'badge-red';
+      default: return 'badge-gray';
     }
   };
 
@@ -54,24 +55,32 @@ export const ConsultationListPage: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return <div className="flex items-center justify-center min-h-screen">
+      <Loader2 className="w-8 h-8 animate-spin text-brand-600" />
+    </div>;
   }
 
   const totalPages = Math.ceil(total / 10);
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Consultations</h1>
+      <div className="flex items-center gap-3 mb-8 animate-slide-in-up">
+        <div className="w-10 h-10 bg-gradient-to-br from-brand-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-soft">
+          <ClipboardList className="w-5 h-5 text-white" />
+        </div>
+        <h1 className="text-3xl font-bold gradient-text">Consultations</h1>
+      </div>
       
       {consultations.length === 0 ? (
-        <div className="text-center py-12">
+        <div className="text-center py-12 animate-fade-in">
+          <ClipboardList className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-500">No consultations found</p>
         </div>
       ) : (
         <>
-          <div className="space-y-4">
+          <div className="space-y-4 stagger-children">
             {consultations.map((consultation) => (
-              <div key={consultation.id} className="bg-white rounded-lg shadow p-6">
+              <div key={consultation.id} className="card card-hover p-6 animate-slide-in-up">
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <h3 className="font-medium">Consultation #{consultation.id.substring(0, 8)}...</h3>
@@ -81,7 +90,7 @@ export const ConsultationListPage: React.FC = () => {
                         : `Patient ID: ${consultation.patientId}`}
                     </p>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(consultation.status)}`}>
+                  <span className={`badge ${getStatusColor(consultation.status)}`}>
                     {consultation.status.replaceAll('_', ' ')}
                   </span>
                 </div>
@@ -110,17 +119,17 @@ export const ConsultationListPage: React.FC = () => {
                 </div>
                 
                 {canViewDetail(consultation) && (
-                  <div className="mt-4 pt-4 border-t">
-                    <Link 
-                      to={`/consultation/${consultation.id}`} 
-                      className="text-blue-600 hover:underline"
+                  <div className="mt-4 pt-4 border-t border-gray-100">
+                    <Link
+                      to={`/consultation/${consultation.id}`}
+                      className="text-brand-600 hover:text-brand-700 font-medium transition-colors"
                     >
                       View Details
                     </Link>
                     {consultation.soapId && (
                       <>
                         {' | '}
-                        <Link to={`/soap/${consultation.soapId}`} className="text-blue-600 hover:underline">
+                        <Link to={`/soap/${consultation.soapId}`} className="text-brand-600 hover:text-brand-700 font-medium transition-colors">
                           View SOAP Note
                         </Link>
                       </>
@@ -136,7 +145,7 @@ export const ConsultationListPage: React.FC = () => {
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="px-4 py-2 border rounded-lg disabled:opacity-50"
+                className="btn-secondary px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Previous
               </button>
@@ -146,7 +155,7 @@ export const ConsultationListPage: React.FC = () => {
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="px-4 py-2 border rounded-lg disabled:opacity-50"
+                className="btn-secondary px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next
               </button>

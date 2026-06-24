@@ -3,6 +3,7 @@ import { reviewApi } from '../../api/review.api';
 import toast from 'react-hot-toast';
 import { DoctorReview } from '../../lib/types/api';
 import { getErrorMessage } from '../../lib/api/error.utils';
+import { Star } from 'lucide-react';
 
 export const AdminReviewModerationPage: React.FC = () => {
   const [reviews, setReviews] = useState<DoctorReview[]>([]);
@@ -44,29 +45,63 @@ export const AdminReviewModerationPage: React.FC = () => {
   const totalPages = Math.ceil(total / limit);
 
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return (
+      <div className="p-6 max-w-6xl mx-auto animate-fade-in">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="w-10 h-10 shimmer rounded-xl" />
+          <div className="space-y-2">
+            <div className="w-44 h-6 shimmer" />
+            <div className="w-32 h-4 shimmer" />
+          </div>
+        </div>
+        <div className="space-y-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="card p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="space-y-2">
+                  <div className="w-32 h-5 shimmer" />
+                  <div className="w-48 h-5 shimmer" />
+                  <div className="w-64 h-4 shimmer" />
+                </div>
+                <div className="w-16 h-8 shimmer rounded-lg" />
+              </div>
+              <div className="flex gap-4">
+                <div className="w-24 h-5 shimmer rounded-full" />
+                <div className="w-24 h-5 shimmer rounded-full" />
+                <div className="w-28 h-5 shimmer rounded-full" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Review Moderation</h1>
-        <span className="text-sm text-gray-500">{total} total reviews</span>
+    <div className="p-6 max-w-6xl mx-auto animate-fade-in">
+      <div className="flex items-center gap-3 mb-8">
+        <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center shadow-soft">
+          <Star className="w-5 h-5 text-white" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Review Moderation</h1>
+          <p className="text-sm text-gray-500">{total} total reviews</p>
+        </div>
       </div>
 
       {reviews.length === 0 ? (
-        <div className="text-center py-12">
+        <div className="card text-center py-12">
           <p className="text-gray-500">No reviews found</p>
         </div>
       ) : (
         <>
           <div className="space-y-4">
             {reviews.map((review) => (
-              <div key={review.id} className="bg-white rounded-lg shadow p-6">
+              <div key={review.id} className="card p-6 animate-slide-in-up">
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="text-yellow-500 text-lg">
+                      <span className="text-amber-400 text-lg">
                         {'★'.repeat(Math.round(review.rating))}{'☆'.repeat(5 - Math.round(review.rating))}
                       </span>
                       <span className="text-sm text-gray-500">
@@ -78,16 +113,16 @@ export const AdminReviewModerationPage: React.FC = () => {
                   </div>
                   <button
                     onClick={() => handleDeleteReview(review.id)}
-                    className="text-red-600 hover:text-red-800 px-3 py-1 rounded hover:bg-red-50"
+                    className="text-red-600 hover:text-red-800 px-3 py-1 rounded-lg hover:bg-red-50 border border-transparent hover:border-red-200 transition"
                   >
                     Delete
                   </button>
                 </div>
 
                 <div className="flex items-center gap-4 text-sm text-gray-500">
-                  <span>Review ID: {review.id}</span>
-                  <span>Doctor ID: {review.doctorId}</span>
-                  <span>Reviewer: {review.reviewerId}</span>
+                  <span className="badge badge-gray">Review ID: {review.id}</span>
+                  <span className="badge badge-gray">Doctor ID: {review.doctorId}</span>
+                  <span className="badge badge-gray">Reviewer: {review.reviewerId}</span>
                 </div>
               </div>
             ))}
@@ -98,7 +133,7 @@ export const AdminReviewModerationPage: React.FC = () => {
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="px-4 py-2 border rounded-lg disabled:opacity-50"
+                className="btn-secondary px-4 py-2 disabled:opacity-50"
               >
                 Previous
               </button>
@@ -108,7 +143,7 @@ export const AdminReviewModerationPage: React.FC = () => {
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="px-4 py-2 border rounded-lg disabled:opacity-50"
+                className="btn-secondary px-4 py-2 disabled:opacity-50"
               >
                 Next
               </button>

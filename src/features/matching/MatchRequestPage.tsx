@@ -3,7 +3,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { matchingApi } from '../../api/matching.api';
 import { patientApi } from '../../api/patient.api';
-import { Loader2, Search, Zap, FileText, ArrowRight } from 'lucide-react';
+import { Loader2, Search, Zap, FileText, ArrowRight, Stethoscope } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { DoctorSpecialty, TriageLevel } from '../../lib/types/api';
 
@@ -14,16 +14,16 @@ const SPECIALTIES: DoctorSpecialty[] = [
 ];
 
 const triageBadge = (level?: TriageLevel) => {
-  const map: Record<string, { bg: string; text: string; label: string }> = {
-    SELF_CARE: { bg: 'bg-green-100', text: 'text-green-800', label: 'Self Care' },
-    SEE_DOCTOR: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'See Doctor' },
-    URGENT: { bg: 'bg-orange-100', text: 'text-orange-800', label: 'Urgent' },
-    EMERGENCY: { bg: 'bg-red-100', text: 'text-red-800', label: 'Emergency' },
+  const map: Record<string, { cls: string; label: string }> = {
+    SELF_CARE: { cls: 'badge badge-green', label: 'Self Care' },
+    SEE_DOCTOR: { cls: 'badge badge-yellow', label: 'See Doctor' },
+    URGENT: { cls: 'badge badge-yellow', label: 'Urgent' },
+    EMERGENCY: { cls: 'badge badge-red', label: 'Emergency' },
   };
   if (!level) return null;
   const m = map[level];
   if (!m) return null;
-  return <span className={`px-2 py-0.5 rounded text-xs font-medium ${m.bg} ${m.text}`}>{m.label}</span>;
+  return <span className={m.cls}>{m.label}</span>;
 };
 
 export const MatchRequestPage: React.FC = () => {
@@ -58,7 +58,7 @@ export const MatchRequestPage: React.FC = () => {
   if (checkingActive) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-brand-600" />
       </div>
     );
   }
@@ -66,13 +66,13 @@ export const MatchRequestPage: React.FC = () => {
   if (activeMatch && !['TIMEOUT', 'MANUAL_BROWSE', 'CONSULTATION_CREATED', 'CANCELLED'].includes(activeMatch.status)) {
     return (
       <div className="max-w-lg mx-auto p-6 mt-12">
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 text-center">
-          <Search className="w-10 h-10 text-blue-600 mx-auto mb-3" />
+        <div className="card border-brand-200 bg-brand-50 p-6 text-center">
+          <Search className="w-10 h-10 text-brand-600 mx-auto mb-3" />
           <h2 className="text-lg font-semibold mb-2">Active Match In Progress</h2>
           <p className="text-gray-600 text-sm mb-4">You already have a match request being processed.</p>
           <button
             onClick={() => navigate(`/matching/${activeMatch.id}/waiting`)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 inline-flex items-center gap-2"
+            className="btn-primary px-4 py-2 inline-flex items-center gap-2"
           >
             Go to Waiting Room <ArrowRight className="w-4 h-4" />
           </button>
@@ -95,8 +95,9 @@ export const MatchRequestPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
+    <div className="max-w-2xl mx-auto p-6 animate-fade-in">
       <div className="mb-8">
+        <div className="w-10 h-10 bg-gradient-to-br from-brand-600 to-purple-500 rounded-xl flex items-center justify-center shadow-soft mb-4"><Stethoscope className="w-5 h-5 text-white" /></div>
         <h1 className="text-2xl font-bold mb-2">Find a Doctor</h1>
         <p className="text-gray-600">We'll match you with the best available doctor based on your needs.</p>
       </div>
@@ -105,21 +106,21 @@ export const MatchRequestPage: React.FC = () => {
       <div className="flex gap-3 mb-6">
         <button
           onClick={() => setMode('soap')}
-          className={`flex-1 p-4 rounded-xl border-2 transition-all text-left ${
-            mode === 'soap' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+          className={`flex-1 p-4 rounded-2xl border-2 transition-all duration-200 text-left ${
+            mode === 'soap' ? 'border-brand-500 bg-brand-50 shadow-soft' : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
           }`}
         >
-          <FileText className={`w-5 h-5 mb-2 ${mode === 'soap' ? 'text-blue-600' : 'text-gray-400'}`} />
+          <FileText className={`w-5 h-5 mb-2 ${mode === 'soap' ? 'text-brand-600' : 'text-gray-400'}`} />
           <div className="font-medium text-sm">From AI Consultation</div>
           <div className="text-xs text-gray-500 mt-0.5">Use your SOAP note to auto-detect specialty</div>
         </button>
         <button
           onClick={() => setMode('manual')}
-          className={`flex-1 p-4 rounded-xl border-2 transition-all text-left ${
-            mode === 'manual' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+          className={`flex-1 p-4 rounded-2xl border-2 transition-all duration-200 text-left ${
+            mode === 'manual' ? 'border-brand-500 bg-brand-50 shadow-soft' : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
           }`}
         >
-          <Search className={`w-5 h-5 mb-2 ${mode === 'manual' ? 'text-blue-600' : 'text-gray-400'}`} />
+          <Search className={`w-5 h-5 mb-2 ${mode === 'manual' ? 'text-brand-600' : 'text-gray-400'}`} />
           <div className="font-medium text-sm">Choose Specialty</div>
           <div className="text-xs text-gray-500 mt-0.5">Manually select the type of doctor you need</div>
         </button>
@@ -132,9 +133,9 @@ export const MatchRequestPage: React.FC = () => {
           {loadingSoaps ? (
             <div className="flex items-center gap-2 text-gray-500 text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Loading...</div>
           ) : soaps.length === 0 ? (
-            <div className="bg-gray-50 rounded-lg p-4 text-center">
+            <div className="card bg-gray-50/80 p-4 text-center">
               <p className="text-gray-600 text-sm mb-2">No SOAP notes found. Start an AI conversation first.</p>
-              <button onClick={() => navigate('/ai/new')} className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+              <button onClick={() => navigate('/ai/new')} className="text-brand-600 hover:text-brand-700 text-sm font-medium">
                 Start AI Chat
               </button>
             </div>
@@ -145,7 +146,7 @@ export const MatchRequestPage: React.FC = () => {
                   key={soap.id}
                   onClick={() => setSelectedSoapId(soap.id)}
                   className={`w-full text-left p-3 rounded-lg border-2 transition-all ${
-                    selectedSoapId === soap.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                    selectedSoapId === soap.id ? 'border-brand-500 bg-brand-50 shadow-soft' : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -158,7 +159,7 @@ export const MatchRequestPage: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-3 mt-1">
                     {soap.suggestedSpecialty && (
-                      <span className="text-xs text-blue-600">{soap.suggestedSpecialty.replace(/_/g, ' ')}</span>
+                      <span className="text-xs text-brand-600">{soap.suggestedSpecialty.replace(/_/g, ' ')}</span>
                     )}
                     <span className="text-xs text-gray-400">{new Date(soap.createdAt).toLocaleDateString()}</span>
                   </div>
@@ -167,11 +168,11 @@ export const MatchRequestPage: React.FC = () => {
             </div>
           )}
           {selectedSoap && (
-            <div className="mt-3 bg-gray-50 rounded-lg p-3 text-sm">
+            <div className="mt-3 bg-gray-50/80 rounded-xl p-3 text-sm">
               <div className="font-medium text-gray-700 mb-1">Auto-detected:</div>
               <div className="flex items-center gap-3">
                 {selectedSoap.suggestedSpecialty && (
-                  <span className="text-blue-600">Specialty: {selectedSoap.suggestedSpecialty.replace(/_/g, ' ')}</span>
+                  <span className="text-brand-600">Specialty: {selectedSoap.suggestedSpecialty.replace(/_/g, ' ')}</span>
                 )}
                 {triageBadge(selectedSoap.triageLevel)}
                 {!selectedSoap.suggestedSpecialty && <span className="text-gray-500">General practitioner</span>}
@@ -192,7 +193,7 @@ export const MatchRequestPage: React.FC = () => {
                 onClick={() => setManualSpecialty(spec)}
                 className={`px-3 py-2 rounded-lg border-2 text-sm transition-all ${
                   manualSpecialty === spec
-                    ? 'border-blue-500 bg-blue-50 text-blue-700 font-medium'
+                    ? 'border-brand-500 bg-brand-50 text-brand-700 shadow-sm font-medium'
                     : 'border-gray-200 text-gray-700 hover:border-gray-300'
                 }`}
               >

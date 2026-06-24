@@ -32,7 +32,7 @@ export const SOAPDetailPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-brand-600" />
       </div>
     );
   }
@@ -61,21 +61,21 @@ export const SOAPDetailPage: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto p-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg shadow-lg p-8 mb-8">
+      <div className="bg-gradient-to-br from-brand-600 via-brand-500 to-purple-500 text-white rounded-2xl shadow-soft-xl p-8 mb-8 animate-slide-in-up">
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <FileText className="w-8 h-8" />
+              <FileText className="w-8 h-8 drop-shadow-md" />
               <h1 className="text-3xl font-bold">SOAP Note</h1>
             </div>
-            <p className="text-blue-100">
+            <p className="text-white/80">
               <Calendar className="w-4 h-4 inline mr-2" />
               {formatDate(soap.createdAt)}
             </p>
           </div>
           {soap.specialty && (
             <div className="text-right">
-              <p className="text-blue-100 text-sm mb-2">Specialty</p>
+              <p className="text-white/70 text-sm mb-2">Specialty</p>
               <p className="text-xl font-semibold">{soap.specialty}</p>
             </div>
           )}
@@ -85,9 +85,9 @@ export const SOAPDetailPage: React.FC = () => {
       {/* SOAP Sections */}
       <div className="space-y-6">
         {/* Subjective */}
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-600">
+        <div className="card p-6 border-l-4 border-blue-500 animate-slide-in-up" style={{ animationDelay: '80ms' }}>
           <div className="flex items-center gap-2 mb-4">
-            <Tag className="w-5 h-5 text-blue-600" />
+            <Tag className="w-5 h-5 text-blue-500" />
             <h2 className="text-xl font-bold text-gray-900">Subjective</h2>
           </div>
           <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
@@ -100,9 +100,9 @@ export const SOAPDetailPage: React.FC = () => {
         </div>
 
         {/* Objective */}
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-600">
+        <div className="card p-6 border-l-4 border-emerald-500 animate-slide-in-up" style={{ animationDelay: '160ms' }}>
           <div className="flex items-center gap-2 mb-4">
-            <Tag className="w-5 h-5 text-green-600" />
+            <Tag className="w-5 h-5 text-emerald-500" />
             <h2 className="text-xl font-bold text-gray-900">Objective</h2>
           </div>
           <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
@@ -115,9 +115,9 @@ export const SOAPDetailPage: React.FC = () => {
         </div>
 
         {/* Assessment */}
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-purple-600">
+        <div className="card p-6 border-l-4 border-purple-500 animate-slide-in-up" style={{ animationDelay: '240ms' }}>
           <div className="flex items-center gap-2 mb-4">
-            <Tag className="w-5 h-5 text-purple-600" />
+            <Tag className="w-5 h-5 text-purple-500" />
             <h2 className="text-xl font-bold text-gray-900">Assessment</h2>
           </div>
           <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
@@ -130,9 +130,9 @@ export const SOAPDetailPage: React.FC = () => {
         </div>
 
         {/* Plan */}
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-orange-600">
+        <div className="card p-6 border-l-4 border-orange-500 animate-slide-in-up" style={{ animationDelay: '320ms' }}>
           <div className="flex items-center gap-2 mb-4">
-            <Tag className="w-5 h-5 text-orange-600" />
+            <Tag className="w-5 h-5 text-orange-500" />
             <h2 className="text-xl font-bold text-gray-900">Plan</h2>
           </div>
           <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
@@ -146,9 +146,9 @@ export const SOAPDetailPage: React.FC = () => {
 
         {/* Triage */}
         {soap.triage && (
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-red-600">
+          <div className="card p-6 border-l-4 border-red-500 animate-slide-in-up" style={{ animationDelay: '400ms' }}>
             <div className="flex items-center gap-2 mb-4">
-              <Tag className="w-5 h-5 text-red-600" />
+              <Tag className="w-5 h-5 text-red-500" />
               <h2 className="text-xl font-bold text-gray-900">Triage</h2>
             </div>
             <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
@@ -159,7 +159,7 @@ export const SOAPDetailPage: React.FC = () => {
 
         {/* Raw Note */}
         {soap.rawNote && (
-          <div className="bg-gray-50 rounded-lg shadow p-6 border-l-4 border-gray-400">
+          <div className="card bg-gray-50 p-6 border-l-4 border-gray-400 animate-slide-in-up" style={{ animationDelay: '480ms' }}>
             <h2 className="text-xl font-bold text-gray-900 mb-4">Raw Note</h2>
             <pre className="text-sm text-gray-700 overflow-x-auto bg-white p-4 rounded border">
               {soap.rawNote}
@@ -169,7 +169,7 @@ export const SOAPDetailPage: React.FC = () => {
       </div>
 
       {/* Metadata */}
-      <div className="mt-8 bg-gray-50 rounded-lg p-6 text-sm text-gray-600">
+      <div className="mt-8 card bg-gray-50/50 p-6 text-sm text-gray-600 animate-fade-in" style={{ animationDelay: '500ms' }}>
         <p>
           <span className="font-medium">Conversation ID:</span> {soap.conversationId}
         </p>

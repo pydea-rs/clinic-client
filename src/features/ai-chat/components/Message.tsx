@@ -63,7 +63,7 @@ const MarkdownContent: React.FC<{ text: string }> = ({ text }) => {
       <h3 className="text-sm font-bold mb-1 mt-2 first:mt-0">{children}</h3>
     ),
     blockquote: ({ children }: any) => (
-      <blockquote className="border-l-2 border-gray-300 pl-3 my-2 text-gray-600 italic">{children}</blockquote>
+      <blockquote className="border-l-2 border-brand-300 pl-3 my-2 text-gray-600 italic">{children}</blockquote>
     ),
     code: ({ inline, className, children }: any) => {
       if (inline) {
@@ -84,7 +84,7 @@ const MarkdownContent: React.FC<{ text: string }> = ({ text }) => {
       );
     },
     a: ({ href, children }: any) => (
-      <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+      <a href={href} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:text-brand-700 hover:underline transition-colors duration-200">
         {children}
       </a>
     ),
@@ -117,21 +117,21 @@ export const Message: React.FC<MessageProps> = ({ message, onChoiceSelect }) => 
 
   if (message.isUser) {
     const bubbleClass = message.isQuickReply
-      ? 'bg-emerald-600 text-white'
-      : 'bg-blue-600 text-white';
-    const avatarBg = message.isQuickReply ? 'bg-emerald-100' : 'bg-blue-100';
-    const avatarIcon = message.isQuickReply ? 'text-emerald-600' : 'text-blue-600';
+      ? 'bg-emerald-600 text-white shadow-sm'
+      : 'bg-gradient-to-br from-brand-600 to-brand-500 text-white shadow-soft shadow-brand-500/15';
+    const avatarBg = message.isQuickReply ? 'bg-emerald-100' : 'bg-brand-100';
+    const avatarIcon = message.isQuickReply ? 'text-emerald-600' : 'text-brand-600';
 
     return (
       <div className="flex justify-end mb-5 animate-msg-in">
         <div className="flex items-end gap-2.5 max-w-[85%] sm:max-w-[75%] lg:max-w-[65%]">
           <div>
-            <div className={`${bubbleClass} px-4 py-3 rounded-2xl rounded-br-sm shadow-sm`}>
+            <div className={`${bubbleClass} px-4 py-3 rounded-2xl rounded-br-sm`}>
               <p className="text-[14px] leading-relaxed whitespace-pre-wrap break-words">{message.text}</p>
             </div>
             <p className="text-[10px] text-gray-400 mt-1 text-right pr-1">{formatTime(message.timestamp)}</p>
           </div>
-          <div className={`w-7 h-7 rounded-full ${avatarBg} flex items-center justify-center flex-shrink-0 mb-5`}>
+          <div className={`w-7 h-7 rounded-full ${avatarBg} flex items-center justify-center flex-shrink-0 mb-5 ring-2 ring-white`}>
             <User className={`w-3.5 h-3.5 ${avatarIcon}`} />
           </div>
         </div>
@@ -142,19 +142,19 @@ export const Message: React.FC<MessageProps> = ({ message, onChoiceSelect }) => 
   return (
     <div className="flex justify-start mb-5 animate-msg-in">
       <div className="flex items-end gap-2.5 max-w-[90%] sm:max-w-[80%] lg:max-w-[75%]">
-        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0 mb-5 shadow-sm">
+        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center flex-shrink-0 mb-5 shadow-sm shadow-brand-500/20 ring-2 ring-white">
           <Bot className="w-3.5 h-3.5 text-white" />
         </div>
         <div>
-          <div className="bg-white border border-gray-200/80 px-4 py-3 rounded-2xl rounded-bl-sm shadow-sm">
+          <div className="bg-gradient-to-br from-white to-brand-50/40 border border-gray-100 px-4 py-3 rounded-2xl rounded-bl-sm shadow-soft">
             <div className="text-[14px] text-gray-800 prose-sm">
               <MarkdownContent text={message.text} />
               {message.isStreaming && (
-                <span className="inline-block w-0.5 h-4 ml-0.5 align-middle bg-blue-500 animate-pulse rounded-full" />
+                <span className="inline-block w-0.5 h-4 ml-0.5 align-middle bg-brand-500 animate-pulse rounded-full" />
               )}
             </div>
             {message.choices && message.choices.length > 0 && !message.isStreaming && (
-              <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-100">
+              <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-100/80">
                 {message.choices.map((c) => {
                   const isSelected = message.selectedChoice === c.value;
                   const isClosed = message.selectedChoice === '__closed__';
@@ -164,12 +164,12 @@ export const Message: React.FC<MessageProps> = ({ message, onChoiceSelect }) => 
                     return (
                       <span
                         key={c.value}
-                        className={`px-3.5 py-1.5 text-[13px] font-medium rounded-full border ${
+                        className={`px-3.5 py-1.5 text-[13px] font-medium rounded-full border transition-all duration-200 ${
                           isSelected
-                            ? 'text-emerald-700 bg-emerald-50 border-emerald-300'
+                            ? 'text-emerald-700 bg-emerald-50 border-emerald-300 ring-1 ring-emerald-600/10'
                             : isClosed
                               ? 'text-gray-400 bg-gray-50 border-gray-200'
-                              : 'text-gray-400 bg-gray-50 border-gray-200 line-through'
+                              : 'text-gray-400 bg-gray-50 border-gray-200 line-through opacity-60'
                         }`}
                       >
                         {c.label}
@@ -181,7 +181,7 @@ export const Message: React.FC<MessageProps> = ({ message, onChoiceSelect }) => 
                     <button
                       key={c.value}
                       onClick={() => onChoiceSelect?.(c.value, c.label)}
-                      className="px-3.5 py-1.5 text-[13px] font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-full hover:bg-blue-100 hover:border-blue-300 transition-colors btn-press"
+                      className="px-3.5 py-1.5 text-[13px] font-medium text-brand-600 bg-brand-50 border border-brand-200 rounded-full hover:bg-brand-100 hover:border-brand-300 hover:shadow-sm transition-all duration-200 ease-spring btn-press"
                     >
                       {c.label}
                     </button>

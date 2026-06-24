@@ -5,6 +5,7 @@ import { useAuthStore } from '../../lib/stores/auth.store';
 import toast from 'react-hot-toast';
 import { Consultation } from '../../lib/types/api';
 import { getErrorMessage } from '../../lib/api/error.utils';
+import { Loader2, ClipboardList } from 'lucide-react';
 
 export const ConsultationDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -102,37 +103,53 @@ export const ConsultationDetailPage: React.FC = () => {
     !!consultation?.status && ['CREATED', 'PENDING_DOCTOR_REVIEW', 'DOCTOR_DECIDED'].includes(consultation.status);
 
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin text-brand-600" />
+      </div>
+    );
   }
 
   if (!consultation) {
-    return <div className="flex items-center justify-center min-h-screen">Consultation not found</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center animate-fade-in">
+          <ClipboardList className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+          <p className="text-gray-500 text-lg">Consultation not found</p>
+        </div>
+      </div>
+    );
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'CREATED': return 'bg-gray-100 text-gray-800';
-      case 'PENDING_DOCTOR_REVIEW': return 'bg-yellow-100 text-yellow-800';
-      case 'DOCTOR_DECIDED': return 'bg-blue-100 text-blue-800';
-      case 'PENDING_PAYMENT': return 'bg-orange-100 text-orange-800';
-      case 'PAYMENT_CONFIRMED': return 'bg-green-100 text-green-800';
-      case 'IN_PROGRESS': return 'bg-purple-100 text-purple-800';
-      case 'COMPLETED': return 'bg-green-100 text-green-800';
-      case 'CANCELLED': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'CREATED': return 'badge-gray';
+      case 'PENDING_DOCTOR_REVIEW': return 'badge-yellow';
+      case 'DOCTOR_DECIDED': return 'badge-blue';
+      case 'PENDING_PAYMENT': return 'badge-yellow';
+      case 'PAYMENT_CONFIRMED': return 'badge-green';
+      case 'IN_PROGRESS': return 'badge-purple';
+      case 'COMPLETED': return 'badge-green';
+      case 'CANCELLED': return 'badge-red';
+      default: return 'badge-gray';
     }
   };
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Consultation Details</h1>
-        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(consultation.status)}`}>
+      <div className="flex items-center justify-between mb-8 animate-slide-in-up">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-brand-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-soft">
+            <ClipboardList className="w-5 h-5 text-white" />
+          </div>
+          <h1 className="text-3xl font-bold gradient-text">Consultation Details</h1>
+        </div>
+        <span className={`badge ${getStatusColor(consultation.status)}`}>
           {consultation.status.replaceAll('_', ' ')}
         </span>
       </div>
 
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
+      <div className="card p-6 mb-6 animate-slide-in-up" style={{ animationDelay: '60ms' }}>
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <span className="text-gray-500">Consultation ID:</span>
@@ -203,14 +220,14 @@ export const ConsultationDetailPage: React.FC = () => {
 
       {/* Doctor Decision Panel */}
       {canDecide && (
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <div className="card p-6 mb-6 animate-slide-in-up" style={{ animationDelay: '120ms' }}>
           <h2 className="text-xl font-bold mb-4">Decision Panel</h2>
           
           {showDecisionForm ? (
             <form onSubmit={handleDecide} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Decision</label>
-                <select name="doctorDecision" className="w-full px-4 py-2 border rounded-lg" required>
+                <select name="doctorDecision" className="w-full px-4 py-2.5 input-focus" required>
                   <option value="">Select decision</option>
                   <option value="ASYNC">Async (Chat)</option>
                   <option value="ONLINE">Online (Video/Audio)</option>
@@ -220,7 +237,7 @@ export const ConsultationDetailPage: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Visit Method</label>
-                <select name="visitMethod" className="w-full px-4 py-2 border rounded-lg" required>
+                <select name="visitMethod" className="w-full px-4 py-2.5 input-focus" required>
                   <option value="">Select method</option>
                   <option value="CHAT">Chat</option>
                   <option value="VOICE_CALL">Voice Call</option>
@@ -233,14 +250,14 @@ export const ConsultationDetailPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={deciding}
-                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:bg-blue-300"
+                  className="flex-1 btn-primary py-2.5 disabled:opacity-50"
                 >
                   {deciding ? 'Submitting...' : 'Submit Decision'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowDecisionForm(false)}
-                  className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                  className="btn-secondary px-4 py-2"
                 >
                   Cancel
                 </button>
@@ -249,7 +266,7 @@ export const ConsultationDetailPage: React.FC = () => {
           ) : (
             <button
               onClick={() => setShowDecisionForm(true)}
-              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+              className="w-full btn-primary py-2.5"
             >
               Make Decision
             </button>
@@ -259,7 +276,7 @@ export const ConsultationDetailPage: React.FC = () => {
 
       {/* Doctor Completion Panel */}
       {canComplete && (
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <div className="card p-6 mb-6 animate-slide-in-up" style={{ animationDelay: '180ms' }}>
           <h2 className="text-xl font-bold mb-4">Completion Panel</h2>
           
           {showCompletionForm ? (
@@ -268,7 +285,7 @@ export const ConsultationDetailPage: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
                 <textarea
                   name="notes"
-                  className="w-full px-4 py-2 border rounded-lg"
+                  className="w-full px-4 py-2.5 input-focus"
                   rows={3}
                 />
               </div>
@@ -277,7 +294,7 @@ export const ConsultationDetailPage: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Summary</label>
                 <textarea
                   name="summary"
-                  className="w-full px-4 py-2 border rounded-lg"
+                  className="w-full px-4 py-2.5 input-focus"
                   rows={3}
                 />
               </div>
@@ -293,14 +310,14 @@ export const ConsultationDetailPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={completing}
-                  className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 disabled:bg-green-300"
+                  className="flex-1 btn-primary py-2.5 disabled:opacity-50"
                 >
                   {completing ? 'Completing...' : 'Complete Consultation'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowCompletionForm(false)}
-                  className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                  className="btn-secondary px-4 py-2"
                 >
                   Cancel
                 </button>

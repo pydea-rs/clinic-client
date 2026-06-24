@@ -74,26 +74,23 @@ export const DoctorDocumentsPage: React.FC = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    const badges: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
+    const badges: Record<string, { className: string; icon: React.ReactNode }> = {
       PENDING: {
-        bg: 'bg-yellow-100',
-        text: 'text-yellow-800',
-        icon: <Clock className="w-4 h-4" />,
+        className: 'badge-yellow',
+        icon: <Clock className="w-3.5 h-3.5" />,
       },
       APPROVED: {
-        bg: 'bg-green-100',
-        text: 'text-green-800',
-        icon: <CheckCircle className="w-4 h-4" />,
+        className: 'badge-green',
+        icon: <CheckCircle className="w-3.5 h-3.5" />,
       },
       REJECTED: {
-        bg: 'bg-red-100',
-        text: 'text-red-800',
-        icon: <XCircle className="w-4 h-4" />,
+        className: 'badge-red',
+        icon: <XCircle className="w-3.5 h-3.5" />,
       },
     };
     const badge = badges[status] || badges.PENDING;
     return (
-      <div className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${badge.bg} ${badge.text}`}>
+      <div className={`badge ${badge.className}`}>
         {badge.icon}
         {status}
       </div>
@@ -103,17 +100,22 @@ export const DoctorDocumentsPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-brand-600" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-8">Verification Documents</h1>
+    <div className="max-w-4xl mx-auto p-6 animate-fade-in">
+      <div className="flex items-center gap-3 mb-8">
+        <div className="w-10 h-10 bg-gradient-to-br from-brand-500 to-emerald-500 rounded-xl flex items-center justify-center shadow-soft">
+          <FileText className="w-5 h-5 text-white" />
+        </div>
+        <h1 className="text-3xl font-bold text-gray-900">Verification Documents</h1>
+      </div>
 
       {/* Upload Section */}
-      <div className="bg-white rounded-lg shadow p-8 mb-8">
+      <div className="card p-8 mb-8 animate-slide-in-up">
         <h2 className="text-xl font-bold text-gray-900 mb-6">Upload Document</h2>
 
         <div className="space-y-6">
@@ -122,7 +124,7 @@ export const DoctorDocumentsPage: React.FC = () => {
             <select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 input-focus"
             >
               {DOCUMENT_TYPES.map((type) => (
                 <option key={type} value={type}>
@@ -134,7 +136,7 @@ export const DoctorDocumentsPage: React.FC = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Select File *</label>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-500 transition-colors">
+            <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-brand-400 transition-all duration-300 hover:bg-brand-50/30">
               <input
                 type="file"
                 accept=".pdf,.jpg,.jpeg,.png"
@@ -155,7 +157,7 @@ export const DoctorDocumentsPage: React.FC = () => {
           <button
             onClick={handleUpload}
             disabled={!selectedFile || uploadMutation.isPending}
-            className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300 font-medium flex items-center justify-center gap-2"
+            className="btn-primary w-full px-6 py-3 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {uploadMutation.isPending ? (
               <>
@@ -173,22 +175,22 @@ export const DoctorDocumentsPage: React.FC = () => {
       </div>
 
       {/* Documents List */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="card overflow-hidden animate-slide-in-up" style={{ animationDelay: '50ms' }}>
         <div className="px-8 py-6 border-b">
           <h2 className="text-xl font-bold text-gray-900">Your Documents</h2>
         </div>
 
         {documents && documents.length === 0 ? (
           <div className="px-8 py-12 text-center">
-            <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+            <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-600">No documents uploaded yet</p>
           </div>
         ) : (
           <div className="divide-y">
             {documents?.map((doc) => (
-              <div key={doc.id} className="px-8 py-6 flex items-center justify-between hover:bg-gray-50">
+              <div key={doc.id} className="px-8 py-6 flex items-center justify-between hover:bg-gray-50/80 transition-colors duration-200">
                 <div className="flex items-center gap-4 flex-1">
-                  <FileText className="w-8 h-8 text-blue-600" />
+                  <FileText className="w-8 h-8 text-brand-600" />
                   <div className="flex-1">
                     <p className="font-medium text-gray-900">{doc.type.replace(/_/g, ' ')}</p>
                     <p className="text-sm text-gray-600">
@@ -205,7 +207,7 @@ export const DoctorDocumentsPage: React.FC = () => {
                   <button
                     onClick={() => deleteMutation.mutate(doc.id)}
                     disabled={deleteMutation.isPending}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                    className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 disabled:opacity-50 hover:scale-105"
                   >
                     <Trash2 className="w-5 h-5" />
                   </button>
@@ -217,9 +219,9 @@ export const DoctorDocumentsPage: React.FC = () => {
       </div>
 
       {/* Info Box */}
-      <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
-        <h3 className="font-bold text-blue-900 mb-2">Document Requirements</h3>
-        <ul className="text-sm text-blue-800 space-y-1">
+      <div className="card mt-8 p-6 border-brand-100 bg-brand-50/30 animate-slide-in-up" style={{ animationDelay: '100ms' }}>
+        <h3 className="font-bold text-brand-900 mb-2">Document Requirements</h3>
+        <ul className="text-sm text-brand-800 space-y-1">
           <li>• Medical license (required)</li>
           <li>• Educational degree (required)</li>
           <li>• Professional certifications</li>
