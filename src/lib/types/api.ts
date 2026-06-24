@@ -295,6 +295,61 @@ export interface Notification {
   createdAt: string;
 }
 
+// ─── Matching ───────────────────────────────────────────────────────────────
+
+export type MatchStatus =
+  | 'SEARCHING'
+  | 'MATCHED'
+  | 'ACCEPTED'
+  | 'CONSULTATION_CREATED'
+  | 'TIMEOUT'
+  | 'MANUAL_BROWSE'
+  | 'CANCELLED';
+
+export type NotificationType =
+  | 'CONSULTATION_REQUEST'
+  | 'DOCTOR_DECISION'
+  | 'PAYMENT_CONFIRMED'
+  | 'APPOINTMENT_REMINDER'
+  | 'APPOINTMENT_CANCELLED'
+  | 'NEW_CHAT_MESSAGE'
+  | 'NEW_REVIEW'
+  | 'DOCTOR_VERIFIED'
+  | 'SOAP_READY'
+  | 'SYSTEM';
+
+export interface MatchRequest {
+  id: string;
+  patientId: string;
+  soapId?: string;
+  specialty?: DoctorSpecialty;
+  triageLevel?: TriageLevel;
+  status: MatchStatus;
+  matchedDoctorId?: number;
+  matchedDoctor?: {
+    user: Pick<User, 'id' | 'firstname' | 'lastname' | 'avatar'>;
+  };
+  soap?: Pick<PatientSOAP, 'id' | 'suggestedSpecialty' | 'triageLevel'>;
+  consultationId?: string;
+  resolvedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ScoredDoctor {
+  doctorId: number;
+  userId: string;
+  firstname: string;
+  lastname: string;
+  avatar?: string;
+  specialty: DoctorSpecialty;
+  secondarySpecialties: DoctorSpecialty[];
+  rating?: number;
+  totalReviews: number;
+  availableSlots: number;
+  score: number;
+}
+
 // ─── Admin ──────────────────────────────────────────────────────────────────
 
 export interface PlatformStats {

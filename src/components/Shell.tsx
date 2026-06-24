@@ -17,7 +17,10 @@ import {
   Menu,
   X,
   Stethoscope,
+  Zap,
+  Bell,
 } from 'lucide-react';
+import { NotificationBell } from '../features/notification/NotificationBell';
 
 interface ShellProps {
   children: React.ReactNode;
@@ -31,11 +34,14 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
   const navItems = [
     { label: 'Dashboard', icon: Home, path: '/dashboard' },
     { label: 'AI Chat', icon: Bot, path: '/ai' },
+    { label: 'Find Match', icon: Zap, path: '/matching/request', role: 'PATIENT' },
+    { label: 'Match Requests', icon: Zap, path: '/matching/pending', role: 'DOCTOR' },
     { label: 'Doctors', icon: Search, path: '/doctors' },
     { label: 'Appointments', icon: Calendar, path: '/appointments', role: 'PATIENT' },
     { label: 'Patient', icon: User, path: '/patient', role: 'PATIENT' },
     { label: 'Doctor', icon: UserCheck, path: '/doctor', role: 'DOCTOR' },
     { label: 'Chat', icon: MessageSquare, path: '/chat' },
+    { label: 'Notifications', icon: Bell, path: '/notifications' },
     { label: 'Admin', icon: Shield, path: '/admin', role: 'ADMIN' },
   ];
 
@@ -67,12 +73,15 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
           </div>
           <span className="font-bold text-gray-900">AI-Clinic</span>
         </div>
-        <button
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
+        <div className="flex items-center gap-1">
+          {isAuthenticated && <NotificationBell />}
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-1 overflow-hidden">

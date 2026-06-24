@@ -38,6 +38,10 @@ const AdminDoctorVerificationPage = React.lazy(() => import('../features/admin/A
 const AdminReviewModerationPage = React.lazy(() => import('../features/admin/AdminReviewModerationPage').then(m => ({ default: m.AdminReviewModerationPage })));
 const ChatListPage = React.lazy(() => import('../features/chat/ChatListPage').then(m => ({ default: m.ChatListPage })));
 const ChatRoomPage = React.lazy(() => import('../features/chat/ChatRoomPage').then(m => ({ default: m.ChatRoomPage })));
+const MatchRequestPage = React.lazy(() => import('../features/matching/MatchRequestPage').then(m => ({ default: m.MatchRequestPage })));
+const MatchWaitingPage = React.lazy(() => import('../features/matching/MatchWaitingPage').then(m => ({ default: m.MatchWaitingPage })));
+const DoctorMatchRequestsPage = React.lazy(() => import('../features/matching/DoctorMatchRequestsPage').then(m => ({ default: m.DoctorMatchRequestsPage })));
+const NotificationPage = React.lazy(() => import('../features/notification/NotificationPage').then(m => ({ default: m.NotificationPage })));
 
 // Placeholder components for unsupported modules
 const PlaceholderPage: React.FC<{ title: string; phase: string }> = ({ title, phase }) => (
@@ -128,11 +132,18 @@ function App() {
           <Route path="/chat" element={<AuthGuard><Shell><LazyPage><ChatListPage /></LazyPage></Shell></AuthGuard>} />
           <Route path="/chat/:id" element={<AuthGuard><Shell><LazyPage><ChatRoomPage /></LazyPage></Shell></AuthGuard>} />
 
+          {/* Matching routes */}
+          <Route path="/matching/request" element={<PatientGuard><Shell><LazyPage><MatchRequestPage /></LazyPage></Shell></PatientGuard>} />
+          <Route path="/matching/:id/waiting" element={<PatientGuard><Shell><LazyPage><MatchWaitingPage /></LazyPage></Shell></PatientGuard>} />
+          <Route path="/matching/pending" element={<DoctorGuard><Shell><LazyPage><DoctorMatchRequestsPage /></LazyPage></Shell></DoctorGuard>} />
+
+          {/* Notification routes */}
+          <Route path="/notifications" element={<AuthGuard><Shell><LazyPage><NotificationPage /></LazyPage></Shell></AuthGuard>} />
+
           {/* Unsupported modules placeholders */}
-          <Route path="/calls" element={<AuthGuard><Shell><PlaceholderPage title="Calls & WebRTC" phase="Phase 6 pending" /></Shell></AuthGuard>} />
-          <Route path="/notifications" element={<AuthGuard><Shell><PlaceholderPage title="Notifications" phase="Frontend pending" /></Shell></AuthGuard>} />
-          <Route path="/payment" element={<AuthGuard><Shell><PlaceholderPage title="Payment" phase="Frontend pending" /></Shell></AuthGuard>} />
-          <Route path="/nurse" element={<AuthGuard><Shell><PlaceholderPage title="Nurse Management" phase="Phase 9 pending" /></Shell></AuthGuard>} />
+          <Route path="/calls" element={<AuthGuard><Shell><PlaceholderPage title="Calls & WebRTC" phase="Phase 14 pending" /></Shell></AuthGuard>} />
+          <Route path="/payment" element={<AuthGuard><Shell><PlaceholderPage title="Payment" phase="Provider TBD" /></Shell></AuthGuard>} />
+          <Route path="/nurse" element={<AuthGuard><Shell><PlaceholderPage title="Nurse Management" phase="Frontend pending" /></Shell></AuthGuard>} />
 
           {/* 404 */}
           <Route path="*" element={<div className="flex items-center justify-center min-h-screen">404 - Not Found</div>} />
