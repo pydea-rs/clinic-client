@@ -45,10 +45,10 @@ export const FeaturedDoctors: React.FC = () => {
           <Link
             key={doctor.id}
             to={`/doctor/${doctor.id}`}
-            className="border border-gray-100 rounded-xl p-4 hover:border-brand-200 hover:shadow-soft transition-all duration-300 ease-spring group hover:-translate-y-0.5"
+            className="card-shine border border-gray-100 rounded-xl p-4 hover:border-brand-200 hover:shadow-soft transition-all duration-300 ease-spring group hover:-translate-y-0.5"
           >
             <div className="flex items-center gap-2.5 mb-2">
-              <div className="w-9 h-9 bg-gradient-to-br from-brand-50 to-blue-50 rounded-xl flex items-center justify-center flex-shrink-0 ring-1 ring-brand-100/50 group-hover:ring-brand-200 transition-all duration-200">
+              <div className="w-9 h-9 bg-gradient-to-br from-brand-50 to-blue-50 rounded-xl flex items-center justify-center flex-shrink-0 ring-2 ring-brand-200/50 group-hover:ring-brand-300/60 transition-all duration-200">
                 <Stethoscope className="w-4 h-4 text-brand-600" />
               </div>
               <span className="text-sm font-semibold text-gray-900 truncate group-hover:text-brand-700 transition-colors">
@@ -63,9 +63,9 @@ export const FeaturedDoctors: React.FC = () => {
               </div>
             )}
             {doctor.rating !== undefined && doctor.rating > 0 && (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 bg-amber-50 rounded-md px-1.5 py-0.5 w-fit">
                 <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                <span className="text-[11px] font-medium text-gray-600">{doctor.rating.toFixed(1)}</span>
+                <span className="text-[11px] font-semibold text-amber-700">{doctor.rating.toFixed(1)}</span>
               </div>
             )}
           </Link>

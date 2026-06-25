@@ -49,37 +49,52 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   };
 
   const canSend = input.trim().length > 0 && !disabled;
+  const showCharCounter = input.length > 200;
 
   return (
-    <div className="flex-shrink-0 glass border-t border-gray-100/60 px-4 py-3.5">
-      <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
-        <div className="relative flex items-end bg-white border border-gray-200 rounded-2xl shadow-soft focus-within:border-brand-400 focus-within:ring-4 focus-within:ring-brand-100 focus-within:shadow-glow-blue transition-all duration-200 ease-spring">
-          <textarea
-            ref={textareaRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder}
-            disabled={disabled}
-            rows={1}
-            className="flex-1 bg-transparent px-4 py-3.5 pr-12 text-sm resize-none focus:outline-none placeholder-gray-400 disabled:text-gray-400 max-h-40 leading-relaxed"
-          />
-          <button
-            type="submit"
-            disabled={!canSend}
-            className={`absolute right-2.5 bottom-2.5 w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-200 ease-spring btn-press ${
-              canSend
-                ? 'bg-gradient-to-r from-brand-600 to-brand-500 text-white hover:shadow-glow-blue hover:from-brand-500 hover:to-brand-400 shadow-sm shadow-brand-600/20'
-                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-            }`}
-          >
-            <ArrowUp className="w-4 h-4" />
-          </button>
-        </div>
-        <p className="text-[11px] text-gray-400 text-center mt-2.5">
-          AI may make mistakes. Always consult a real doctor for medical advice.
-        </p>
-      </form>
+    <div className="flex-shrink-0 glass border-t border-gray-100/60">
+      {/* Subtle gradient accent line */}
+      <div className="h-px bg-gradient-to-r from-transparent via-brand-500/20 to-transparent" />
+
+      <div className="px-4 py-3.5">
+        <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
+          <div className="relative flex items-end bg-white border border-gray-200 rounded-2xl shadow-soft focus-within:border-brand-400 focus-within:ring-4 focus-within:ring-brand-100 focus-within:shadow-glow-blue transition-all duration-200 ease-spring">
+            <textarea
+              ref={textareaRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={placeholder}
+              disabled={disabled}
+              rows={1}
+              className="flex-1 bg-transparent px-4 py-3.5 pr-12 text-sm resize-none focus:outline-none placeholder-gray-400 disabled:text-gray-400 max-h-40 leading-relaxed"
+            />
+            <button
+              type="submit"
+              disabled={!canSend}
+              className={`absolute right-2.5 bottom-2.5 w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-200 ease-spring btn-press ${
+                canSend
+                  ? 'bg-gradient-to-r from-brand-600 to-brand-500 text-white hover:shadow-glow-blue hover:from-brand-500 hover:to-brand-400 shadow-sm shadow-brand-600/20 animate-pop-in'
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              }`}
+            >
+              <ArrowUp className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="flex items-center justify-between mt-2.5">
+            <p className="text-[11px] text-gray-400 text-center flex-1">
+              AI may make mistakes. Always consult a real doctor for medical advice.
+            </p>
+            {showCharCounter && (
+              <span className={`text-[10px] ml-2 flex-shrink-0 transition-colors duration-200 ${
+                input.length > 1800 ? 'text-amber-500' : 'text-gray-400'
+              }`}>
+                {input.length}/2000
+              </span>
+            )}
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

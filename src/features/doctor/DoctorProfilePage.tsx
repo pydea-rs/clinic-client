@@ -55,72 +55,109 @@ export const DoctorProfilePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="card border-b rounded-none animate-fade-in">
-        <div className="max-w-4xl mx-auto px-6 py-8">
+      {/* Gradient Banner Header */}
+      <div className="bg-gradient-to-r from-brand-600 to-purple-500 animate-fade-in">
+        <div className="max-w-4xl mx-auto px-6 pt-10 pb-20">
+          {/* Spacer for the gradient banner area */}
+        </div>
+      </div>
+
+      {/* Profile Card overlapping the banner */}
+      <div className="max-w-4xl mx-auto px-6 -mt-16">
+        <div className="card card-glow rounded-2xl shadow-soft-xl p-8 animate-fade-in">
           <div className="flex items-start justify-between">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold text-gray-900">
-                  Dr. {doctor.user ? `${doctor.user.firstname} ${doctor.user.lastname}` : doctor.specialty}
-                </h1>
-                {doctor.verified && (
-                  <CheckCircle className="w-6 h-6 text-emerald-500" />
+            <div className="flex items-center gap-6">
+              {/* Doctor Avatar */}
+              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-brand-400 to-purple-500 flex items-center justify-center text-white font-bold text-3xl ring-4 ring-white shadow-soft-lg flex-shrink-0">
+                {doctor.user
+                  ? `${doctor.user.firstname?.[0] || ''}${doctor.user.lastname?.[0] || ''}`
+                  : doctor.specialty?.[0] || 'D'}
+              </div>
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <h1 className="text-3xl font-bold text-gray-900">
+                    Dr. {doctor.user ? `${doctor.user.firstname} ${doctor.user.lastname}` : doctor.specialty}
+                  </h1>
+                  {doctor.verified && (
+                    <CheckCircle className="w-6 h-6 text-emerald-500" />
+                  )}
+                </div>
+                <p className="text-lg text-gray-600 mb-4">{doctor.specialty}</p>
+
+                {doctor.clinicLocation && (
+                  <div className="flex items-center gap-2 text-gray-600 mb-4">
+                    <MapPin className="w-5 h-5" />
+                    {doctor.clinicLocation}
+                  </div>
+                )}
+
+                {/* Rating */}
+                {rating && !ratingLoading && (
+                  <div className="flex items-center gap-4 mt-4">
+                    <div className="flex items-center gap-2">
+                      {[...Array(5)].map((_, i) => (
+                        <svg
+                          key={i}
+                          className={`w-5 h-5 ${
+                            i < Math.round(rating.averageRating || 0)
+                              ? 'fill-amber-400 text-amber-400'
+                              : 'text-gray-300'
+                          }`}
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      ))}
+                    </div>
+                    <span className="text-lg font-semibold text-gray-900">
+                      {(rating.averageRating || 0).toFixed(1)}
+                    </span>
+                    <span className="text-gray-600">({rating.totalReviews} reviews)</span>
+                  </div>
                 )}
               </div>
-              <p className="text-lg text-gray-600 mb-4">{doctor.specialty}</p>
-
-              {doctor.clinicLocation && (
-                <div className="flex items-center gap-2 text-gray-600 mb-4">
-                  <MapPin className="w-5 h-5" />
-                  {doctor.clinicLocation}
-                </div>
-              )}
-
-              {/* Rating */}
-              {rating && !ratingLoading && (
-                <div className="flex items-center gap-4 mt-4">
-                  <div className="flex items-center gap-2">
-                    {[...Array(5)].map((_, i) => (
-                      <svg
-                        key={i}
-                        className={`w-5 h-5 ${
-                          i < Math.round(rating.averageRating || 0)
-                            ? 'fill-yellow-400 text-yellow-400'
-                            : 'text-gray-300'
-                        }`}
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                    ))}
-                  </div>
-                  <span className="text-lg font-semibold text-gray-900">
-                    {(rating.averageRating || 0).toFixed(1)}
-                  </span>
-                  <span className="text-gray-600">({rating.totalReviews} reviews)</span>
-                </div>
-              )}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <Link
                 to={`/slots/${doctor.id}${soapId ? `?soapId=${soapId}` : ''}`}
-                className="btn-secondary px-5 py-3 flex items-center gap-2"
+                className="btn-secondary px-6 py-3 flex items-center gap-2 text-base"
               >
                 <Calendar className="w-5 h-5" />
                 View Slots
               </Link>
               <Link
                 to={`/patient/consultations/create?doctorId=${doctor.id}${soapId ? `&soapId=${soapId}` : ''}`}
-                className="btn-primary px-5 py-3 flex items-center gap-2"
+                className="btn-primary px-6 py-3 flex items-center gap-2 text-base"
               >
                 <MessageSquare className="w-5 h-5" />
                 Book Consultation
               </Link>
             </div>
           </div>
+
+          {/* Stats row */}
+          {rating && !ratingLoading && (
+            <div className="mt-8 pt-6 border-t border-gray-100 grid grid-cols-3 gap-6">
+              <div className="text-center">
+                <p className="counter-value text-3xl font-bold text-brand-600">{(rating.averageRating || 0).toFixed(1)}</p>
+                <p className="text-sm text-gray-500 mt-1">Average Rating</p>
+              </div>
+              <div className="text-center">
+                <p className="counter-value text-3xl font-bold text-brand-600">{rating.totalReviews}</p>
+                <p className="text-sm text-gray-500 mt-1">Total Reviews</p>
+              </div>
+              <div className="text-center">
+                <p className="counter-value text-3xl font-bold text-brand-600">
+                  {doctor.startedAt
+                    ? new Date().getFullYear() - new Date(doctor.startedAt).getFullYear()
+                    : '--'}
+                </p>
+                <p className="text-sm text-gray-500 mt-1">Years Experience</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -143,7 +180,7 @@ export const DoctorProfilePage: React.FC = () => {
               <div className="space-y-3">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Primary</p>
-                  <p className="font-medium text-gray-900">{doctor.specialty}</p>
+                  <span className="badge-brand">{doctor.specialty}</span>
                 </div>
                 {doctor.secondarySpecialties && doctor.secondarySpecialties.length > 0 && (
                   <div>

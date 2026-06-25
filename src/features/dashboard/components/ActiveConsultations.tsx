@@ -15,6 +15,28 @@ const statusConfig: Record<string, { color: string; ring: string; dot: string }>
   CANCELLED: { color: 'bg-red-50 text-red-700', ring: 'ring-red-500/10', dot: 'bg-red-400' },
 };
 
+const statusProgress: Record<string, number> = {
+  CREATED: 5,
+  PENDING_DOCTOR_REVIEW: 15,
+  DOCTOR_DECIDED: 30,
+  PENDING_PAYMENT: 40,
+  PAYMENT_CONFIRMED: 50,
+  IN_PROGRESS: 70,
+  COMPLETED: 100,
+  CANCELLED: 0,
+};
+
+const progressColor: Record<string, string> = {
+  CREATED: 'bg-gray-400',
+  PENDING_DOCTOR_REVIEW: 'bg-amber-500',
+  DOCTOR_DECIDED: 'bg-blue-500',
+  PENDING_PAYMENT: 'bg-orange-500',
+  PAYMENT_CONFIRMED: 'bg-emerald-500',
+  IN_PROGRESS: 'bg-indigo-500',
+  COMPLETED: 'bg-emerald-500',
+  CANCELLED: 'bg-red-400',
+};
+
 function formatStatus(status: string): string {
   return status.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
@@ -63,30 +85,41 @@ export const ActiveConsultations: React.FC = () => {
           <p className="text-sm text-gray-400">No active consultations</p>
         </div>
       ) : (
-        <div className="space-y-1">
+        <div className="space-y-1.5">
           {active.map((consultation) => {
             const config = statusConfig[consultation.status] || statusConfig.CREATED;
+            const progress = statusProgress[consultation.status] ?? 10;
+            const barColor = progressColor[consultation.status] || 'bg-gray-400';
             return (
               <Link
                 key={consultation.id}
                 to={`/consultation/${consultation.id}`}
-                className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50/80 transition-all duration-200 group"
+                className="card-interactive hover-lift block p-3 rounded-xl transition-all duration-200 group"
               >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] font-semibold ring-1 ${config.color} ${config.ring}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
-                      {formatStatus(consultation.status)}
-                    </span>
-                    {consultation.visitMethod && (
-                      <span className="text-[11px] text-gray-400 font-medium">{consultation.visitMethod.replace(/_/g, ' ')}</span>
-                    )}
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] font-semibold ring-1 ${config.color} ${config.ring}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
+                        {formatStatus(consultation.status)}
+                      </span>
+                      {consultation.visitMethod && (
+                        <span className="text-[11px] text-gray-400 font-medium">{consultation.visitMethod.replace(/_/g, ' ')}</span>
+                      )}
+                    </div>
+                    {/* Progress bar */}
+                    <div className="progress-bar mt-2">
+                      <div
+                        className={`progress-bar-fill ${barColor}`}
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1.5">
+                      Created {new Date(consultation.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </p>
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Created {new Date(consultation.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                  </p>
+                  <ChevronRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-brand-500 group-hover:translate-x-0.5 flex-shrink-0 transition-all duration-200" />
                 </div>
-                <ChevronRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-brand-500 group-hover:translate-x-0.5 flex-shrink-0 transition-all duration-200" />
               </Link>
             );
           })}

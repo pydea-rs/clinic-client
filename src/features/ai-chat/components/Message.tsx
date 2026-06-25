@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Bot, User, Copy, Check } from 'lucide-react';
+import { Bot, User, Copy, Check, CheckCircle2 } from 'lucide-react';
 import { AiChatMessage } from '../../../lib/types/chat';
 
 interface MessageProps {
@@ -118,18 +118,18 @@ export const Message: React.FC<MessageProps> = ({ message, onChoiceSelect }) => 
   if (message.isUser) {
     const bubbleClass = message.isQuickReply
       ? 'bg-emerald-600 text-white shadow-sm'
-      : 'bg-gradient-to-br from-brand-600 to-brand-500 text-white shadow-soft shadow-brand-500/15';
+      : 'bg-gradient-to-br from-brand-600 to-brand-500 text-white shadow-soft shadow-brand-500/15 shadow-inner-soft';
     const avatarBg = message.isQuickReply ? 'bg-emerald-100' : 'bg-brand-100';
     const avatarIcon = message.isQuickReply ? 'text-emerald-600' : 'text-brand-600';
 
     return (
-      <div className="flex justify-end mb-5 animate-msg-in">
+      <div className="group flex justify-end mb-5 animate-msg-in">
         <div className="flex items-end gap-2.5 max-w-[85%] sm:max-w-[75%] lg:max-w-[65%]">
           <div>
-            <div className={`${bubbleClass} px-4 py-3 rounded-2xl rounded-br-sm`}>
+            <div className={`${bubbleClass} px-4 py-3 rounded-2xl rounded-br-sm`} style={{ boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1), 0 2px 15px -3px rgba(0,0,0,0.07)' }}>
               <p className="text-[14px] leading-relaxed whitespace-pre-wrap break-words">{message.text}</p>
             </div>
-            <p className="text-[10px] text-gray-400 mt-1 text-right pr-1">{formatTime(message.timestamp)}</p>
+            <p className="text-[10px] text-gray-400 mt-1 text-right pr-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">{formatTime(message.timestamp)}</p>
           </div>
           <div className={`w-7 h-7 rounded-full ${avatarBg} flex items-center justify-center flex-shrink-0 mb-5 ring-2 ring-white`}>
             <User className={`w-3.5 h-3.5 ${avatarIcon}`} />
@@ -140,13 +140,13 @@ export const Message: React.FC<MessageProps> = ({ message, onChoiceSelect }) => 
   }
 
   return (
-    <div className="flex justify-start mb-5 animate-msg-in">
+    <div className="group flex justify-start mb-5 animate-msg-in">
       <div className="flex items-end gap-2.5 max-w-[90%] sm:max-w-[80%] lg:max-w-[75%]">
         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center flex-shrink-0 mb-5 shadow-sm shadow-brand-500/20 ring-2 ring-white">
           <Bot className="w-3.5 h-3.5 text-white" />
         </div>
         <div>
-          <div className="bg-gradient-to-br from-white to-brand-50/40 border border-gray-100 px-4 py-3 rounded-2xl rounded-bl-sm shadow-soft">
+          <div className="bg-gradient-to-br from-white to-brand-50/40 border border-gray-100 border-l-2 border-l-brand-200 px-4 py-3 rounded-2xl rounded-bl-sm shadow-soft">
             <div className="text-[14px] text-gray-800 prose-sm">
               <MarkdownContent text={message.text} />
               {message.isStreaming && (
@@ -164,7 +164,7 @@ export const Message: React.FC<MessageProps> = ({ message, onChoiceSelect }) => 
                     return (
                       <span
                         key={c.value}
-                        className={`px-3.5 py-1.5 text-[13px] font-medium rounded-full border transition-all duration-200 ${
+                        className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[13px] font-medium rounded-full border transition-all duration-200 ${
                           isSelected
                             ? 'text-emerald-700 bg-emerald-50 border-emerald-300 ring-1 ring-emerald-600/10'
                             : isClosed
@@ -172,6 +172,7 @@ export const Message: React.FC<MessageProps> = ({ message, onChoiceSelect }) => 
                               : 'text-gray-400 bg-gray-50 border-gray-200 line-through opacity-60'
                         }`}
                       >
+                        {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />}
                         {c.label}
                       </span>
                     );
@@ -190,7 +191,7 @@ export const Message: React.FC<MessageProps> = ({ message, onChoiceSelect }) => 
               </div>
             )}
           </div>
-          <p className="text-[10px] text-gray-400 mt-1 pl-1">{formatTime(message.timestamp)}</p>
+          <p className="text-[10px] text-gray-400 mt-1 pl-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">{formatTime(message.timestamp)}</p>
         </div>
       </div>
     </div>

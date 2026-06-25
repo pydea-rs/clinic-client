@@ -9,8 +9,8 @@ const THINKING_PHASES = [
   { text: 'Preparing response', icon: Sparkles, color: 'text-amber-500' },
 ];
 
-const PHASE_INTERVAL_MIN = 2400;
-const PHASE_INTERVAL_MAX = 4000;
+const PHASE_INTERVAL_MIN = 2200;
+const PHASE_INTERVAL_MAX = 3800;
 
 export const TypingIndicator: React.FC = () => {
   const [phaseIndex, setPhaseIndex] = useState(() => Math.floor(Math.random() * THINKING_PHASES.length));
@@ -32,7 +32,7 @@ export const TypingIndicator: React.FC = () => {
           });
           setIsFading(false);
           scheduleNext();
-        }, 300);
+        }, 250);
       }, delay);
     };
 
@@ -50,21 +50,22 @@ export const TypingIndicator: React.FC = () => {
           <Bot className="w-3.5 h-3.5 text-white" />
         </div>
         <div>
-          <div className="bg-gradient-to-br from-white to-brand-50/40 border border-gray-100 px-5 py-3.5 rounded-2xl rounded-bl-sm shadow-soft">
+          <div className="bg-gradient-to-br from-white to-brand-50/40 border border-gray-100 border-l-2 border-l-brand-200 px-5 py-3.5 rounded-2xl rounded-bl-sm shadow-soft">
             <div
-              className={`flex items-center gap-2.5 transition-opacity duration-300 ease-spring ${isFading ? 'opacity-0' : 'opacity-100'}`}
+              className={`flex items-center gap-2.5 transition-opacity duration-250 ease-spring ${isFading ? 'opacity-0' : 'opacity-100'}`}
             >
               <div className="relative w-4 h-4 flex-shrink-0">
                 <PhaseIcon className={`w-4 h-4 ${phase.color} animate-thinking-icon`} />
               </div>
               <span className="text-sm text-gray-500 font-medium">{phase.text}</span>
-              <span className="flex items-center gap-0.5 ml-0.5">
-                <span className="w-1 h-1 bg-brand-400 rounded-full typing-dot" />
-                <span className="w-1 h-1 bg-brand-400 rounded-full typing-dot" />
-                <span className="w-1 h-1 bg-brand-400 rounded-full typing-dot" />
+              <span className="flex items-center gap-1 ml-0.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-brand-400 to-brand-600 typing-dot" />
+                <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-brand-500 to-purple-500 typing-dot" />
+                <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-purple-400 to-brand-400 typing-dot" />
               </span>
             </div>
           </div>
+          <p className="text-[10px] text-gray-400 mt-1 pl-1 animate-fade-in">AI is thinking...</p>
         </div>
       </div>
     </div>

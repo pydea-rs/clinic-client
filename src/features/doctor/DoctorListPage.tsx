@@ -31,6 +31,8 @@ export const DoctorListPage: React.FC = () => {
 
   const totalPages = data ? Math.ceil(data.total / limit) : 1;
 
+  const isFilterEmpty = !search && !specialty && !visitMethod && !location;
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -68,7 +70,7 @@ export const DoctorListPage: React.FC = () => {
                     setPage(1);
                   }}
                   placeholder="Doctor name..."
-                  className="w-full pl-10 pr-4 py-2 input-focus"
+                  className={`w-full pl-10 pr-4 py-2 input-focus ${isFilterEmpty ? 'animate-breathe' : ''}`}
                 />
               </div>
             </div>
@@ -158,15 +160,24 @@ export const DoctorListPage: React.FC = () => {
                     <Link
                       key={doctor.id}
                       to={`/doctor/${doctor.id}${soapId ? `?soapId=${encodeURIComponent(soapId)}` : ''}`}
-                      className="card-interactive overflow-hidden animate-slide-in-up"
+                      className="card-interactive card-shine hover-lift overflow-hidden animate-slide-in-up"
                     >
                       <div className="p-6">
                         <div className="flex items-start justify-between mb-4">
-                          <div>
-                            <h3 className="font-bold text-lg text-gray-900">
-                              Dr. {doctor.user ? `${doctor.user.firstname} ${doctor.user.lastname}` : doctor.specialty}
-                            </h3>
-                            <p className="text-sm text-gray-600">{doctor.specialty}</p>
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white font-bold text-lg ring-2 ring-brand-200/50 flex-shrink-0">
+                              {doctor.user
+                                ? `${doctor.user.firstname?.[0] || ''}${doctor.user.lastname?.[0] || ''}`
+                                : doctor.specialty?.[0] || 'D'}
+                            </div>
+                            <div>
+                              <h3 className="font-bold text-lg text-gray-900">
+                                Dr. {doctor.user ? `${doctor.user.firstname} ${doctor.user.lastname}` : doctor.specialty}
+                              </h3>
+                              <span className="badge-brand text-xs">
+                                {doctor.specialty}
+                              </span>
+                            </div>
                           </div>
                           {doctor.verified && (
                             <span className="badge badge-green">
@@ -188,16 +199,19 @@ export const DoctorListPage: React.FC = () => {
                               {[...Array(5)].map((_, i) => (
                                 <Star
                                   key={i}
-                                  className={`w-4 h-4 ${
+                                  className={`w-5 h-5 ${
                                     i < Math.round(doctor.rating || 0)
-                                      ? 'fill-yellow-400 text-yellow-400'
+                                      ? 'fill-amber-400 text-amber-400'
                                       : 'text-gray-300'
                                   }`}
                                 />
                               ))}
                             </div>
-                            <span className="text-sm text-gray-600">
-                              {doctor.rating?.toFixed(1)} ({doctor.totalReviews || 0} reviews)
+                            <span className="text-sm font-semibold text-gray-800">
+                              {doctor.rating?.toFixed(1)}
+                            </span>
+                            <span className="text-sm text-gray-500">
+                              ({doctor.totalReviews || 0})
                             </span>
                           </div>
                         )}

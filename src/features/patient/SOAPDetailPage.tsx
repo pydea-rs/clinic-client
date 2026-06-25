@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { patientApi } from '../../api/patient.api';
-import { Loader2, FileText, Calendar, Tag } from 'lucide-react';
+import { Loader2, FileText, Calendar, Tag, AlertTriangle } from 'lucide-react';
 
 const mdComponents = {
   p: ({ children }: any) => <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>,
@@ -82,90 +82,96 @@ export const SOAPDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* SOAP Sections */}
-      <div className="space-y-6">
-        {/* Subjective */}
-        <div className="card p-6 border-l-4 border-blue-500 animate-slide-in-up" style={{ animationDelay: '80ms' }}>
-          <div className="flex items-center gap-2 mb-4">
-            <Tag className="w-5 h-5 text-blue-500" />
-            <h2 className="text-xl font-bold text-gray-900">Subjective</h2>
-          </div>
-          <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
-            {soap.subjective ? (
-              <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{soap.subjective}</ReactMarkdown>
-            ) : (
-              <p className="text-gray-400 italic">No data available</p>
-            )}
-          </div>
-        </div>
-
-        {/* Objective */}
-        <div className="card p-6 border-l-4 border-emerald-500 animate-slide-in-up" style={{ animationDelay: '160ms' }}>
-          <div className="flex items-center gap-2 mb-4">
-            <Tag className="w-5 h-5 text-emerald-500" />
-            <h2 className="text-xl font-bold text-gray-900">Objective</h2>
-          </div>
-          <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
-            {soap.objective ? (
-              <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{soap.objective}</ReactMarkdown>
-            ) : (
-              <p className="text-gray-400 italic">No data available</p>
-            )}
-          </div>
-        </div>
-
-        {/* Assessment */}
-        <div className="card p-6 border-l-4 border-purple-500 animate-slide-in-up" style={{ animationDelay: '240ms' }}>
-          <div className="flex items-center gap-2 mb-4">
-            <Tag className="w-5 h-5 text-purple-500" />
-            <h2 className="text-xl font-bold text-gray-900">Assessment</h2>
-          </div>
-          <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
-            {soap.assessment ? (
-              <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{soap.assessment}</ReactMarkdown>
-            ) : (
-              <p className="text-gray-400 italic">No data available</p>
-            )}
-          </div>
-        </div>
-
-        {/* Plan */}
-        <div className="card p-6 border-l-4 border-orange-500 animate-slide-in-up" style={{ animationDelay: '320ms' }}>
-          <div className="flex items-center gap-2 mb-4">
-            <Tag className="w-5 h-5 text-orange-500" />
-            <h2 className="text-xl font-bold text-gray-900">Plan</h2>
-          </div>
-          <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
-            {soap.plan ? (
-              <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{soap.plan}</ReactMarkdown>
-            ) : (
-              <p className="text-gray-400 italic">No data available</p>
-            )}
-          </div>
-        </div>
-
-        {/* Triage */}
-        {soap.triage && (
-          <div className="card p-6 border-l-4 border-red-500 animate-slide-in-up" style={{ animationDelay: '400ms' }}>
-            <div className="flex items-center gap-2 mb-4">
-              <Tag className="w-5 h-5 text-red-500" />
-              <h2 className="text-xl font-bold text-gray-900">Triage</h2>
+      {/* Overall Container with glow */}
+      <div className="card-glow rounded-2xl p-1">
+        <div className="bg-white rounded-2xl">
+          {/* SOAP Sections */}
+          <div className="space-y-6 p-6">
+            {/* Subjective */}
+            <div className="card p-6 border-l-4 border-blue-400 animate-slide-in-up" style={{ animationDelay: '80ms' }}>
+              <div className="flex items-center gap-2 mb-4">
+                <Tag className="w-5 h-5 text-blue-500" />
+                <h2 className="text-xl font-bold text-gray-900">Subjective</h2>
+              </div>
+              <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
+                {soap.subjective ? (
+                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{soap.subjective}</ReactMarkdown>
+                ) : (
+                  <p className="text-gray-400 italic">No data available</p>
+                )}
+              </div>
             </div>
-            <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
-              <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{soap.triage}</ReactMarkdown>
-            </div>
-          </div>
-        )}
 
-        {/* Raw Note */}
-        {soap.rawNote && (
-          <div className="card bg-gray-50 p-6 border-l-4 border-gray-400 animate-slide-in-up" style={{ animationDelay: '480ms' }}>
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Raw Note</h2>
-            <pre className="text-sm text-gray-700 overflow-x-auto bg-white p-4 rounded border">
-              {soap.rawNote}
-            </pre>
+            {/* Objective */}
+            <div className="card p-6 border-l-4 border-emerald-400 animate-slide-in-up" style={{ animationDelay: '160ms' }}>
+              <div className="flex items-center gap-2 mb-4">
+                <Tag className="w-5 h-5 text-emerald-500" />
+                <h2 className="text-xl font-bold text-gray-900">Objective</h2>
+              </div>
+              <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
+                {soap.objective ? (
+                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{soap.objective}</ReactMarkdown>
+                ) : (
+                  <p className="text-gray-400 italic">No data available</p>
+                )}
+              </div>
+            </div>
+
+            {/* Assessment */}
+            <div className="card p-6 border-l-4 border-amber-400 animate-slide-in-up" style={{ animationDelay: '240ms' }}>
+              <div className="flex items-center gap-2 mb-4">
+                <Tag className="w-5 h-5 text-amber-500" />
+                <h2 className="text-xl font-bold text-gray-900">Assessment</h2>
+              </div>
+              <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
+                {soap.assessment ? (
+                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{soap.assessment}</ReactMarkdown>
+                ) : (
+                  <p className="text-gray-400 italic">No data available</p>
+                )}
+              </div>
+            </div>
+
+            {/* Plan */}
+            <div className="card p-6 border-l-4 border-purple-400 animate-slide-in-up" style={{ animationDelay: '320ms' }}>
+              <div className="flex items-center gap-2 mb-4">
+                <Tag className="w-5 h-5 text-purple-500" />
+                <h2 className="text-xl font-bold text-gray-900">Plan</h2>
+              </div>
+              <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
+                {soap.plan ? (
+                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{soap.plan}</ReactMarkdown>
+                ) : (
+                  <p className="text-gray-400 italic">No data available</p>
+                )}
+              </div>
+            </div>
+
+            {/* Triage */}
+            {soap.triage && (
+              <div className="card p-6 border-l-4 border-red-500 animate-slide-in-up" style={{ animationDelay: '400ms' }}>
+                <div className="flex items-center gap-3 mb-4">
+                  <AlertTriangle className="w-6 h-6 text-red-500" />
+                  <h2 className="text-2xl font-bold text-gray-900">Triage</h2>
+                  <span className="badge badge-red text-base font-semibold px-4 py-1.5">Priority Assessment</span>
+                </div>
+                <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{soap.triage}</ReactMarkdown>
+                </div>
+              </div>
+            )}
+
+            {/* Raw Note */}
+            {soap.rawNote && (
+              <div className="card bg-gray-50 p-6 border-l-4 border-gray-400 animate-slide-in-up" style={{ animationDelay: '480ms' }}>
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Raw Note</h2>
+                <pre className="text-sm text-gray-700 overflow-x-auto bg-white p-4 rounded border">
+                  {soap.rawNote}
+                </pre>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Metadata */}

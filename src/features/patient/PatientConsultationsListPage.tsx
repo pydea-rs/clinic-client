@@ -4,6 +4,19 @@ import { patientApi } from '../../api/patient.api';
 import { Link } from 'react-router-dom';
 import { Loader2, ChevronRight, Plus, Stethoscope } from 'lucide-react';
 
+const statusProgress: Record<string, number> = {
+  CREATED: 10,
+  PENDING_DOCTOR_REVIEW: 10,
+  PENDING: 10,
+  DOCTOR_DECIDED: 30,
+  ACCEPTED: 30,
+  PENDING_PAYMENT: 30,
+  PAYMENT_CONFIRMED: 40,
+  IN_PROGRESS: 60,
+  COMPLETED: 100,
+  CANCELLED: 0,
+};
+
 export const PatientConsultationsListPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>('');
@@ -85,85 +98,80 @@ export const PatientConsultationsListPage: React.FC = () => {
         ))}
       </div>
 
-      {/* Consultations Table */}
-      <div className="card overflow-hidden animate-slide-in-up" style={{ animationDelay: '120ms' }}>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50/80 border-b border-gray-100">
-              <tr>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">ID</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Doctor</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Status</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Created</th>
-                <th className="px-6 py-3 text-right text-sm font-semibold text-gray-900">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {consultations.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                    No consultations found
-                  </td>
-                </tr>
-              ) : (
-                consultations.map((consultation) => (
-                  <tr key={consultation.id} className="hover:bg-gray-50/80 transition-all duration-200">
-                    <td className="px-6 py-4 text-sm font-mono text-gray-600">
-                      {consultation.id.substring(0, 8)}...
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">Doctor {consultation.doctorId}</td>
-                    <td className="px-6 py-4">
-                      <span className={`badge ${getStatusBadgeColor(consultation.status)}`}>
-                        {consultation.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {new Date(consultation.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <Link
-                        to={`/consultation/${consultation.id}`}
-                        className="inline-flex items-center gap-1 text-brand-600 hover:text-brand-700 font-medium"
-                      >
-                        View
-                        <ChevronRight className="w-4 h-4" />
-                      </Link>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        {consultations.length > 0 && (
-          <div className="px-6 py-4 border-t flex items-center justify-between">
-            <p className="text-sm text-gray-600">
-              Showing {(page - 1) * limit + 1} to {Math.min(page * limit, data?.total || 0)} of {data?.total || 0}
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setPage(Math.max(1, page - 1))}
-                disabled={page === 1}
-                className="btn-secondary px-3 py-1.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Previous
-              </button>
-              <span className="px-3 py-1 text-sm text-gray-600">
-                Page {page} of {totalPages}
-              </span>
-              <button
-                onClick={() => setPage(Math.min(totalPages, page + 1))}
-                disabled={page === totalPages}
-                className="btn-secondary px-3 py-1.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Next
-              </button>
-            </div>
+      {/* Consultations List */}
+      <div className="space-y-0 animate-slide-in-up" style={{ animationDelay: '120ms' }}>
+        {consultations.length === 0 ? (
+          <div className="card p-12 text-center">
+            <p className="text-gray-500 text-lg">No consultations found</p>
           </div>
+        ) : (
+          consultations.map((consultation, index) => (
+            <React.Fragment key={consultation.id}>
+              {index > 0 && <div className="divider-gradient my-1" />}
+              <Link
+                to={`/consultation/${consultation.id}`}
+                className="card-interactive hover-lift block p-6 rounded-xl"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-4">
+                    <span className="text-sm font-mono text-gray-500">
+                      {consultation.id.substring(0, 8)}...
+                    </span>
+                    <span className="text-sm font-medium text-gray-900">
+                      Doctor {consultation.doctorId}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className={`badge ${getStatusBadgeColor(consultation.status)} text-sm font-semibold px-3 py-1`}>
+                      {consultation.status.replaceAll('_', ' ')}
+                    </span>
+                    <span className="text-sm text-gray-500">
+                      {new Date(consultation.createdAt).toLocaleDateString()}
+                    </span>
+                    <ChevronRight className="w-5 h-5 text-gray-400" />
+                  </div>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="progress-bar">
+                  <div
+                    className="progress-bar-fill"
+                    style={{ width: `${statusProgress[consultation.status] ?? 0}%` }}
+                  />
+                </div>
+              </Link>
+            </React.Fragment>
+          ))
         )}
       </div>
+
+      {/* Pagination */}
+      {consultations.length > 0 && (
+        <div className="mt-6 flex items-center justify-between animate-fade-in">
+          <p className="text-sm text-gray-600">
+            Showing {(page - 1) * limit + 1} to {Math.min(page * limit, data?.total || 0)} of {data?.total || 0}
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setPage(Math.max(1, page - 1))}
+              disabled={page === 1}
+              className="btn-secondary px-3 py-1.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            <span className="px-3 py-1 text-sm text-gray-600">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              onClick={() => setPage(Math.min(totalPages, page + 1))}
+              disabled={page === totalPages}
+              className="btn-secondary px-3 py-1.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
