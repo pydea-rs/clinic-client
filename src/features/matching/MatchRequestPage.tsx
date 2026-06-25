@@ -34,7 +34,7 @@ export const MatchRequestPage: React.FC = () => {
 
   const [selectedSoapId, setSelectedSoapId] = useState<string>(soapIdParam || '');
   const [manualSpecialty, setManualSpecialty] = useState<DoctorSpecialty | ''>('');
-  const [mode, setMode] = useState<'soap' | 'manual'>(soapIdParam ? 'soap' : 'soap');
+  const [mode, setMode] = useState<'soap' | 'manual'>(soapIdParam ? 'soap' : 'manual');
 
   const { data: activeMatch, isLoading: checkingActive } = useQuery({
     queryKey: ['matching', 'active'],
