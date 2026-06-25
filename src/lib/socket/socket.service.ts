@@ -84,10 +84,11 @@ class SocketService {
     });
 
     // Flush any listeners that were registered before socket existed
-    for (const { event, callback } of this.pendingListeners) {
+    const pending = this.pendingListeners;
+    this.pendingListeners = [];
+    for (const { event, callback } of pending) {
       this.socket.on(event, callback);
     }
-    this.pendingListeners = [];
 
     return this.socket;
   }

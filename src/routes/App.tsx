@@ -175,7 +175,18 @@ function App() {
           <Route path="/nurse" element={<AuthGuard><Shell><PlaceholderPage title="Nurse Management" phase="Frontend pending" /></Shell></AuthGuard>} />
 
           {/* 404 */}
-          <Route path="*" element={<div className="flex items-center justify-center min-h-screen">404 - Not Found</div>} />
+          <Route path="*" element={
+            <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 via-white to-brand-50 animate-fade-in">
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gray-100 flex items-center justify-center">
+                  <span className="text-2xl font-bold text-gray-300">?</span>
+                </div>
+                <h2 className="text-xl font-bold text-gray-900 mb-1">Page Not Found</h2>
+                <p className="text-sm text-gray-500 mb-6">The page you're looking for doesn't exist.</p>
+                <a href="/" className="text-brand-600 hover:text-brand-700 text-sm font-medium">Go Home</a>
+              </div>
+            </div>
+          } />
         </Routes>
       </BrowserRouter>
     </ErrorBoundary>

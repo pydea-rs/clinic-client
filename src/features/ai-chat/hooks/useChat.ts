@@ -32,6 +32,7 @@ export const useChat = (options?: UseChatOptions) => {
   const lastUserMessageAtRef = useRef<number>(0);
   const isInitializingRef = useRef(false);
 
+  const mountedRef = useRef(true);
   const soapReadyCallbackRef = useRef<SoapReadyCallback | null>(null);
 
   const [deliveryMode, setDeliveryMode] = useState<'sse' | 'poll'>(
@@ -371,6 +372,7 @@ export const useChat = (options?: UseChatOptions) => {
       });
 
       eventSource.addEventListener("message_created", (e: MessageEvent) => {
+        if (!mountedRef.current) return;
         try {
           const messageData = JSON.parse(e.data as string) as Record<string, unknown>;
           const payload = messageData?.payload as Record<string, unknown> | undefined;
@@ -403,6 +405,7 @@ export const useChat = (options?: UseChatOptions) => {
       });
 
       eventSource.addEventListener("message_updated", (e: MessageEvent) => {
+        if (!mountedRef.current) return;
         try {
           const messageData = JSON.parse(e.data as string) as Record<string, unknown>;
           const text =
@@ -441,7 +444,8 @@ export const useChat = (options?: UseChatOptions) => {
         }
       });
 
-      eventSource.addEventListener("error", (errorEvent) => {
+      eventSource.addEventListener("error", (errorEvent: Event) => {
+        if (!mountedRef.current) return;
         const serverData = (errorEvent as MessageEvent).data;
 
         if (serverData !== undefined && serverData !== null) {
@@ -588,7 +592,11 @@ export const useChat = (options?: UseChatOptions) => {
   }, [updateConnectionStatus, stopPolling, stopTypewriter]);
 
   useEffect(() => {
-    return () => { disconnect(); };
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      disconnect();
+    };
   }, [disconnect]);
 
   const setSoapReadyCallback = useCallback((cb: SoapReadyCallback | null) => {

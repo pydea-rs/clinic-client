@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { chatApi } from '../../api/chat.api';
 import { socketService } from '../../lib/socket/socket.service';
@@ -295,7 +295,7 @@ export const ChatRoomPage: React.FC = () => {
     }
   };
 
-  const groupMessagesByDate = () => {
+  const messageGroups = useMemo(() => {
     const groups: { [key: string]: Message[] } = {};
 
     messages.forEach(msg => {
@@ -307,7 +307,7 @@ export const ChatRoomPage: React.FC = () => {
     });
 
     return groups;
-  };
+  }, [messages]);
 
   if (loading) {
     return (
@@ -338,7 +338,6 @@ export const ChatRoomPage: React.FC = () => {
 
   const otherParticipant = getOtherParticipant();
   const isOnline = otherParticipant ? isParticipantOnline(otherParticipant.userId) : false;
-  const messageGroups = groupMessagesByDate();
 
   return (
     <div className="flex flex-col h-full bg-gray-50 animate-fade-in">
