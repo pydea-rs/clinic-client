@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import { Appointment } from '../../lib/types/api';
 import { getErrorMessage } from '../../lib/api/error.utils';
+import { formatStatus, formatVisitMethod } from '../../lib/format';
 
 export const AppointmentsPage: React.FC = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -116,7 +117,7 @@ export const AppointmentsPage: React.FC = () => {
                     </p>
                   </div>
                   <span className={getStatusColor(appointment.status)}>
-                    {appointment.status}
+                    {formatStatus(appointment.status)}
                   </span>
                 </div>
 
@@ -131,11 +132,11 @@ export const AppointmentsPage: React.FC = () => {
                   </div>
                   <div>
                     <span className="text-gray-500">Price:</span>
-                    <p className="font-medium">{appointment.price}</p>
+                    <p className="font-medium">${appointment.price}</p>
                   </div>
                   <div>
                     <span className="text-gray-500">Method:</span>
-                    <p className="font-medium">{appointment.method}</p>
+                    <p className="font-medium">{formatVisitMethod(appointment.method)}</p>
                   </div>
                 </div>
 

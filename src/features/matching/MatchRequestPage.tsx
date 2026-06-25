@@ -6,6 +6,7 @@ import { patientApi } from '../../api/patient.api';
 import { Loader2, Search, Zap, FileText, ArrowRight, Stethoscope } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { DoctorSpecialty, TriageLevel } from '../../lib/types/api';
+import { formatSpecialty } from '../../lib/format';
 
 const SPECIALTIES: DoctorSpecialty[] = [
   'GENERAL', 'CARDIOLOGY', 'DERMATOLOGY', 'ENT', 'GASTROENTEROLOGY',
@@ -159,7 +160,7 @@ export const MatchRequestPage: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-3 mt-1">
                     {soap.suggestedSpecialty && (
-                      <span className="text-xs text-brand-600">{soap.suggestedSpecialty.replace(/_/g, ' ')}</span>
+                      <span className="text-xs text-brand-600">{formatSpecialty(soap.suggestedSpecialty)}</span>
                     )}
                     <span className="text-xs text-gray-400">{new Date(soap.createdAt).toLocaleDateString()}</span>
                   </div>
@@ -172,7 +173,7 @@ export const MatchRequestPage: React.FC = () => {
               <div className="font-medium text-gray-700 mb-1">Auto-detected:</div>
               <div className="flex items-center gap-3">
                 {selectedSoap.suggestedSpecialty && (
-                  <span className="text-brand-600">Specialty: {selectedSoap.suggestedSpecialty.replace(/_/g, ' ')}</span>
+                  <span className="text-brand-600">Specialty: {formatSpecialty(selectedSoap.suggestedSpecialty)}</span>
                 )}
                 {triageBadge(selectedSoap.triageLevel)}
                 {!selectedSoap.suggestedSpecialty && <span className="text-gray-500">General practitioner</span>}
@@ -197,7 +198,7 @@ export const MatchRequestPage: React.FC = () => {
                     : 'border-gray-200 text-gray-700 hover:border-gray-300'
                 }`}
               >
-                {spec.replace(/_/g, ' ')}
+                {formatSpecialty(spec)}
               </button>
             ))}
           </div>

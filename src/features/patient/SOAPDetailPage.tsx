@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { patientApi } from '../../api/patient.api';
 import { Loader2, FileText, Calendar, Tag, AlertTriangle } from 'lucide-react';
+import { formatSpecialty } from '../../lib/format';
 
 const mdComponents = {
   p: ({ children }: any) => <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>,
@@ -76,7 +77,7 @@ export const SOAPDetailPage: React.FC = () => {
           {soap.specialty && (
             <div className="text-right">
               <p className="text-white/70 text-sm mb-2">Specialty</p>
-              <p className="text-xl font-semibold">{soap.specialty}</p>
+              <p className="text-xl font-semibold">{formatSpecialty(soap.specialty)}</p>
             </div>
           )}
         </div>

@@ -5,6 +5,7 @@ import { matchingSocket } from '../../lib/socket/matching.socket';
 import { Loader2, UserPlus, Check, X, Clock, FileText, AlertTriangle, Zap } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { MatchRequest, TriageLevel } from '../../lib/types/api';
+import { formatSpecialty } from '../../lib/format';
 
 const triageConfig: Record<string, { icon: React.ElementType; color: string; ring: string; label: string }> = {
   SELF_CARE: { icon: Check, color: 'bg-emerald-50 text-emerald-700', ring: 'ring-emerald-500/10', label: 'Self Care' },
@@ -60,7 +61,7 @@ const MatchRequestCard: React.FC<{
         <div className="flex flex-wrap gap-2 mb-4">
           {request.specialty && (
             <span className="badge badge-blue">
-              {request.specialty.replace(/_/g, ' ')}
+              {formatSpecialty(request.specialty)}
             </span>
           )}
           <TriageBadge level={request.triageLevel} />

@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { soapApi } from '../../../api/soap.api';
 import { FileText, Search, AlertTriangle, CheckCircle, AlertCircle, ClipboardList } from 'lucide-react';
+import { formatTriageLevel, formatSpecialty } from '../../../lib/format';
 
 const triageBadge: Record<string, { color: string; ring: string; icon: React.ReactNode }> = {
   SELF_CARE: { color: 'bg-emerald-50 text-emerald-700', ring: 'ring-emerald-500/10', icon: <CheckCircle className="w-3 h-3" /> },
@@ -66,12 +67,12 @@ export const RecentSOAPs: React.FC = () => {
                   {triage && (
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-semibold ring-1 ${triage.color} ${triage.ring}`}>
                       {triage.icon}
-                      {soap.triageLevel?.replace(/_/g, ' ')}
+                      {formatTriageLevel(soap.triageLevel)}
                     </span>
                   )}
                   {soap.suggestedSpecialty && (
                     <span className="inline-flex items-center px-2 py-0.5 bg-purple-50 text-purple-700 rounded-lg text-[10px] font-semibold ring-1 ring-purple-600/10">
-                      {soap.suggestedSpecialty.replace(/_/g, ' ')}
+                      {formatSpecialty(soap.suggestedSpecialty)}
                     </span>
                   )}
                   <span className="text-[11px] text-gray-400 ml-auto">

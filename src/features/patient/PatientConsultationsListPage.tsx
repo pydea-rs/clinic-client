@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { patientApi } from '../../api/patient.api';
 import { Link } from 'react-router-dom';
 import { Loader2, ChevronRight, Plus, Stethoscope } from 'lucide-react';
+import { formatStatus } from '../../lib/format';
 
 const statusProgress: Record<string, number> = {
   CREATED: 10,
@@ -93,7 +94,7 @@ export const PatientConsultationsListPage: React.FC = () => {
                 : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 shadow-sm'
             }`}
           >
-            {status.replaceAll('_', ' ')}
+            {formatStatus(status)}
           </button>
         ))}
       </div>
@@ -123,7 +124,7 @@ export const PatientConsultationsListPage: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-3">
                     <span className={`badge ${getStatusBadgeColor(consultation.status)} text-sm font-semibold px-3 py-1`}>
-                      {consultation.status.replaceAll('_', ' ')}
+                      {formatStatus(consultation.status)}
                     </span>
                     <span className="text-sm text-gray-500">
                       {new Date(consultation.createdAt).toLocaleDateString()}

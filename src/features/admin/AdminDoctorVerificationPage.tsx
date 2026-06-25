@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { adminApi } from '../../api/admin.api';
 import toast from 'react-hot-toast';
 import { ShieldCheck } from 'lucide-react';
+import { formatDocType, formatStatus } from '../../lib/format';
 
 interface VerificationDocument {
   id: number;
@@ -145,13 +146,13 @@ export const AdminDoctorVerificationPage: React.FC = () => {
                     {(documentsByDoctor[doctor.doctorId] || doctor.documents).map((doc) => (
                       <div key={doc.id} className="flex items-center justify-between bg-gray-50/80 p-3 rounded-xl">
                         <div>
-                          <span className="text-sm font-medium capitalize">{doc.type?.replace('_', ' ') || doc.type}</span>
+                          <span className="text-sm font-medium capitalize">{formatDocType(doc.type)}</span>
                           <span className={`ml-2 badge ${
                             doc.status === 'PENDING' ? 'badge-yellow' :
                             doc.status === 'APPROVED' ? 'badge-green' :
                             'badge-red'
                           }`}>
-                            {doc.status}
+                            {formatStatus(doc.status)}
                           </span>
                         </div>
                         <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:text-brand-700 hover:underline">

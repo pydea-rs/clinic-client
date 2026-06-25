@@ -5,6 +5,7 @@ import { useAuthStore } from '../../lib/stores/auth.store';
 import toast from 'react-hot-toast';
 import { Consultation } from '../../lib/types/api';
 import { getErrorMessage } from '../../lib/api/error.utils';
+import { formatStatus, formatVisitMethod, formatEnum } from '../../lib/format';
 import { Loader2, ClipboardList } from 'lucide-react';
 
 export const ConsultationDetailPage: React.FC = () => {
@@ -145,7 +146,7 @@ export const ConsultationDetailPage: React.FC = () => {
           <h1 className="text-3xl font-bold gradient-text">Consultation Details</h1>
         </div>
         <span className={`badge ${getStatusColor(consultation.status)}`}>
-          {consultation.status.replaceAll('_', ' ')}
+          {formatStatus(consultation.status)}
         </span>
       </div>
 
@@ -189,11 +190,11 @@ export const ConsultationDetailPage: React.FC = () => {
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
               <span className="text-gray-500">Doctor Decision:</span>
-              <p className="font-medium">{consultation.doctorDecision}</p>
+              <p className="font-medium">{{ ASYNC: 'Async (Chat)', ONLINE: 'Online', IN_PERSON: 'In Person' }[consultation.doctorDecision!] || formatEnum(consultation.doctorDecision!)}</p>
             </div>
             <div>
               <span className="text-gray-500">Visit Method:</span>
-              <p className="font-medium">{consultation.visitMethod}</p>
+              <p className="font-medium">{formatVisitMethod(consultation.visitMethod!)}</p>
             </div>
           </div>
         )}
@@ -326,7 +327,7 @@ export const ConsultationDetailPage: React.FC = () => {
           ) : (
             <button
               onClick={() => setShowCompletionForm(true)}
-              className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700"
+              className="btn-success w-full py-2.5"
             >
               Complete Consultation
             </button>
@@ -336,11 +337,11 @@ export const ConsultationDetailPage: React.FC = () => {
 
       {/* Cancel Button */}
       {canCancel && (
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <div className="card p-6 mb-6">
           <button
             onClick={handleCancel}
             disabled={cancelling}
-            className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 disabled:bg-red-300"
+            className="btn-danger w-full py-2.5 disabled:opacity-50"
           >
             {cancelling ? 'Cancelling...' : 'Cancel Consultation'}
           </button>
@@ -350,14 +351,14 @@ export const ConsultationDetailPage: React.FC = () => {
       <div className="flex space-x-4">
         <button
           onClick={() => navigate(-1)}
-          className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+          className="btn-secondary"
         >
           Back
         </button>
         {user?.role === 'PATIENT' && (
           <button
             onClick={() => navigate('/patient/consultations')}
-            className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+            className="btn-secondary"
           >
             My Consultations
           </button>

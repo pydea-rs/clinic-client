@@ -4,6 +4,7 @@ import { schedulingApi } from '../../api/scheduling.api';
 import toast from 'react-hot-toast';
 import { Appointment } from '../../lib/types/api';
 import { getErrorMessage } from '../../lib/api/error.utils';
+import { formatStatus, formatVisitMethod } from '../../lib/format';
 
 export const AppointmentDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -86,7 +87,7 @@ export const AppointmentDetailPage: React.FC = () => {
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold">Details</h2>
           <span className={getStatusBadge(appointment.status)}>
-            {appointment.status}
+            {formatStatus(appointment.status)}
           </span>
         </div>
 
@@ -101,11 +102,11 @@ export const AppointmentDetailPage: React.FC = () => {
           </div>
           <div className="p-3 rounded-xl bg-gray-50/80">
             <span className="text-gray-500 text-xs uppercase tracking-wide">Method</span>
-            <p className="font-medium mt-0.5">{appointment.method}</p>
+            <p className="font-medium mt-0.5">{formatVisitMethod(appointment.method)}</p>
           </div>
           <div className="p-3 rounded-xl bg-gray-50/80">
             <span className="text-gray-500 text-xs uppercase tracking-wide">Price</span>
-            <p className="font-medium mt-0.5">{appointment.price}</p>
+            <p className="font-medium mt-0.5">${appointment.price}</p>
           </div>
           <div className="p-3 rounded-xl bg-gray-50/80">
             <span className="text-gray-500 text-xs uppercase tracking-wide">Doctor ID</span>

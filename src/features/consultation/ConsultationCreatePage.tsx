@@ -8,6 +8,7 @@ import { DoctorProfile } from '../../api/doctor.api';
 import { PatientSOAP } from '../../lib/types/api';
 import { getErrorMessage } from '../../lib/api/error.utils';
 import { Loader2, PlusCircle } from 'lucide-react';
+import { formatSpecialty } from '../../lib/format';
 
 export const ConsultationCreatePage: React.FC = () => {
   const navigate = useNavigate();
@@ -99,7 +100,7 @@ export const ConsultationCreatePage: React.FC = () => {
             <option value="">Select a doctor</option>
             {doctors.map((doctor) => (
               <option key={doctor.id} value={doctor.id}>
-                {doctor.user?.firstname} {doctor.user?.lastname} - {doctor.specialty}
+                {doctor.user?.firstname} {doctor.user?.lastname} - {formatSpecialty(doctor.specialty)}
               </option>
             ))}
           </select>
@@ -116,7 +117,7 @@ export const ConsultationCreatePage: React.FC = () => {
               <option value="">No SOAP</option>
               {soaps.map((soap) => (
                 <option key={soap.id} value={soap.id}>
-                  {soap.suggestedSpecialty || 'No specialty'} - {new Date(soap.createdAt).toLocaleDateString()}
+                  {soap.suggestedSpecialty ? formatSpecialty(soap.suggestedSpecialty) : 'No specialty'} - {new Date(soap.createdAt).toLocaleDateString()}
                 </option>
               ))}
             </select>

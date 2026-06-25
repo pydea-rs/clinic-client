@@ -6,6 +6,7 @@ import { reviewApi } from '../../api/review.api';
 import { Loader2, MapPin, CheckCircle, MessageSquare, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { RatingWidget } from '../review/RatingWidget';
+import { formatSpecialty } from '../../lib/format';
 
 export const DoctorProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -82,7 +83,7 @@ export const DoctorProfilePage: React.FC = () => {
                     <CheckCircle className="w-6 h-6 text-emerald-500" />
                   )}
                 </div>
-                <p className="text-lg text-gray-600 mb-4">{doctor.specialty}</p>
+                <p className="text-lg text-gray-600 mb-4">{formatSpecialty(doctor.specialty)}</p>
 
                 {doctor.clinicLocation && (
                   <div className="flex items-center gap-2 text-gray-600 mb-4">
@@ -180,7 +181,7 @@ export const DoctorProfilePage: React.FC = () => {
               <div className="space-y-3">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Primary</p>
-                  <span className="badge-brand">{doctor.specialty}</span>
+                  <span className="badge-brand">{formatSpecialty(doctor.specialty)}</span>
                 </div>
                 {doctor.secondarySpecialties && doctor.secondarySpecialties.length > 0 && (
                   <div>
@@ -188,7 +189,7 @@ export const DoctorProfilePage: React.FC = () => {
                     <div className="flex flex-wrap gap-2">
                       {doctor.secondarySpecialties.map((spec) => (
                         <span key={spec} className="badge badge-blue">
-                          {spec}
+                          {formatSpecialty(spec)}
                         </span>
                       ))}
                     </div>

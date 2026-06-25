@@ -2,6 +2,7 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { FileText, Search, X, AlertTriangle, CheckCircle, AlertCircle } from 'lucide-react';
+import { formatSpecialty } from '../../../lib/format';
 
 interface SOAPReadyBannerProps {
   soapId: string;
@@ -49,7 +50,7 @@ export const SOAPReadyBanner: React.FC<SOAPReadyBannerProps> = ({
                 )}
                 {suggestedSpecialty && (
                   <span className="badge-purple">
-                    {suggestedSpecialty.replace(/_/g, ' ')}
+                    {formatSpecialty(suggestedSpecialty)}
                   </span>
                 )}
               </div>

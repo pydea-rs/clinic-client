@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { patientApi } from '../../api/patient.api';
 import { Link } from 'react-router-dom';
 import { Loader2, ChevronRight, FileText } from 'lucide-react';
+import { formatSpecialty } from '../../lib/format';
 
 const stripMarkdown = (text: string) =>
   text.replace(/\*\*(.*?)\*\*/g, '$1').replace(/__(.*?)__/g, '$1').replace(/\*(.*?)\*/g, '$1').replace(/_(.*?)_/g, '$1');
@@ -60,7 +61,7 @@ export const PatientSOAPListPage: React.FC = () => {
             {soap.specialty && (
               <div className="mb-3">
                 <span className="badge badge-blue">
-                  {soap.specialty}
+                  {formatSpecialty(soap.specialty)}
                 </span>
               </div>
             )}

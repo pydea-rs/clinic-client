@@ -6,6 +6,7 @@ import { matchingSocket } from '../../lib/socket/matching.socket';
 import { Loader2, Search, CheckCircle, XCircle, Clock, UserCheck, ArrowRight, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { ScoredDoctor, MatchRequest } from '../../lib/types/api';
+import { formatSpecialty } from '../../lib/format';
 
 const MATCH_TIMEOUT_SECONDS = 300;
 
@@ -253,7 +254,7 @@ export const MatchWaitingPage: React.FC = () => {
                     <span className="text-gray-700 font-medium">Dr. {doc.firstname} {doc.lastname}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-400">{doc.specialty.replace(/_/g, ' ')}</span>
+                    <span className="text-xs text-gray-400">{formatSpecialty(doc.specialty)}</span>
                     <span className="text-xs font-semibold text-brand-600">{Math.round(doc.score)}%</span>
                   </div>
                 </div>

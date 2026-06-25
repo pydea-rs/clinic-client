@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Consultation } from '../../lib/types/api';
 import { getErrorMessage } from '../../lib/api/error.utils';
+import { formatStatus, formatVisitMethod, formatEnum } from '../../lib/format';
 import { Loader2, ClipboardList, ChevronRight } from 'lucide-react';
 
 export const ConsultationListPage: React.FC = () => {
@@ -91,7 +92,7 @@ export const ConsultationListPage: React.FC = () => {
                     </p>
                   </div>
                   <span className={`badge ${getStatusColor(consultation.status)}`}>
-                    {consultation.status.replaceAll('_', ' ')}
+                    {formatStatus(consultation.status)}
                   </span>
                 </div>
                 
@@ -103,13 +104,13 @@ export const ConsultationListPage: React.FC = () => {
                   {consultation.doctorDecision && (
                     <div>
                       <span className="text-gray-500">Decision:</span>
-                      <p className="font-medium">{consultation.doctorDecision}</p>
+                      <p className="font-medium">{{ ASYNC: 'Async (Chat)', ONLINE: 'Online', IN_PERSON: 'In Person' }[consultation.doctorDecision!] || formatEnum(consultation.doctorDecision!)}</p>
                     </div>
                   )}
                   {consultation.visitMethod && (
                     <div>
                       <span className="text-gray-500">Method:</span>
-                      <p className="font-medium">{consultation.visitMethod}</p>
+                      <p className="font-medium">{formatVisitMethod(consultation.visitMethod!)}</p>
                     </div>
                   )}
                   <div>

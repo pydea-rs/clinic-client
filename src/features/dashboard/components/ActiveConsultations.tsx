@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { consultationApi } from '../../../api/consultation.api';
 import { ClipboardList, ChevronRight, Activity } from 'lucide-react';
+import { formatVisitMethod } from '../../../lib/format';
 
 const statusConfig: Record<string, { color: string; ring: string; dot: string }> = {
   CREATED: { color: 'bg-gray-50 text-gray-700', ring: 'ring-gray-500/10', dot: 'bg-gray-400' },
@@ -104,7 +105,7 @@ export const ActiveConsultations: React.FC = () => {
                         {formatStatus(consultation.status)}
                       </span>
                       {consultation.visitMethod && (
-                        <span className="text-[11px] text-gray-400 font-medium">{consultation.visitMethod.replace(/_/g, ' ')}</span>
+                        <span className="text-[11px] text-gray-400 font-medium">{formatVisitMethod(consultation.visitMethod)}</span>
                       )}
                     </div>
                     {/* Progress bar */}

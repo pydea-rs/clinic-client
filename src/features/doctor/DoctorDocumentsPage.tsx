@@ -4,6 +4,7 @@ import { doctorApi } from '../../api/doctor.api';
 import { Loader2, Upload, FileText, Trash2, CheckCircle, Clock, XCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../lib/api/error.utils';
+import { formatDocType, formatStatus } from '../../lib/format';
 
 const DOCUMENT_TYPES = [
   'LICENSE',
@@ -92,7 +93,7 @@ export const DoctorDocumentsPage: React.FC = () => {
     return (
       <div className={`badge ${badge.className}`}>
         {badge.icon}
-        {status}
+        {formatStatus(status)}
       </div>
     );
   };
@@ -128,7 +129,7 @@ export const DoctorDocumentsPage: React.FC = () => {
             >
               {DOCUMENT_TYPES.map((type) => (
                 <option key={type} value={type}>
-                  {type.replace(/_/g, ' ')}
+                  {formatDocType(type)}
                 </option>
               ))}
             </select>
@@ -192,7 +193,7 @@ export const DoctorDocumentsPage: React.FC = () => {
                 <div className="flex items-center gap-4 flex-1">
                   <FileText className="w-8 h-8 text-brand-600" />
                   <div className="flex-1">
-                    <p className="font-medium text-gray-900">{doc.type.replace(/_/g, ' ')}</p>
+                    <p className="font-medium text-gray-900">{formatDocType(doc.type)}</p>
                     <p className="text-sm text-gray-600">
                       Uploaded {new Date(doc.createdAt).toLocaleDateString()}
                     </p>

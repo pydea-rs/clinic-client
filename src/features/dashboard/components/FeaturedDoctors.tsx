@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { doctorApi } from '../../../api/doctor.api';
 import { MapPin, Star, Stethoscope, Users } from 'lucide-react';
+import { formatSpecialty } from '../../../lib/format';
 
 export const FeaturedDoctors: React.FC = () => {
   const { data, isLoading } = useQuery({
@@ -55,7 +56,7 @@ export const FeaturedDoctors: React.FC = () => {
                 {doctor.user?.firstname} {doctor.user?.lastname}
               </span>
             </div>
-            <p className="text-xs text-brand-600 font-semibold mb-2">{doctor.specialty?.replace(/_/g, ' ')}</p>
+            <p className="text-xs text-brand-600 font-semibold mb-2">{formatSpecialty(doctor.specialty || '')}</p>
             {doctor.clinicLocation && (
               <div className="flex items-center gap-1 text-[11px] text-gray-400 mb-1.5">
                 <MapPin className="w-3 h-3 flex-shrink-0" />

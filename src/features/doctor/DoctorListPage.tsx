@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { doctorApi } from '../../api/doctor.api';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Loader2, MapPin, Star, Search, FileText } from 'lucide-react';
+import { formatSpecialty } from '../../lib/format';
 
 export const DoctorListPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -50,7 +51,7 @@ export const DoctorListPage: React.FC = () => {
           <div className="card border-brand-100 bg-brand-50/50 p-4 mb-6 flex items-center gap-3 animate-slide-in-up">
             <FileText className="w-5 h-5 text-brand-600 flex-shrink-0" />
             <p className="text-brand-800 text-sm font-medium">
-              Based on your AI consultation{specialty ? `, we recommend a ${specialty.replace(/_/g, ' ')} specialist` : ', find a suitable doctor below'}.
+              Based on your AI consultation{specialty ? `, we recommend a ${formatSpecialty(specialty)} specialist` : ', find a suitable doctor below'}.
             </p>
           </div>
         )}
@@ -175,7 +176,7 @@ export const DoctorListPage: React.FC = () => {
                                 Dr. {doctor.user ? `${doctor.user.firstname} ${doctor.user.lastname}` : doctor.specialty}
                               </h3>
                               <span className="badge-brand text-xs">
-                                {doctor.specialty}
+                                {formatSpecialty(doctor.specialty)}
                               </span>
                             </div>
                           </div>
