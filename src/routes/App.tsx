@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ToastProvider } from '../components/Toast';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { useAuth } from '../features/auth/hooks/useAuth';
@@ -56,6 +56,15 @@ const PlaceholderPage: React.FC<{ title: string; phase: string }> = ({ title, ph
   </div>
 );
 
+const AuthRedirect: React.FC<{ isAuthenticated: boolean; children: React.ReactNode }> = ({ isAuthenticated, children }) => {
+  const location = useLocation();
+  if (isAuthenticated) {
+    const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/dashboard';
+    return <Navigate to={from} replace />;
+  }
+  return <>{children}</>;
+};
+
 const PageLoader: React.FC = () => (
   <div className="flex items-center justify-center min-h-[60vh] animate-fade-in">
     <div className="flex flex-col items-center gap-3">
@@ -102,7 +111,7 @@ function App() {
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<Navigate to={isAuthenticated ? '/dashboard' : '/auth'} replace />} />
-          <Route path="/auth" element={!isAuthenticated ? <LazyPage><AuthForm onLogin={login} onRegister={register} /></LazyPage> : <Navigate to="/dashboard" replace />} />
+          <Route path="/auth" element={<AuthRedirect isAuthenticated={isAuthenticated}><LazyPage><AuthForm onLogin={login} onRegister={register} /></LazyPage></AuthRedirect>} />
 
           {/* Dashboard */}
           <Route path="/dashboard" element={<AuthGuard><Shell><LazyPage><DashboardPage /></LazyPage></Shell></AuthGuard>} />

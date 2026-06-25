@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { useAuthStore } from '../../../lib/stores/auth.store';
 import { authApi } from '../../../api/auth.api';
 import { queryClient } from '../../../lib/queryClient';
@@ -26,8 +27,14 @@ export const useAuth = (): {
         } else {
           clearAuth();
         }
-      } catch {
-        clearAuth();
+      } catch (error: unknown) {
+        const status = (error as { status?: number }).status;
+        if (status === 401 || status === 403) {
+          clearAuth();
+        } else {
+          clearAuth();
+          toast.error('Unable to reach the server. Please check your connection.');
+        }
       } finally {
         setInitializing(false);
       }

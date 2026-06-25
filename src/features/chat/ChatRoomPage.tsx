@@ -50,6 +50,8 @@ export const ChatRoomPage: React.FC = () => {
   useEffect(() => {
     if (!id) return;
 
+    let cancelled = false;
+
     loadChatAndMessages();
 
     const socket = socketService.connect();
@@ -59,6 +61,7 @@ export const ChatRoomPage: React.FC = () => {
 
     // Listen for incoming messages
     const handleNewMessage = (data: { message: Message }) => {
+      if (cancelled) return;
       if (data?.message?.chatId === id) {
         setMessages(prev => {
           if (prev.some(m => String(m.id) === String(data.message.id))) {
@@ -86,6 +89,7 @@ export const ChatRoomPage: React.FC = () => {
 
     // Listen for typing indicators
     const handleTyping = (data: { userId: string; isTyping: boolean; firstname?: string }) => {
+      if (cancelled) return;
       if (data.userId !== user?.id) {
         setTypingUsers(prev => {
           if (data.isTyping) {
@@ -165,6 +169,7 @@ export const ChatRoomPage: React.FC = () => {
     });
 
     return () => {
+      cancelled = true;
       socketService.leaveRoom(id);
       unsubStatus();
 
@@ -224,8 +229,9 @@ export const ChatRoomPage: React.FC = () => {
     const trimmed = content.trim();
     handleTyping(false);
 
+    const tempId = `temp-${Date.now()}`;
     const optimisticMsg: Message = {
-      id: `temp-${Date.now()}`,
+      id: tempId,
       chatId: id,
       senderId: user.id,
       content: trimmed,
@@ -234,8 +240,27 @@ export const ChatRoomPage: React.FC = () => {
       updatedAt: new Date().toISOString(),
     };
     setMessages(prev => [...prev, optimisticMsg]);
-    socketService.sendMessage(id, trimmed);
     setContent('');
+
+    if (!socketService.isConnected()) {
+      setMessages(prev => prev.filter(m => m.id !== tempId));
+      toast.error('Not connected — message not sent');
+      setContent(trimmed);
+      return;
+    }
+
+    socketService.sendMessage(id, trimmed);
+
+    // Rollback if server never confirms within 10s
+    setTimeout(() => {
+      setMessages(prev => {
+        const stillTemp = prev.find(m => m.id === tempId);
+        if (stillTemp) {
+          toast.error('Message may not have been delivered');
+        }
+        return prev;
+      });
+    }, 10000);
   };
 
   const handleEdit = (message: Message) => {

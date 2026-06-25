@@ -29,8 +29,8 @@ export const ConsultationCreatePage: React.FC = () => {
         ]);
         setDoctors(doctorsData.doctors || []);
         setSoaps(soapsData.soaps || []);
-      } catch {
-        // Page renders with empty lists on failure
+      } catch (error: unknown) {
+        toast.error(getErrorMessage(error, 'Failed to load doctors or SOAP notes'));
       } finally {
         setLoading(false);
       }
