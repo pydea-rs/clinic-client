@@ -96,6 +96,7 @@ export const ConsultationCreatePage: React.FC = () => {
             onChange={(e) => setSelectedDoctor(e.target.value)}
             className="w-full px-4 py-2.5 input-focus"
             required
+            disabled={submitting}
           >
             <option value="">Select a doctor</option>
             {doctors.map((doctor) => (
@@ -113,6 +114,7 @@ export const ConsultationCreatePage: React.FC = () => {
               value={selectedSoap}
               onChange={(e) => setSelectedSoap(e.target.value)}
               className="w-full px-4 py-2.5 input-focus"
+              disabled={submitting}
             >
               <option value="">No SOAP</option>
               {soaps.map((soap) => (

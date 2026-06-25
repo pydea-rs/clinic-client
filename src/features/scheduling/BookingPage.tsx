@@ -153,6 +153,7 @@ export const BookingPage: React.FC = () => {
             onChange={(e) => setFormData({ ...formData, method: e.target.value as 'CHAT' | 'VOICE_CALL' | 'VIDEO_CALL' | 'ON_SITE' })}
             className="w-full px-4 py-2.5 input-focus"
             required
+            disabled={loading}
           >
             <option value="CHAT">Chat</option>
             <option value="VOICE_CALL">Voice Call</option>
@@ -171,6 +172,7 @@ export const BookingPage: React.FC = () => {
             onChange={(e) => setFormData({ ...formData, consultationId: e.target.value })}
             className="w-full px-4 py-2.5 input-focus"
             placeholder="Enter consultation ID if applicable"
+            disabled={loading}
           />
         </div>
 
@@ -182,6 +184,7 @@ export const BookingPage: React.FC = () => {
             className="w-full px-4 py-2.5 input-focus"
             rows={3}
             placeholder="Any additional notes"
+            disabled={loading}
           />
         </div>
 
@@ -197,6 +200,7 @@ export const BookingPage: React.FC = () => {
       <button
         onClick={() => navigate(-1)}
         className="btn-secondary w-full mt-4 py-2.5"
+        disabled={loading}
       >
         Back
       </button>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { matchingApi } from '../../api/matching.api';
@@ -28,37 +28,39 @@ export const MatchWaitingPage: React.FC = () => {
     refetchInterval: 5000,
   });
 
-  const handleEvent = useCallback((event: string) => (data: Record<string, unknown>) => {
-    if (data.matchRequestId !== id) return;
-
-    if (event === 'match:searching') {
-      setWsStatus(`Searching among ${data.candidates} doctors...`);
-    } else if (event === 'match:accepted') {
-      toast.success('A doctor accepted your request!');
-      void refetch();
-    } else if (event === 'match:timeout') {
-      toast('No doctors available right now', { icon: '⏰' });
-      void refetch();
-    } else if (event === 'match:cancelled') {
-      toast('Match request cancelled');
-      void refetch();
-    }
-  }, [id, refetch]);
-
   useEffect(() => {
+    let cancelled = false;
     matchingSocket.connect();
 
+    const makeHandler = (event: string) => (data: Record<string, unknown>) => {
+      if (cancelled || data.matchRequestId !== id) return;
+
+      if (event === 'match:searching') {
+        setWsStatus(`Searching among ${data.candidates} doctors...`);
+      } else if (event === 'match:accepted') {
+        toast.success('A doctor accepted your request!');
+        void refetch();
+      } else if (event === 'match:timeout') {
+        toast('No doctors available right now', { icon: '⏰' });
+        void refetch();
+      } else if (event === 'match:cancelled') {
+        toast('Match request cancelled');
+        void refetch();
+      }
+    };
+
     const handlers = ['match:searching', 'match:accepted', 'match:timeout', 'match:cancelled'].map(evt => {
-      const handler = handleEvent(evt);
+      const handler = makeHandler(evt);
       matchingSocket.on(evt, handler);
       return { evt, handler };
     });
 
     return () => {
+      cancelled = true;
       handlers.forEach(({ evt, handler }) => matchingSocket.off(evt, handler));
       matchingSocket.disconnect();
     };
-  }, [handleEvent]);
+  }, [id, refetch]);
 
   useEffect(() => {
     if (!matchRequest) return;
