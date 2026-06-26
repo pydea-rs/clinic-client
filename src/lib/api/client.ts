@@ -25,13 +25,25 @@ export const apiClient: AxiosInstance = axios.create({
   withCredentials: true,
 });
 
-// Request interceptor for logging
+function getCsrfToken(): string | undefined {
+  const match = document.cookie.match(/(?:^|;\s*)csrf-token=([^;]*)/);
+  return match?.[1];
+}
+
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
     const trackedConfig = config as TrackedRequestConfig;
-    // Add timestamp for latency tracking
     trackedConfig.__requestStart = Date.now();
     trackedConfig.__requestPayload = config.data;
+
+    const method = config.method?.toUpperCase();
+    if (method && method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS') {
+      const token = getCsrfToken();
+      if (token) {
+        config.headers.set('X-CSRF-Token', token);
+      }
+    }
+
     return config;
   }
 );
