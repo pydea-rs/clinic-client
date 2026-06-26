@@ -184,9 +184,12 @@ export const useChat = (options?: UseChatOptions) => {
       if (!payload) return undefined;
       const opts = payload.options;
       if (!Array.isArray(opts) || opts.length === 0) return undefined;
-      return opts
-        .filter((o: any) => typeof o?.label === "string" && typeof o?.value === "string")
-        .map((o: any) => ({ label: o.label as string, value: o.value as string }));
+      return (opts as unknown[])
+        .filter((o): o is { label: string; value: string } =>
+          typeof (o as Record<string, unknown>)?.label === "string" &&
+          typeof (o as Record<string, unknown>)?.value === "string",
+        )
+        .map((o) => ({ label: o.label, value: o.value }));
     },
     []
   );

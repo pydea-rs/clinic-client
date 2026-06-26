@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Bot, User, Copy, Check, CheckCircle2 } from 'lucide-react';
 import { AiChatMessage } from '../../../lib/types/chat';
@@ -34,39 +34,40 @@ const CopyButton: React.FC<{ text: string }> = ({ text }) => {
 };
 
 const MarkdownContent: React.FC<{ text: string }> = ({ text }) => {
-  const components = useMemo(() => ({
-    p: ({ children }: any) => (
+  const components: Components = useMemo(() => ({
+    p: ({ children }) => (
       <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>
     ),
-    strong: ({ children }: any) => (
+    strong: ({ children }) => (
       <strong className="font-semibold">{children}</strong>
     ),
-    em: ({ children }: any) => (
+    em: ({ children }) => (
       <em className="italic">{children}</em>
     ),
-    ul: ({ children }: any) => (
+    ul: ({ children }) => (
       <ul className="mb-2 last:mb-0 ml-4 space-y-0.5 list-disc">{children}</ul>
     ),
-    ol: ({ children }: any) => (
+    ol: ({ children }) => (
       <ol className="mb-2 last:mb-0 ml-4 space-y-0.5 list-decimal">{children}</ol>
     ),
-    li: ({ children }: any) => (
+    li: ({ children }) => (
       <li className="leading-relaxed">{children}</li>
     ),
-    h1: ({ children }: any) => (
+    h1: ({ children }) => (
       <h1 className="text-base font-bold mb-2 mt-3 first:mt-0">{children}</h1>
     ),
-    h2: ({ children }: any) => (
+    h2: ({ children }) => (
       <h2 className="text-[15px] font-bold mb-1.5 mt-2.5 first:mt-0">{children}</h2>
     ),
-    h3: ({ children }: any) => (
+    h3: ({ children }) => (
       <h3 className="text-sm font-bold mb-1 mt-2 first:mt-0">{children}</h3>
     ),
-    blockquote: ({ children }: any) => (
+    blockquote: ({ children }) => (
       <blockquote className="border-l-2 border-brand-300 pl-3 my-2 text-gray-600 italic">{children}</blockquote>
     ),
-    code: ({ inline, className, children }: any) => {
-      if (inline) {
+    code: ({ className, children }) => {
+      const isBlock = /^language-/.test(className || '');
+      if (!isBlock) {
         return (
           <code className="px-1 py-0.5 bg-gray-100 text-gray-800 rounded text-[13px] font-mono">
             {children}
@@ -83,21 +84,21 @@ const MarkdownContent: React.FC<{ text: string }> = ({ text }) => {
         </div>
       );
     },
-    a: ({ href, children }: any) => (
+    a: ({ href, children }) => (
       <a href={href} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:text-brand-700 hover:underline transition-colors duration-200">
         {children}
       </a>
     ),
     hr: () => <hr className="my-3 border-gray-200" />,
-    table: ({ children }: any) => (
+    table: ({ children }) => (
       <div className="overflow-x-auto my-2">
         <table className="min-w-full text-sm border border-gray-200 rounded">{children}</table>
       </div>
     ),
-    th: ({ children }: any) => (
+    th: ({ children }) => (
       <th className="px-3 py-1.5 bg-gray-50 text-left font-medium border-b border-gray-200">{children}</th>
     ),
-    td: ({ children }: any) => (
+    td: ({ children }) => (
       <td className="px-3 py-1.5 border-b border-gray-100">{children}</td>
     ),
   }), []);

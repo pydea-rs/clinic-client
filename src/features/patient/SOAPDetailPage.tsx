@@ -1,19 +1,19 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { patientApi } from '../../api/patient.api';
 import { Loader2, FileText, Calendar, Tag, AlertTriangle } from 'lucide-react';
 import { formatSpecialty } from '../../lib/format';
 
-const mdComponents = {
-  p: ({ children }: any) => <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>,
-  strong: ({ children }: any) => <strong className="font-semibold">{children}</strong>,
-  em: ({ children }: any) => <em className="italic">{children}</em>,
-  ul: ({ children }: any) => <ul className="mb-2 last:mb-0 ml-4 space-y-0.5 list-disc">{children}</ul>,
-  ol: ({ children }: any) => <ol className="mb-2 last:mb-0 ml-4 space-y-0.5 list-decimal">{children}</ol>,
-  li: ({ children }: any) => <li className="leading-relaxed">{children}</li>,
+const mdComponents: Components = {
+  p: ({ children }) => <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>,
+  strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+  em: ({ children }) => <em className="italic">{children}</em>,
+  ul: ({ children }) => <ul className="mb-2 last:mb-0 ml-4 space-y-0.5 list-disc">{children}</ul>,
+  ol: ({ children }) => <ol className="mb-2 last:mb-0 ml-4 space-y-0.5 list-decimal">{children}</ol>,
+  li: ({ children }) => <li className="leading-relaxed">{children}</li>,
 };
 
 export const SOAPDetailPage: React.FC = () => {
