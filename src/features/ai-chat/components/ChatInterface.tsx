@@ -7,6 +7,7 @@ import { MessageInput } from './MessageInput';
 import { SOAPReadyBanner } from './SOAPReadyBanner';
 import { useChat } from '../hooks/useChat';
 import { soapApi } from '../../../api/soap.api';
+import { queryClient } from '../../../lib/queryClient';
 import { Loader2, RefreshCw, Stethoscope, Heart, Brain, Thermometer, Pill, ArrowDown } from 'lucide-react';
 
 interface ChatInterfaceProps {
@@ -48,6 +49,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ forceNew }) => {
     } catch {
       setSoapData({ id: data.soapId });
     }
+    void queryClient.invalidateQueries({ queryKey: ['ai-conversations'] });
   }, []);
 
   useEffect(() => {

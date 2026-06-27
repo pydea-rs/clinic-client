@@ -418,15 +418,26 @@ export const useChat = (options?: UseChatOptions) => {
           const text =
             extractMessageText(messageData?.payload as Record<string, unknown>) ??
             extractMessageText(messageData);
-          if (!text) return;
+          const choices = extractChoices(messageData?.payload as Record<string, unknown> | undefined);
 
           setChatState((prev) => {
             const index = prev.messages.findIndex((m) => m.id === messageData.id);
             if (index === -1) return prev;
+            const existing = prev.messages[index];
+
+            // Don't replace text of messages that already finished streaming
+            if (!existing.isStreaming && existing.text && text && text !== existing.text) {
+              if (!choices) return prev;
+              const updated = [...prev.messages];
+              updated[index] = { ...existing, choices };
+              return { ...prev, messages: updated };
+            }
+
             const updated = [...prev.messages];
             updated[index] = {
               ...updated[index],
-              text,
+              ...(text ? { text } : {}),
+              ...(choices ? { choices } : {}),
               isStreaming: false,
               timestamp: new Date(
                 (messageData.updatedAt as string) ||

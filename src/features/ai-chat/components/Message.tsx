@@ -150,9 +150,6 @@ export const Message: React.FC<MessageProps> = ({ message, onChoiceSelect }) => 
           <div className="bg-gradient-to-br from-white to-brand-50/40 border border-gray-100 border-l-2 border-l-brand-200 px-4 py-3 rounded-2xl rounded-bl-sm shadow-soft">
             <div className="text-[14px] text-gray-800 prose-sm">
               <MarkdownContent text={message.text} />
-              {message.isStreaming && (
-                <span className="inline-block w-0.5 h-4 ml-0.5 align-middle bg-brand-500 animate-pulse rounded-full" />
-              )}
             </div>
             {message.choices && message.choices.length > 0 && !message.isStreaming && (
               <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-100/80">
