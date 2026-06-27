@@ -4,7 +4,17 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Chat Client with SSE Integration</title>
+    <title>AI-Clinic — Telemedicine</title>
+    <script>
+      try {
+        var s = JSON.parse(localStorage.getItem('ai-clinic-theme') || '{}').state || {};
+        var m = s.mode || 'light';
+        if (m === 'dark' || (m === 'system' && matchMedia('(prefers-color-scheme:dark)').matches))
+          document.documentElement.classList.add('dark');
+        if (s.accent && s.accent !== 'indigo')
+          document.documentElement.setAttribute('data-accent', s.accent);
+      } catch(e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

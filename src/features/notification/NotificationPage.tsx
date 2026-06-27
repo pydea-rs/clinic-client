@@ -119,19 +119,24 @@ export const NotificationPage: React.FC = () => {
   });
 
   const markReadMutation = useMutation({
-    mutationFn: notificationApi.markAsRead,
+    mutationFn: (id: number) => notificationApi.markAsRead(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    },
+    onError: (error: { message?: string }) => {
+      toast.error(error?.message || 'Failed to mark notification as read');
     },
   });
 
   const markAllReadMutation = useMutation({
-    mutationFn: notificationApi.markAllAsRead,
+    mutationFn: () => notificationApi.markAllAsRead(),
     onSuccess: (result) => {
-      toast.success(`Marked ${result.count} notifications as read`);
+      toast.success(`Marked ${result?.count ?? 0} notifications as read`);
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
-    onError: () => toast.error('Failed to mark all as read'),
+    onError: (error: { message?: string }) => {
+      toast.error(error?.message || 'Failed to mark all as read');
+    },
   });
 
   const handleClick = (notification: Notification) => {

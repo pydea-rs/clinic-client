@@ -270,14 +270,15 @@ export const useChat = (options?: UseChatOptions) => {
       }
 
       if (!conversationId) throw new Error("No conversationId returned by server");
-      setChatState((prev) => ({ ...prev, conversationId }));
 
-      // Load existing messages when resuming a conversation
+      // Load existing messages when resuming a conversation — keep loading
+      // state visible until messages are ready by deferring conversationId set
       if (options?.conversationId) {
+        let loadedMessages: AiChatMessage[] = [];
         try {
           const history = await aiChatService.getConversationHistory(conversationId);
           if (history.length > 0) {
-            const formattedMessages: AiChatMessage[] = history.map((msg) => ({
+            loadedMessages = history.map((msg) => ({
               id: msg.id,
               text: msg.text,
               isUser: msg.role === 'user',
@@ -285,9 +286,9 @@ export const useChat = (options?: UseChatOptions) => {
               choices: msg.choices?.map((c) => ({ label: c.label, value: c.value })),
             }));
             // Detect which quick reply options were selected by matching user replies
-            for (let i = 0; i < formattedMessages.length - 1; i++) {
-              const botMsg = formattedMessages[i];
-              const nextMsg = formattedMessages[i + 1];
+            for (let i = 0; i < loadedMessages.length - 1; i++) {
+              const botMsg = loadedMessages[i];
+              const nextMsg = loadedMessages[i + 1];
               if (!botMsg.isUser && botMsg.choices?.length && nextMsg.isUser) {
                 const match = botMsg.choices.find((c) => c.value === nextMsg.text);
                 if (match) {
@@ -301,11 +302,14 @@ export const useChat = (options?: UseChatOptions) => {
             for (const msg of history) {
               if (msg.role === 'bot') seenBotMessageIds.current.add(msg.id);
             }
-            setChatState((prev) => ({ ...prev, messages: formattedMessages }));
           }
         } catch {
           // Not critical — user can still chat
         }
+        // Set conversationId + messages in one batch so UI transitions directly from loading to chat with messages
+        setChatState((prev) => ({ ...prev, conversationId, messages: loadedMessages.length > 0 ? loadedMessages : prev.messages }));
+      } else {
+        setChatState((prev) => ({ ...prev, conversationId }));
       }
 
       return conversationId;

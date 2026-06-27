@@ -82,15 +82,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ forceNew }) => {
   if (!conversationId) {
     const hasError = !!connectionStatus.error;
     return (
-      <div className="flex items-center justify-center h-full bg-gradient-to-b from-gray-50 to-brand-50/30">
+      <div className="flex items-center justify-center h-full bg-gray-50 dark:bg-slate-900">
         <div className="text-center animate-scale-in">
-          <div className={`w-14 h-14 ${hasError ? 'bg-red-50 ring-1 ring-red-100' : 'bg-brand-50 ring-1 ring-brand-100'} rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-soft`}>
+          <div className={`w-14 h-14 ${hasError ? 'bg-red-50 dark:bg-red-950/30 ring-1 ring-red-100 dark:ring-red-900/50' : 'bg-brand-50 dark:bg-brand-950/30 ring-1 ring-brand-100 dark:ring-brand-800/50'} rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-soft`}>
             {hasError
               ? <RefreshCw className="w-6 h-6 text-red-500" />
-              : <Loader2 className="w-6 h-6 animate-spin text-brand-600" />
+              : <Loader2 className="w-6 h-6 animate-spin text-brand-600 dark:text-brand-400" />
             }
           </div>
-          <p className="text-gray-600 text-sm font-medium">
+          <p className="text-gray-600 dark:text-slate-400 text-sm font-medium">
             {hasError ? connectionStatus.error : 'Connecting to AI...'}
           </p>
           {hasError && (
@@ -114,7 +114,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ forceNew }) => {
   ];
 
   return (
-    <div className="h-full flex flex-col bg-gradient-to-b from-gray-50/80 to-brand-50/20">
+    <div className="h-full flex flex-col bg-gray-50 dark:bg-slate-900">
       <ChatHeader
         connectionStatus={connectionStatus}
         onRetry={initializeChat}
@@ -124,24 +124,24 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ forceNew }) => {
       <div
         ref={messagesContainerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto scroll-smooth relative"
+        className="flex-1 overflow-y-auto scroll-smooth relative bg-mesh"
       >
-        <div className="max-w-3xl mx-auto px-4 py-6 bg-mesh min-h-full">
+        <div className="max-w-3xl mx-auto px-4 py-6 min-h-full">
           {/* Welcome state */}
           {messages.length === 0 && !isTyping && (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center animate-fade-in bg-gradient-to-b from-transparent via-brand-50/20 to-transparent rounded-3xl py-8">
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center animate-fade-in py-8">
               <div className="relative w-16 h-16 mb-6">
                 {/* Morphing blob background */}
-                <div className="absolute inset-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-brand-200/30 blob animate-morph" />
+                <div className="absolute inset-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-brand-200/30 dark:bg-brand-800/20 blob animate-morph" />
                 {/* Decorative spinning ring */}
-                <div className="absolute inset-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 border border-brand-200/30 rounded-full animate-spin-slow" />
+                <div className="absolute inset-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 border border-brand-200/30 dark:border-brand-700/30 rounded-full animate-spin-slow" />
                 {/* Icon container */}
                 <div className="relative w-16 h-16 bg-gradient-to-br from-brand-500 to-brand-700 rounded-2xl flex items-center justify-center shadow-soft-lg shadow-brand-500/20 animate-float z-[1]">
                   <Stethoscope className="w-8 h-8 text-white" />
                 </div>
               </div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">How can I help you today?</h2>
-              <p className="text-sm text-gray-500 max-w-md mb-8 leading-relaxed">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">How can I help you today?</h2>
+              <p className="text-sm text-gray-500 dark:text-slate-400 max-w-md mb-8 leading-relaxed">
                 Describe your symptoms or health concerns. I'll help assess your condition and guide you to the right care.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-lg stagger-children">
@@ -149,10 +149,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ forceNew }) => {
                   <button
                     key={s.text}
                     onClick={() => sendMessage(s.text)}
-                    className="card-shine cursor-pointer group flex items-center gap-3 p-4 text-left text-sm text-gray-600 hover:text-gray-900 hover:shadow-soft-lg hover:-translate-y-0.5 hover:border-gray-200 animate-slide-in-up"
+                    className="card-shine cursor-pointer group flex items-center gap-3 p-4 text-left text-sm text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:shadow-soft-lg hover:-translate-y-0.5 hover:border-gray-200 dark:hover:border-slate-600 animate-slide-in-up"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center flex-shrink-0 group-hover:bg-brand-100 transition-colors duration-200">
-                      <s.icon className="w-4 h-4 text-brand-400 group-hover:text-brand-600 flex-shrink-0 transition-colors duration-200" />
+                    <div className="w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center flex-shrink-0 group-hover:bg-brand-100 dark:group-hover:bg-brand-900/40 transition-colors duration-200">
+                      <s.icon className="w-4 h-4 text-brand-400 dark:text-brand-400 group-hover:text-brand-600 dark:group-hover:text-brand-300 flex-shrink-0 transition-colors duration-200" />
                     </div>
                     <span className="leading-snug">{s.text}</span>
                   </button>
@@ -172,14 +172,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ forceNew }) => {
         {/* Scroll to bottom button */}
         <button
           onClick={scrollToBottom}
-          className={`absolute bottom-4 right-4 w-9 h-9 bg-white/90 backdrop-blur border border-gray-200 rounded-full shadow-elevation-2 flex items-center justify-center hover:shadow-elevation-3 hover:bg-white transition-all duration-300 ease-spring z-10 ${
+          className={`absolute bottom-4 right-4 w-9 h-9 bg-white/90 dark:bg-slate-800/90 backdrop-blur border border-gray-200 dark:border-slate-600 rounded-full shadow-elevation-2 flex items-center justify-center hover:shadow-elevation-3 hover:bg-white dark:hover:bg-slate-700 transition-all duration-300 ease-spring z-10 ${
             !isNearBottom && messages.length > 0
               ? 'opacity-100 scale-100'
               : 'opacity-0 scale-75 pointer-events-none'
           }`}
           aria-label="Scroll to bottom"
         >
-          <ArrowDown className="w-4 h-4 text-gray-600" />
+          <ArrowDown className="w-4 h-4 text-gray-600 dark:text-slate-300" />
         </button>
       </div>
 

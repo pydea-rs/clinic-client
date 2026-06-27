@@ -63,14 +63,17 @@ export const MatchWaitingPage: React.FC = () => {
   }, [id, refetch]);
 
   useEffect(() => {
-    if (!matchRequest) return;
-    const created = new Date(matchRequest.createdAt).getTime();
-    const now = Date.now();
-    setElapsed(Math.floor((now - created) / 1000));
+    if (!matchRequest?.createdAt) return;
+    const createdMs = new Date(matchRequest.createdAt).getTime();
+    if (isNaN(createdMs)) return;
 
-    timerRef.current = setInterval(() => {
-      setElapsed(prev => prev + 1);
-    }, 1000);
+    const tick = () => {
+      const now = Date.now();
+      setElapsed(Math.max(0, Math.floor((now - createdMs) / 1000)));
+    };
+
+    tick();
+    timerRef.current = setInterval(tick, 1000);
 
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [matchRequest?.createdAt]);
