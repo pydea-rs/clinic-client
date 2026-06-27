@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { NotificationBell } from '../features/notification/NotificationBell';
 import { ThemeCustomizer } from './ThemeCustomizer';
+import { ProfileModal } from './ProfileModal';
 
 interface ShellProps {
   children: React.ReactNode;
@@ -46,6 +47,7 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [showCustomizer, setShowCustomizer] = React.useState(false);
+  const [showProfile, setShowProfile] = React.useState(false);
 
   const navItems = [
     { label: 'Dashboard', icon: Home, path: '/dashboard' },
@@ -231,7 +233,9 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
               <div className="relative">
                 <div className="h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-slate-700 to-transparent mb-3" />
                 {isAuthenticated && user && (
-                  <div className="flex items-center gap-3 px-3 py-3 mb-1 rounded-xl bg-gray-50/50 dark:bg-slate-800/50 hover:bg-gray-100/60 dark:hover:bg-slate-700/60 transition-colors duration-200">
+                  <button
+                    onClick={() => setShowProfile(true)}
+                    className="w-full flex items-center gap-3 px-3 py-3 mb-1 rounded-xl bg-gray-50/50 dark:bg-slate-800/50 hover:bg-gray-100/60 dark:hover:bg-slate-700/60 transition-colors duration-200 text-left cursor-pointer">
                     {/* Avatar with online dot */}
                     <div className="relative flex-shrink-0">
                       <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-100 to-brand-50 dark:from-brand-900/50 dark:to-brand-800/30 flex items-center justify-center text-brand-700 dark:text-brand-300 text-xs font-bold shadow-sm ring-2 ring-brand-300/50 dark:ring-brand-700/50">
@@ -246,7 +250,7 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
                         {user.role === 'NONE' ? 'Guest' : user.role}
                       </span>
                     </div>
-                  </div>
+                  </button>
                 )}
 
                 <div className="flex gap-1">
@@ -273,7 +277,7 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
 
         {/* Main Content */}
         <main className="flex-1 overflow-auto bg-gray-50/50 dark:bg-slate-900">
-          <div className="page-enter min-h-full">
+          <div className="page-enter min-h-full flex flex-col">
             {children}
           </div>
         </main>
@@ -289,6 +293,9 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
 
       {/* Theme Customizer */}
       <ThemeCustomizer open={showCustomizer} onClose={() => setShowCustomizer(false)} />
+
+      {/* Profile Modal */}
+      <ProfileModal open={showProfile} onClose={() => setShowProfile(false)} />
     </div>
   );
 };

@@ -26,7 +26,7 @@ export const AdminUsersQuickList: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+        <Loader2 className="w-6 h-6 animate-spin text-brand-600" />
       </div>
     );
   }
@@ -77,7 +77,7 @@ export const AdminUsersQuickList: React.FC = () => {
                 <td className="px-6 py-4 text-right">
                   <Link
                     to={`/user/${user.id}`}
-                    className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium"
+                    className="inline-flex items-center gap-1 text-brand-600 hover:text-brand-700 font-medium"
                   >
                     View
                     <ChevronRight className="w-4 h-4" />

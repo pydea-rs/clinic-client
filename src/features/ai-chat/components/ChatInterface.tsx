@@ -82,7 +82,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ forceNew }) => {
   if (!conversationId) {
     const hasError = !!connectionStatus.error;
     return (
-      <div className="flex items-center justify-center h-full bg-gray-50 dark:bg-slate-900">
+      <div className="flex items-center justify-center flex-1 bg-gray-50 dark:bg-slate-900">
         <div className="text-center animate-scale-in">
           <div className={`w-14 h-14 ${hasError ? 'bg-red-50 dark:bg-red-950/30 ring-1 ring-red-100 dark:ring-red-900/50' : 'bg-brand-50 dark:bg-brand-950/30 ring-1 ring-brand-100 dark:ring-brand-800/50'} rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-soft`}>
             {hasError
@@ -114,7 +114,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ forceNew }) => {
   ];
 
   return (
-    <div className="h-full flex flex-col bg-gray-50 dark:bg-slate-900">
+    <div className="flex-1 min-h-0 flex flex-col bg-gray-50 dark:bg-slate-900">
       <ChatHeader
         connectionStatus={connectionStatus}
         onRetry={initializeChat}

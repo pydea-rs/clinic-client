@@ -8,6 +8,10 @@ import toast from 'react-hot-toast';
 import { DoctorSpecialty, TriageLevel } from '../../lib/types/api';
 import { formatSpecialty } from '../../lib/format';
 
+function stripMarkdown(text: string): string {
+  return text.replace(/\*\*/g, '').replace(/^[\s-]+/, '').trim();
+}
+
 const SPECIALTIES: DoctorSpecialty[] = [
   'GENERAL', 'CARDIOLOGY', 'DERMATOLOGY', 'ENT', 'GASTROENTEROLOGY',
   'GYNECOLOGY', 'NEUROLOGY', 'ONCOLOGY', 'ORTHOPEDICS',
@@ -151,8 +155,8 @@ export const MatchRequestPage: React.FC = () => {
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <div className="text-sm font-medium text-gray-900">
-                      {soap.assessment ? soap.assessment.substring(0, 80) + (soap.assessment.length > 80 ? '...' : '') : 'SOAP Note'}
+                    <div className="text-sm font-medium text-gray-900 line-clamp-1">
+                      {soap.assessment ? stripMarkdown(soap.assessment).substring(0, 80) + (stripMarkdown(soap.assessment).length > 80 ? '...' : '') : 'SOAP Note'}
                     </div>
                     <div className="flex items-center gap-2">
                       {triageBadge(soap.triageLevel)}
@@ -209,7 +213,7 @@ export const MatchRequestPage: React.FC = () => {
       <button
         onClick={handleSubmit}
         disabled={createMutation.isPending || (mode === 'soap' && !selectedSoapId) || (mode === 'manual' && !manualSpecialty)}
-        className="w-full py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
+        className="w-full btn-primary py-3 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         {createMutation.isPending ? (
           <><Loader2 className="w-5 h-5 animate-spin" /> Finding doctors...</>

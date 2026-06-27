@@ -106,7 +106,7 @@ export const PatientProfileForm: React.FC<PatientProfileFormProps> = ({
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:bg-blue-300 font-medium"
+        className="w-full btn-primary py-2 disabled:opacity-50 font-medium"
       >
         {loading ? 'Saving...' : 'Save Profile'}
       </button>

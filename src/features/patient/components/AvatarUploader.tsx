@@ -73,7 +73,7 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
       </div>
 
       <div className="flex gap-2">
-        <label className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer transition-colors">
+        <label className="flex items-center gap-2 px-4 py-2 btn-primary cursor-pointer">
           <Upload className="w-4 h-4" />
           Choose Image
           <input

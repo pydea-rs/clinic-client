@@ -52,7 +52,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   const showCharCounter = input.length > 200;
 
   return (
-    <div className="flex-shrink-0 glass border-t border-gray-100/60 dark:border-slate-700/60">
+    <div className="flex-shrink-0 bg-gray-50 dark:bg-slate-900 border-t border-gray-200/60 dark:border-slate-700/60">
       {/* Subtle gradient accent line */}
       <div className="h-px bg-gradient-to-r from-transparent via-brand-500/20 to-transparent" />
 

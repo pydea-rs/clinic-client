@@ -57,8 +57,8 @@ export const ConversationHistory: React.FC = () => {
               to={`/ai/${conv.id}`}
               className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50/80 transition-all duration-200 group"
             >
-              <div className="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-blue-100 transition-colors duration-200">
-                <Bot className="w-4 h-4 text-blue-600" />
+              <div className="w-9 h-9 bg-brand-50 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-brand-100 transition-colors duration-200">
+                <Bot className="w-4 h-4 text-brand-600" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-800 truncate group-hover:text-gray-900 transition-colors">

@@ -20,6 +20,10 @@ export const userApi = {
     return response.data;
   },
 
+  changePassword: async (payload: { currentPassword: string; newPassword: string }): Promise<void> => {
+    await apiClient.patch('/user/change-password', payload);
+  },
+
   uploadAvatar: async (file: File): Promise<{ url: string }> => {
     const formData = new FormData();
     formData.append('file', file);

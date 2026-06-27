@@ -66,7 +66,7 @@ export const ExceptionsPanel: React.FC = () => {
         <h1 className="text-2xl font-bold">Availability Exceptions</h1>
         <button
           onClick={() => setShowForm(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="px-4 py-2 btn-primary"
         >
           Add Exception
         </button>
@@ -148,7 +148,7 @@ export const ExceptionsPanel: React.FC = () => {
             <div className="flex space-x-2">
               <button
                 type="submit"
-                className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+                className="flex-1 btn-primary py-2"
               >
                 Save
               </button>

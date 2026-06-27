@@ -83,7 +83,7 @@ export const AppointmentsPage: React.FC = () => {
   const totalPages = Math.ceil(total / 10);
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className={`p-6 max-w-6xl mx-auto ${appointments.length === 0 ? 'flex-1 flex flex-col' : ''}`}>
       <div className="mb-8 animate-slide-in-up">
         <div className="flex items-center gap-3 mb-2">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-white shadow-soft">
@@ -97,12 +97,17 @@ export const AppointmentsPage: React.FC = () => {
       </div>
 
       {appointments.length === 0 ? (
-        <div className="card text-center py-16 animate-scale-in">
-          <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+        <div className="flex-1 flex items-center justify-center animate-scale-in">
+          <div className="text-center max-w-sm">
+            <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+            </div>
+            <p className="text-gray-500 font-medium">No appointments found</p>
+            <p className="text-gray-400 text-sm mt-1">Your appointments will appear here once booked</p>
+            <Link to="/doctors" className="btn-primary inline-flex items-center gap-2 px-5 py-2.5 mt-5 text-sm">
+              Find a Doctor
+            </Link>
           </div>
-          <p className="text-gray-500 font-medium">No appointments found</p>
-          <p className="text-gray-400 text-sm mt-1">Your appointments will appear here once booked</p>
         </div>
       ) : (
         <>

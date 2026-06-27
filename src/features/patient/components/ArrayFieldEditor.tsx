@@ -45,12 +45,12 @@ export const ArrayFieldEditor: React.FC<ArrayFieldEditorProps> = ({
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 px-3 py-2 border rounded-lg input-focus"
         />
         <button
           type="button"
           onClick={handleAdd}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+          className="px-4 py-2 btn-primary flex items-center gap-2"
         >
           <Plus className="w-4 h-4" />
           Add
@@ -61,13 +61,13 @@ export const ArrayFieldEditor: React.FC<ArrayFieldEditorProps> = ({
         {items.map((item, index) => (
           <div
             key={index}
-            className="flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+            className="flex items-center gap-2 px-3 py-1 bg-brand-100 text-brand-800 rounded-full text-sm"
           >
             <span>{item}</span>
             <button
               type="button"
               onClick={() => handleRemove(index)}
-              className="hover:text-blue-600"
+              className="hover:text-brand-600"
             >
               <X className="w-4 h-4" />
             </button>

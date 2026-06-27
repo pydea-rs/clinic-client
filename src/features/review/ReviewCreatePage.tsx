@@ -85,7 +85,7 @@ export const ReviewCreatePage: React.FC = () => {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:bg-blue-300"
+          className="w-full btn-primary py-2 disabled:opacity-50"
         >
           {loading ? 'Submitting...' : 'Submit Review'}
         </button>
