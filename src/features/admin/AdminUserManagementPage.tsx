@@ -362,6 +362,7 @@ export const AdminUserManagementPage: React.FC = () => {
                   onChange={e => setBanReason(e.target.value)}
                   className="w-full px-3 py-2 input-focus resize-none"
                   rows={3}
+                  maxLength={500}
                   placeholder="Enter the reason for this action..."
                   required
                 />

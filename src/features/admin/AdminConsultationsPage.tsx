@@ -267,7 +267,9 @@ export const AdminConsultationsPage: React.FC = () => {
       {totalPages > 1 && (
         <div className="flex items-center justify-between mt-4">
           <p className="text-sm text-gray-600">
-            Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)} of {total}
+            {hasActiveFilters
+              ? `Showing ${filteredConsultations.length} filtered result${filteredConsultations.length !== 1 ? 's' : ''} (page ${page} of ${totalPages})`
+              : `Showing ${(page - 1) * limit + 1} to ${Math.min(page * limit, total)} of ${total}`}
           </p>
           <div className="flex gap-2">
             <button

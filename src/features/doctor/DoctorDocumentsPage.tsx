@@ -8,10 +8,9 @@ import { formatDocType, formatStatus } from '../../lib/format';
 
 const DOCUMENT_TYPES = [
   'LICENSE',
-  'DEGREE',
+  'ID_CARD',
   'CERTIFICATION',
-  'INSURANCE',
-  'MALPRACTICE_INSURANCE',
+  'PHOTO',
   'OTHER',
 ];
 
@@ -39,7 +38,7 @@ export const DoctorDocumentsPage: React.FC = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (documentId: string) => doctorApi.deleteDocument(documentId),
+    mutationFn: (documentId: number) => doctorApi.deleteDocument(documentId),
     onSuccess: () => {
       toast.success('Document deleted successfully');
       queryClient.invalidateQueries({ queryKey: ['doctor-documents'] });
@@ -197,8 +196,8 @@ export const DoctorDocumentsPage: React.FC = () => {
                     <p className="text-sm text-gray-600">
                       Uploaded {new Date(doc.createdAt).toLocaleDateString()}
                     </p>
-                    {doc.rejectionReason && (
-                      <p className="text-sm text-red-600 mt-1">Reason: {doc.rejectionReason}</p>
+                    {doc.rejectReason && (
+                      <p className="text-sm text-red-600 mt-1">Reason: {doc.rejectReason}</p>
                     )}
                   </div>
                 </div>

@@ -71,11 +71,10 @@ const VISIT_METHOD_LABELS: Record<string, string> = {
 };
 
 const DOC_TYPE_LABELS: Record<string, string> = {
-  MEDICAL_LICENSE: 'Medical License',
-  BOARD_CERTIFICATION: 'Board Certification',
-  GOVERNMENT_ID: 'Government ID',
-  DIPLOMA: 'Diploma',
-  CV_RESUME: 'CV / Resume',
+  LICENSE: 'Medical License',
+  ID_CARD: 'ID Card',
+  CERTIFICATION: 'Certification',
+  PHOTO: 'Photo',
   OTHER: 'Other',
 };
 
