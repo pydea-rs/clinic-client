@@ -1,5 +1,5 @@
 import { apiClient } from '../lib/api/client';
-import { DoctorProfile, DoctorRating, DoctorDocument } from '../lib/types/api';
+import { DoctorProfile, DoctorRating, DoctorDocument, DoctorStats } from '../lib/types/api';
 
 export type { DoctorProfile, DoctorRating, DoctorDocument };
 
@@ -54,5 +54,15 @@ export const doctorApi = {
 
   deleteDocument: async (documentId: number): Promise<void> => {
     await apiClient.delete(`/doctor/documents/${documentId}`);
+  },
+
+  getStats: async (): Promise<DoctorStats> => {
+    const response = await apiClient.get('/doctor/stats');
+    return response.data;
+  },
+
+  getMyProfile: async (): Promise<DoctorProfile> => {
+    const response = await apiClient.get('/doctor/me');
+    return response.data;
   },
 };

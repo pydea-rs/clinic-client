@@ -21,6 +21,9 @@ import {
   Bell,
   ChevronRight,
   Palette,
+  ClipboardList,
+  Users,
+  CalendarClock,
 } from 'lucide-react';
 import { NotificationBell } from '../features/notification/NotificationBell';
 import { ThemeCustomizer } from './ThemeCustomizer';
@@ -49,22 +52,9 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
   const [showCustomizer, setShowCustomizer] = React.useState(false);
   const [showProfile, setShowProfile] = React.useState(false);
 
-  const navItems = [
-    { label: 'Dashboard', icon: Home, path: '/dashboard' },
-    { label: 'AI Chat', icon: Bot, path: '/ai' },
-    { label: 'Find Match', icon: Zap, path: '/matching/request', role: 'PATIENT' },
-    { label: 'Match Requests', icon: Zap, path: '/matching/pending', role: 'DOCTOR' },
-    { label: 'Doctors', icon: Search, path: '/doctors' },
-    { label: 'Appointments', icon: Calendar, path: '/appointments', role: 'PATIENT' },
-    { label: 'Patient', icon: User, path: '/patient', role: 'PATIENT' },
-    { label: 'Doctor', icon: UserCheck, path: '/doctor', role: 'DOCTOR' },
-    { label: 'Chat', icon: MessageSquare, path: '/chat' },
-    { label: 'Notifications', icon: Bell, path: '/notifications' },
-    { label: 'Admin', icon: Shield, path: '/admin', role: 'ADMIN' },
-  ];
-
   const role = user?.role || 'NONE';
   const isAdmin = user?.isAdmin || false;
+  const isDoctor = role === 'DOCTOR';
 
   const handleLogout = async () => {
     try {
@@ -76,16 +66,67 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
     }
   };
 
-  const filteredNavItems = navItems.filter(item => {
-    if (item.role === 'ADMIN') return isAdmin;
-    return !item.role || item.role === role;
-  });
-
-  // Group filtered nav items into sections
   const navGroups: NavGroup[] = React.useMemo(() => {
+    if (isDoctor) {
+      const groups: NavGroup[] = [
+        {
+          label: 'Overview',
+          items: [
+            { label: 'Dashboard', icon: Home, path: '/doctor/dashboard' },
+            { label: 'AI Assistant', icon: Bot, path: '/ai' },
+          ],
+        },
+        {
+          label: 'Practice',
+          items: [
+            { label: 'Appointments', icon: Calendar, path: '/doctor/appointments' },
+            { label: 'Patient Chat', icon: MessageSquare, path: '/doctor/chat' },
+            { label: 'Consultations', icon: ClipboardList, path: '/doctor/consultations' },
+            { label: 'Matching', icon: Zap, path: '/doctor/matching' },
+          ],
+        },
+        {
+          label: 'Management',
+          items: [
+            { label: 'Schedule', icon: CalendarClock, path: '/doctor/scheduling' },
+            { label: 'Nurses', icon: Users, path: '/doctor/nurses' },
+          ],
+        },
+        {
+          label: 'Account',
+          items: [
+            { label: 'My Profile', icon: UserCheck, path: '/doctor/profile' },
+            { label: 'Browse Doctors', icon: Search, path: '/doctors' },
+            { label: 'Notifications', icon: Bell, path: '/notifications' },
+          ],
+        },
+      ];
+      if (isAdmin) {
+        groups.push({ label: 'Admin', items: [{ label: 'Admin', icon: Shield, path: '/admin' }] });
+      }
+      return groups;
+    }
+
+    const navItems: NavItem[] = [
+      { label: 'Dashboard', icon: Home, path: '/dashboard' },
+      { label: 'AI Chat', icon: Bot, path: '/ai' },
+      { label: 'Find Match', icon: Zap, path: '/matching/request', role: 'PATIENT' },
+      { label: 'Doctors', icon: Search, path: '/doctors' },
+      { label: 'Appointments', icon: Calendar, path: '/appointments', role: 'PATIENT' },
+      { label: 'Patient', icon: User, path: '/patient', role: 'PATIENT' },
+      { label: 'Chat', icon: MessageSquare, path: '/chat' },
+      { label: 'Notifications', icon: Bell, path: '/notifications' },
+      { label: 'Admin', icon: Shield, path: '/admin', role: 'ADMIN' },
+    ];
+
+    const filteredNavItems = navItems.filter(item => {
+      if (item.role === 'ADMIN') return isAdmin;
+      return !item.role || item.role === role;
+    });
+
     const mainPaths = ['/dashboard', '/ai'];
-    const carePaths = ['/matching/request', '/matching/pending', '/doctors', '/appointments'];
-    const accountPaths = ['/patient', '/doctor', '/chat', '/notifications'];
+    const carePaths = ['/matching/request', '/doctors', '/appointments'];
+    const accountPaths = ['/patient', '/chat', '/notifications'];
     const adminPaths = ['/admin'];
 
     const groups: NavGroup[] = [];
@@ -103,7 +144,7 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
     if (adminItems.length > 0) groups.push({ label: 'Admin', items: adminItems });
 
     return groups;
-  }, [filteredNavItems]);
+  }, [isDoctor, isAdmin, role]);
 
   const userInitials = user ? `${user.firstname?.[0] || ''}${user.lastname?.[0] || ''}`.toUpperCase() : '';
 

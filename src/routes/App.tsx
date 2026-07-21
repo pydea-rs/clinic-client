@@ -19,6 +19,13 @@ const DoctorDocumentsPage = React.lazy(() => import('../features/doctor/DoctorDo
 const DoctorListPage = React.lazy(() => import('../features/doctor/DoctorListPage').then(m => ({ default: m.DoctorListPage })));
 const DoctorProfilePage = React.lazy(() => import('../features/doctor/DoctorProfilePage').then(m => ({ default: m.DoctorProfilePage })));
 const DoctorProfileForm = React.lazy(() => import('../features/doctor/DoctorProfileForm').then(m => ({ default: m.DoctorProfileForm })));
+const DoctorDashboardPage = React.lazy(() => import('../features/doctor/DoctorDashboardPage').then(m => ({ default: m.DoctorDashboardPage })));
+const DoctorAppointmentsPage = React.lazy(() => import('../features/doctor/DoctorAppointmentsPage').then(m => ({ default: m.DoctorAppointmentsPage })));
+const DoctorChatPage = React.lazy(() => import('../features/doctor/DoctorChatPage').then(m => ({ default: m.DoctorChatPage })));
+const DoctorConsultationsPage = React.lazy(() => import('../features/doctor/DoctorConsultationsPage').then(m => ({ default: m.DoctorConsultationsPage })));
+const DoctorSchedulingPage = React.lazy(() => import('../features/doctor/DoctorSchedulingPage').then(m => ({ default: m.DoctorSchedulingPage })));
+const DoctorNurseManagementPage = React.lazy(() => import('../features/doctor/DoctorNurseManagementPage').then(m => ({ default: m.DoctorNurseManagementPage })));
+const DoctorProfileEnhancedPage = React.lazy(() => import('../features/doctor/DoctorProfileEnhancedPage').then(m => ({ default: m.DoctorProfileEnhancedPage })));
 const ConsultationCreatePage = React.lazy(() => import('../features/consultation/ConsultationCreatePage').then(m => ({ default: m.ConsultationCreatePage })));
 const ConsultationListPage = React.lazy(() => import('../features/consultation/ConsultationListPage').then(m => ({ default: m.ConsultationListPage })));
 const ConsultationDetailPage = React.lazy(() => import('../features/consultation/ConsultationDetailPage').then(m => ({ default: m.ConsultationDetailPage })));
@@ -131,19 +138,20 @@ function App() {
           <Route path="/soap/:id" element={<AuthGuard><Shell><LazyPage><SOAPDetailPage /></LazyPage></Shell></AuthGuard>} />
           <Route path="/user/:id" element={<AuthGuard><Shell><LazyPage><UserDetailPage /></LazyPage></Shell></AuthGuard>} />
 
-          {/* Doctor routes */}
-          <Route path="/doctor" element={<DoctorGuard><Navigate to="/doctor/workspace" replace /></DoctorGuard>} />
-          <Route path="/doctors" element={<AuthGuard><Shell><LazyPage><DoctorListPage /></LazyPage></Shell></AuthGuard>} />
-          <Route path="/doctor/workspace" element={<DoctorGuard><Shell><LazyPage><DoctorWorkspacePage /></LazyPage></Shell></DoctorGuard>} />
-          <Route path="/doctor/profile" element={<DoctorGuard><Shell><LazyPage><DoctorProfileForm /></LazyPage></Shell></DoctorGuard>} />
+          {/* Doctor panel routes */}
+          <Route path="/doctor" element={<DoctorGuard><Navigate to="/doctor/dashboard" replace /></DoctorGuard>} />
+          <Route path="/doctor/dashboard" element={<DoctorGuard><Shell><LazyPage><DoctorDashboardPage /></LazyPage></Shell></DoctorGuard>} />
+          <Route path="/doctor/appointments" element={<DoctorGuard><Shell><LazyPage><DoctorAppointmentsPage /></LazyPage></Shell></DoctorGuard>} />
+          <Route path="/doctor/chat" element={<DoctorGuard><Shell><LazyPage><DoctorChatPage /></LazyPage></Shell></DoctorGuard>} />
+          <Route path="/doctor/consultations" element={<DoctorGuard><Shell><LazyPage><DoctorConsultationsPage /></LazyPage></Shell></DoctorGuard>} />
+          <Route path="/doctor/matching" element={<DoctorGuard><Shell><LazyPage><DoctorMatchRequestsPage /></LazyPage></Shell></DoctorGuard>} />
+          <Route path="/doctor/scheduling" element={<DoctorGuard><Shell><LazyPage><DoctorSchedulingPage /></LazyPage></Shell></DoctorGuard>} />
+          <Route path="/doctor/nurses" element={<DoctorGuard><Shell><LazyPage><DoctorNurseManagementPage /></LazyPage></Shell></DoctorGuard>} />
+          <Route path="/doctor/profile" element={<DoctorGuard><Shell><LazyPage><DoctorProfileEnhancedPage /></LazyPage></Shell></DoctorGuard>} />
           <Route path="/doctor/documents" element={<DoctorGuard><Shell><LazyPage><DoctorDocumentsPage /></LazyPage></Shell></DoctorGuard>} />
-          <Route path="/doctor/consultations" element={<DoctorGuard><Shell><LazyPage><ConsultationListPage /></LazyPage></Shell></DoctorGuard>} />
-          <Route path="/doctor/scheduling" element={<DoctorGuard><Shell><LazyPage><SchedulingPage /></LazyPage></Shell></DoctorGuard>} />
-          <Route path="/doctor/scheduling/availability" element={<DoctorGuard><Shell><LazyPage><AvailabilityPanel /></LazyPage></Shell></DoctorGuard>} />
-          <Route path="/doctor/scheduling/durations" element={<DoctorGuard><Shell><LazyPage><SlotDurationsPanel /></LazyPage></Shell></DoctorGuard>} />
-          <Route path="/doctor/scheduling/exceptions" element={<DoctorGuard><Shell><LazyPage><ExceptionsPanel /></LazyPage></Shell></DoctorGuard>} />
-          <Route path="/doctor/chat" element={<DoctorGuard><Shell><LazyPage><ChatListPage /></LazyPage></Shell></DoctorGuard>} />
-          <Route path="/doctor/settings" element={<DoctorGuard><Shell><div className="p-6 text-center text-gray-500">Settings Coming Soon</div></Shell></DoctorGuard>} />
+          <Route path="/doctor/workspace" element={<DoctorGuard><Navigate to="/doctor/dashboard" replace /></DoctorGuard>} />
+          {/* Public doctor routes */}
+          <Route path="/doctors" element={<AuthGuard><Shell><LazyPage><DoctorListPage /></LazyPage></Shell></AuthGuard>} />
           <Route path="/doctor/:id/review" element={<PatientGuard><Shell><LazyPage><ReviewCreatePage /></LazyPage></Shell></PatientGuard>} />
           <Route path="/doctor/:id" element={<AuthGuard><Shell><LazyPage><DoctorProfilePage /></LazyPage></Shell></AuthGuard>} />
 
@@ -179,9 +187,9 @@ function App() {
           <Route path="/notifications" element={<AuthGuard><Shell><LazyPage><NotificationPage /></LazyPage></Shell></AuthGuard>} />
 
           {/* Unsupported modules placeholders */}
-          <Route path="/calls" element={<AuthGuard><Shell><PlaceholderPage title="Calls & WebRTC" phase="Phase 14 pending" /></Shell></AuthGuard>} />
+          <Route path="/calls" element={<AuthGuard><Shell><PlaceholderPage title="Calls & WebRTC" phase="Phase 19 pending" /></Shell></AuthGuard>} />
           <Route path="/payment" element={<AuthGuard><Shell><PlaceholderPage title="Payment" phase="Provider TBD" /></Shell></AuthGuard>} />
-          <Route path="/nurse" element={<AuthGuard><Shell><PlaceholderPage title="Nurse Management" phase="Frontend pending" /></Shell></AuthGuard>} />
+          <Route path="/nurse" element={<AuthGuard><Shell><PlaceholderPage title="Nurse Panel" phase="Phase 16 pending" /></Shell></AuthGuard>} />
 
           {/* 404 */}
           <Route path="*" element={

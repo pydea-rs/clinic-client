@@ -133,6 +133,9 @@ export interface DoctorProfile {
   bio?: string;
   visitMethods?: VisitMethod[];
   visitTypes?: string[];
+  phoneNumber?: string;
+  languages?: string[];
+  licenseNumber?: string;
   verified?: boolean;
   verifiedAt?: string;
   verifiedBy?: string;
@@ -348,6 +351,39 @@ export interface ScoredDoctor {
   totalReviews: number;
   availableSlots: number;
   score: number;
+}
+
+// ─── Doctor Stats ──────────────────────────────────────────────────
+
+export interface DoctorStats {
+  upcomingAppointments: number;
+  activeConsultations: number;
+  pendingMatchRequests: number;
+  totalPatientsSeen: number;
+  completedConsultations: number;
+  totalAppointments: number;
+}
+
+// ─── Nurse Assignment ──────────────────────────────────────────────
+
+export type NursePermission =
+  | 'VIEW_PATIENTS'
+  | 'CHAT_WITH_PATIENTS'
+  | 'MANAGE_APPOINTMENTS'
+  | 'VIEW_CONSULTATION_NOTES'
+  | 'VIEW_SOAPS'
+  | 'MANAGE_SCHEDULE';
+
+export interface NurseAssignment {
+  id: number;
+  doctorId: number;
+  nurseId: string;
+  permissions: NursePermission[];
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  nurse?: Pick<User, 'id' | 'firstname' | 'lastname' | 'email' | 'avatar'>;
+  doctor?: DoctorProfile;
 }
 
 // ─── Admin ──────────────────────────────────────────────────────────────────

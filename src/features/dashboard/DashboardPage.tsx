@@ -1,4 +1,5 @@
 import React from 'react';
+import { Navigate } from 'react-router-dom';
 import { Sparkles, Heart, Activity } from 'lucide-react';
 import { useAuthStore } from '../../lib/stores/auth.store';
 import { QuickActions } from './components/QuickActions';
@@ -10,6 +11,10 @@ import { FeaturedDoctors } from './components/FeaturedDoctors';
 export const DashboardPage: React.FC = () => {
   const { user } = useAuthStore();
   const isPatient = user?.role === 'PATIENT';
+
+  if (user?.role === 'DOCTOR') {
+    return <Navigate to="/doctor/dashboard" replace />;
+  }
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
