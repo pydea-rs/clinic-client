@@ -259,20 +259,18 @@ export const useChat = (options?: UseChatOptions) => {
 
   const startConversation = useCallback(async () => {
     try {
+      seenBotMessageIds.current.clear();
+
       let conversationId: string;
 
-      if (options?.forceNew) {
-        conversationId = await aiChatService.startNewConversation();
-      } else if (options?.conversationId) {
+      if (options?.conversationId) {
         conversationId = await aiChatService.resumeConversation(options.conversationId);
       } else {
-        conversationId = await aiChatService.startConversation();
+        conversationId = await aiChatService.startNewConversation();
       }
 
       if (!conversationId) throw new Error("No conversationId returned by server");
 
-      // Load existing messages when resuming a conversation — keep loading
-      // state visible until messages are ready by deferring conversationId set
       if (options?.conversationId) {
         let loadedMessages: AiChatMessage[] = [];
         try {
@@ -285,7 +283,6 @@ export const useChat = (options?: UseChatOptions) => {
               timestamp: new Date(msg.createdAt),
               choices: msg.choices?.map((c) => ({ label: c.label, value: c.value })),
             }));
-            // Detect which quick reply options were selected by matching user replies
             for (let i = 0; i < loadedMessages.length - 1; i++) {
               const botMsg = loadedMessages[i];
               const nextMsg = loadedMessages[i + 1];
@@ -298,7 +295,6 @@ export const useChat = (options?: UseChatOptions) => {
                 }
               }
             }
-            // Mark all these as seen so typewriter doesn't animate them
             for (const msg of history) {
               if (msg.role === 'bot') seenBotMessageIds.current.add(msg.id);
             }
@@ -306,10 +302,9 @@ export const useChat = (options?: UseChatOptions) => {
         } catch {
           // Not critical — user can still chat
         }
-        // Set conversationId + messages in one batch so UI transitions directly from loading to chat with messages
-        setChatState((prev) => ({ ...prev, conversationId, messages: loadedMessages.length > 0 ? loadedMessages : prev.messages }));
+        setChatState((prev) => ({ ...prev, conversationId, messages: loadedMessages }));
       } else {
-        setChatState((prev) => ({ ...prev, conversationId }));
+        setChatState((prev) => ({ ...prev, conversationId, messages: [] }));
       }
 
       return conversationId;
@@ -317,7 +312,7 @@ export const useChat = (options?: UseChatOptions) => {
       toast.error("Failed to start conversation. Please check your connection.");
       updateConnectionStatus({ error: "Failed to start conversation" });
     }
-  }, [updateConnectionStatus, options?.forceNew, options?.conversationId]);
+  }, [updateConnectionStatus, options?.conversationId]);
 
   const connectSSE = useCallback(
     (conversationId: string) => {
@@ -517,10 +512,40 @@ export const useChat = (options?: UseChatOptions) => {
     isSendingRef.current = chatState.isSending;
   }, [chatState.isSending]);
 
+  const resetChat = useCallback(async () => {
+    disconnect();
+    seenBotMessageIds.current.clear();
+    lastUserMessageRef.current = null;
+    lastUserMessageAtRef.current = 0;
+    isInitializingRef.current = false;
+    setChatState({
+      messages: [],
+      conversationId: null,
+      connectionStatus: { connected: false },
+      isTyping: false,
+      isSending: false,
+    });
+
+    if (!mountedRef.current) return;
+
+    try {
+      const conversationId = await aiChatService.startNewConversation();
+      if (!mountedRef.current || !conversationId) return;
+      setChatState((prev) => ({ ...prev, conversationId, messages: [] }));
+      connectSSE(conversationId);
+    } catch {
+      if (!mountedRef.current) return;
+      toast.error("Failed to start new conversation.");
+      updateConnectionStatus({ error: "Failed to start conversation" });
+    }
+  }, [disconnect, connectSSE, updateConnectionStatus]);
+
   const sendMessage = useCallback(
     async (text: string, quickReply?: { value: string; label: string }) => {
       const convId = conversationIdRef.current;
       if (!convId || isSendingRef.current) return;
+
+      isSendingRef.current = true;
 
       const displayText = quickReply?.label ?? text;
       const apiText = quickReply?.value ?? text;
@@ -579,6 +604,7 @@ export const useChat = (options?: UseChatOptions) => {
         toast.error(message);
         addMessage({ text: message, isUser: false, timestamp: new Date() });
       } finally {
+        isSendingRef.current = false;
         setChatState((prev) => ({ ...prev, isSending: false }));
       }
     },
@@ -629,5 +655,6 @@ export const useChat = (options?: UseChatOptions) => {
     sendMessage,
     disconnect,
     setSoapReadyCallback,
+    resetChat,
   };
 };

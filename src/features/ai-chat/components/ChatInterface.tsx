@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ChatHeader } from './ChatHeader';
 import { Message } from './Message';
 import { TypingIndicator } from './TypingIndicator';
@@ -17,6 +17,7 @@ interface ChatInterfaceProps {
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({ forceNew }) => {
   const { conversationId: routeConversationId } = useParams<{ conversationId?: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const {
     messages,
@@ -26,6 +27,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ forceNew }) => {
     initializeChat,
     sendMessage,
     setSoapReadyCallback,
+    resetChat,
   } = useChat({ conversationId: routeConversationId, forceNew });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -51,6 +53,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ forceNew }) => {
     }
     void queryClient.invalidateQueries({ queryKey: ['ai-conversations'] });
   }, []);
+
+  const handleNewChat = useCallback(() => {
+    setSoapData(null);
+    if (location.pathname === '/ai/new') {
+      resetChat();
+    } else {
+      navigate('/ai/new');
+    }
+  }, [location.pathname, resetChat, navigate]);
 
   useEffect(() => {
     setSoapReadyCallback?.(handleSoapReady);
@@ -120,6 +131,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ forceNew }) => {
       <ChatHeader
         connectionStatus={connectionStatus}
         onRetry={initializeChat}
+        onNewChat={handleNewChat}
       />
 
       {/* Messages area */}

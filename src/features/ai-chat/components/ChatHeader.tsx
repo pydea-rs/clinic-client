@@ -6,11 +6,13 @@ import { ConnectionStatus as ConnectionStatusType } from '../../../lib/types/cha
 interface ChatHeaderProps {
   connectionStatus: ConnectionStatusType;
   onRetry: () => void;
+  onNewChat?: () => void;
 }
 
 export const ChatHeader: React.FC<ChatHeaderProps> = ({
   connectionStatus,
   onRetry,
+  onNewChat,
 }) => {
   return (
     <div className="glass border-b border-gray-100/60 flex-shrink-0">
@@ -50,6 +52,12 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
         <div className="flex items-center gap-1">
           <Link
             to="/ai/new"
+            onClick={(e) => {
+              if (onNewChat) {
+                e.preventDefault();
+                onNewChat();
+              }
+            }}
             className="group flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-500 hover:text-brand-700 hover:bg-brand-50 rounded-xl transition-all duration-200 ease-spring"
             title="New conversation"
           >
