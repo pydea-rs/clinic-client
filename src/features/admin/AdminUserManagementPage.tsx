@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { adminApi } from '../../api/admin.api';
 import toast from 'react-hot-toast';
 import { User } from '../../lib/types/api';
-import { Users } from 'lucide-react';
+import { Users, Ban, ShieldOff } from 'lucide-react';
 
 type UserUpdatePayload = {
   firstname?: string;
@@ -19,6 +19,9 @@ export const AdminUserManagementPage: React.FC = () => {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('');
+  const [bannedFilter, setBannedFilter] = useState<string>('');
+  const [banningUser, setBanningUser] = useState<User | null>(null);
+  const [banReason, setBanReason] = useState('');
   const [page, setPage] = useState(1);
   const limit = 20;
 
@@ -32,6 +35,7 @@ export const AdminUserManagementPage: React.FC = () => {
           take: limit,
           role: roleFilter || undefined,
           search: searchTerm || undefined,
+          isBanned: bannedFilter ? bannedFilter === 'true' : undefined,
         });
         setUsers(data.data || []);
         setTotal(data.total || 0);
@@ -42,7 +46,7 @@ export const AdminUserManagementPage: React.FC = () => {
       }
     };
     loadUsers();
-  }, [page, roleFilter, searchTerm]);
+  }, [page, roleFilter, searchTerm, bannedFilter]);
 
   const handleUpdateUser = async (id: string, payload: UserUpdatePayload) => {
     try {
@@ -65,6 +69,42 @@ export const AdminUserManagementPage: React.FC = () => {
     } catch {
       toast.error('Failed to deactivate user');
     }
+  };
+
+  const handleBanUser = async () => {
+    if (!banningUser || !banReason.trim()) return;
+    try {
+      const updatedUser = await adminApi.users.ban(banningUser.id, banReason);
+      setUsers(users.map(u => u.id === banningUser.id ? updatedUser : u));
+      setBanningUser(null);
+      setBanReason('');
+      toast.success(
+        (banningUser.role === 'DOCTOR' || banningUser.role === 'NURSE')
+          ? 'User fired successfully'
+          : 'User banned successfully'
+      );
+    } catch {
+      toast.error('Failed to ban user');
+    }
+  };
+
+  const handleUnbanUser = async (id: string) => {
+    if (!confirm('Are you sure you want to unban/reinstate this user?')) return;
+    try {
+      const updatedUser = await adminApi.users.unban(id);
+      setUsers(users.map(u => u.id === id ? updatedUser : u));
+      toast.success('User unbanned successfully');
+    } catch {
+      toast.error('Failed to unban user');
+    }
+  };
+
+  const getBanLabel = (user: User) => {
+    return (user.role === 'DOCTOR' || user.role === 'NURSE') ? 'Fire' : 'Ban';
+  };
+
+  const getBanBadgeLabel = (user: User) => {
+    return (user.role === 'DOCTOR' || user.role === 'NURSE') ? 'Fired' : 'Banned';
   };
 
   const handlePromote = async (id: string) => {
@@ -156,6 +196,15 @@ export const AdminUserManagementPage: React.FC = () => {
           <option value="DOCTOR">Doctor</option>
           <option value="NURSE">Nurse</option>
         </select>
+        <select
+          value={bannedFilter}
+          onChange={(e) => { setBannedFilter(e.target.value); setPage(1); }}
+          className="px-4 py-2 input-focus"
+        >
+          <option value="">All Status</option>
+          <option value="true">Banned/Fired</option>
+          <option value="false">Active</option>
+        </select>
       </div>
 
       {/* Users Table */}
@@ -191,11 +240,19 @@ export const AdminUserManagementPage: React.FC = () => {
                   </span>
                 </td>
                 <td className="px-4 py-3 text-sm">
-                  <span className={`badge ${
-                    user.isActive ? 'badge-green' : 'badge-red'
-                  }`}>
-                    {user.isActive ? 'Active' : 'Inactive'}
-                  </span>
+                  {user.isBanned ? (
+                    <span className={`badge ${
+                      (user.role === 'DOCTOR' || user.role === 'NURSE') ? 'badge-yellow' : 'badge-red'
+                    }`} title={user.banReason || undefined}>
+                      {getBanBadgeLabel(user)}
+                    </span>
+                  ) : (
+                    <span className={`badge ${
+                      user.isActive ? 'badge-green' : 'badge-red'
+                    }`}>
+                      {user.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                  )}
                 </td>
                 <td className="px-4 py-3 text-sm">
                   <button
@@ -220,12 +277,27 @@ export const AdminUserManagementPage: React.FC = () => {
                       Promote
                     </button>
                   )}
+                  {user.isBanned ? (
+                    <button
+                      onClick={() => handleUnbanUser(user.id)}
+                      className="text-green-600 hover:text-green-800 mr-3 font-medium"
+                    >
+                      Reinstate
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => { setBanningUser(user); setBanReason(''); }}
+                      className="text-red-600 hover:text-red-800 mr-3 font-medium"
+                    >
+                      {getBanLabel(user)}
+                    </button>
+                  )}
                   <button
                     onClick={() => handleDeactivateUser(user.id)}
                     className={`font-medium ${user.isActive ? 'text-red-600 hover:text-red-800' : 'text-gray-400'}`}
-                    disabled={!user.isActive}
+                    disabled={!user.isActive || user.isBanned}
                   >
-                    {user.isActive ? 'Deactivate' : 'Active'}
+                    {user.isActive ? 'Deactivate' : 'Inactive'}
                   </button>
                 </td>
               </tr>
@@ -263,6 +335,55 @@ export const AdminUserManagementPage: React.FC = () => {
             >
               Next
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Ban Confirmation Dialog */}
+      {banningUser && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="card shadow-soft-xl max-w-md w-full">
+            <div className="p-6 border-b">
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <Ban className="w-5 h-5 text-red-500" />
+                {getBanLabel(banningUser)} {banningUser.firstname} {banningUser.lastname}
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">
+                {(banningUser.role === 'DOCTOR' || banningUser.role === 'NURSE')
+                  ? 'This will fire the user and prevent access to the platform.'
+                  : 'This will ban the user and prevent access to the platform.'}
+              </p>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Reason (required)</label>
+                <textarea
+                  value={banReason}
+                  onChange={e => setBanReason(e.target.value)}
+                  className="w-full px-3 py-2 input-focus resize-none"
+                  rows={3}
+                  placeholder="Enter the reason for this action..."
+                  required
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => { setBanningUser(null); setBanReason(''); }}
+                  className="flex-1 px-4 py-2 btn-secondary"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBanUser}
+                  disabled={!banReason.trim()}
+                  className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {getBanLabel(banningUser)}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

@@ -5,7 +5,7 @@ import { User, PlatformStats } from '../lib/types/api';
 export const adminApi = {
   // User management
   users: {
-    list: async (params?: { skip?: number; take?: number; role?: string; search?: string; isActive?: boolean; isAdmin?: boolean }): Promise<{ data: User[]; total: number }> => {
+    list: async (params?: { skip?: number; take?: number; role?: string; search?: string; isActive?: boolean; isAdmin?: boolean; isBanned?: boolean }): Promise<{ data: User[]; total: number }> => {
       const response = await apiClient.get('/admin/users', { params });
       return response.data;
     },
@@ -21,6 +21,14 @@ export const adminApi = {
     },
     deactivate: async (id: string): Promise<User> => {
       const response = await apiClient.patch(`/admin/users/${id}/deactivate`);
+      return response.data;
+    },
+    ban: async (id: string, reason: string): Promise<User> => {
+      const response = await apiClient.patch(`/admin/users/${id}/ban`, { reason });
+      return response.data;
+    },
+    unban: async (id: string): Promise<User> => {
+      const response = await apiClient.patch(`/admin/users/${id}/unban`);
       return response.data;
     },
   },

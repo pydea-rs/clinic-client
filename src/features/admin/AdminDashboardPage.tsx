@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { adminApi } from '../../api/admin.api';
 import { Link } from 'react-router-dom';
-import { User, UserCheck, MessageSquare, Star, Clock, LayoutDashboard } from 'lucide-react';
+import {
+  User, UserCheck, MessageSquare, Star, Clock, LayoutDashboard,
+  Ban, Calendar, UserPlus, DollarSign, Activity, ClipboardList,
+} from 'lucide-react';
 import { PlatformStats } from '../../lib/types/api';
 
 export const AdminDashboardPage: React.FC = () => {
@@ -41,12 +44,21 @@ export const AdminDashboardPage: React.FC = () => {
             </div>
           ))}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="card p-6">
-              <div className="w-14 h-14 shimmer rounded-xl mb-4" />
-              <div className="w-32 h-5 shimmer mb-2" />
-              <div className="w-48 h-4 shimmer" />
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          {[...Array(5)].map((_, i) => (
+            <div key={`r2-${i}`} className="card p-6">
+              <div className="w-12 h-12 shimmer rounded-xl mb-3" />
+              <div className="w-20 h-4 shimmer mb-2" />
+              <div className="w-16 h-8 shimmer" />
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          {[...Array(5)].map((_, i) => (
+            <div key={`a-${i}`} className="card p-6">
+              <div className="w-10 h-10 shimmer rounded-xl mb-3" />
+              <div className="w-24 h-4 shimmer mb-2" />
+              <div className="w-32 h-3 shimmer" />
             </div>
           ))}
         </div>
@@ -66,68 +78,31 @@ export const AdminDashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards — Row 1 */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4 stagger-children">
-        <StatCard
-          icon={<User className="w-6 h-6" />}
-          label="Total Users"
-          value={stats?.totalUsers || 0}
-          color="blue"
-        />
-        <StatCard
-          icon={<UserCheck className="w-6 h-6" />}
-          label="Total Doctors"
-          value={stats?.totalDoctors || 0}
-          color="green"
-        />
-        <StatCard
-          icon={<User className="w-6 h-6" />}
-          label="Total Patients"
-          value={stats?.totalPatients || 0}
-          color="purple"
-        />
-        <StatCard
-          icon={<MessageSquare className="w-6 h-6" />}
-          label="Consultations"
-          value={stats?.totalConsultations || 0}
-          color="orange"
-        />
-        <StatCard
-          icon={<Clock className="w-6 h-6" />}
-          label="Pending Verifications"
-          value={stats?.pendingVerifications || 0}
-          color="yellow"
-        />
+        <StatCard icon={<User className="w-6 h-6" />} label="Total Users" value={stats?.totalUsers || 0} color="blue" />
+        <StatCard icon={<UserCheck className="w-6 h-6" />} label="Total Doctors" value={stats?.totalDoctors || 0} color="green" />
+        <StatCard icon={<User className="w-6 h-6" />} label="Total Patients" value={stats?.totalPatients || 0} color="purple" />
+        <StatCard icon={<MessageSquare className="w-6 h-6" />} label="Consultations" value={stats?.totalConsultations || 0} color="orange" />
+        <StatCard icon={<Clock className="w-6 h-6" />} label="Pending Verifications" value={stats?.pendingVerifications || 0} color="yellow" />
+      </div>
+
+      {/* Stats Cards — Row 2 */}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 stagger-children">
+        <StatCard icon={<Activity className="w-6 h-6" />} label="Active Consultations" value={stats?.activeConsultations || 0} color="purple" />
+        <StatCard icon={<Ban className="w-6 h-6" />} label="Banned/Fired" value={stats?.bannedUsers || 0} color="orange" />
+        <StatCard icon={<Calendar className="w-6 h-6" />} label="Appointments" value={stats?.totalAppointments || 0} color="blue" />
+        <StatCard icon={<UserPlus className="w-6 h-6" />} label="New This Month" value={stats?.newUsersThisMonth || 0} color="green" />
+        <StatCard icon={<DollarSign className="w-6 h-6" />} label="Total Revenue" value={stats?.totalRevenue || 0} color="yellow" />
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <ActionCard
-          to="/admin/users"
-          icon={<User className="w-8 h-8" />}
-          title="User Management"
-          description="List, edit, and manage all users"
-        />
-        <ActionCard
-          to="/admin/verifications"
-          icon={<UserCheck className="w-8 h-8" />}
-          title="Doctor Verifications"
-          description="Review and approve doctor applications"
-        />
-        <ActionCard
-          to="/admin/reviews"
-          icon={<Star className="w-8 h-8" />}
-          title="Review Moderation"
-          description="Manage flagged and reported reviews"
-        />
-      </div>
-
-      {/* Recent Activity */}
-      <div className="card p-6 animate-slide-in-up">
-        <h2 className="text-xl font-bold mb-4">Recent Activity</h2>
-        <div className="text-gray-500 text-center py-8">
-          <p>Activity feed coming soon...</p>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <ActionCard to="/admin/users" icon={<User className="w-7 h-7" />} title="Users" description="Manage all users" />
+        <ActionCard to="/admin/verifications" icon={<UserCheck className="w-7 h-7" />} title="Verifications" description="Approve doctors" />
+        <ActionCard to="/admin/consultations" icon={<ClipboardList className="w-7 h-7" />} title="Consultations" description="View all consultations" />
+        <ActionCard to="/admin/appointments" icon={<Calendar className="w-7 h-7" />} title="Appointments" description="View all appointments" />
+        <ActionCard to="/admin/reviews" icon={<Star className="w-7 h-7" />} title="Reviews" description="Moderate reviews" />
       </div>
     </div>
   );

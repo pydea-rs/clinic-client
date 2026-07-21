@@ -43,6 +43,8 @@ const AdminDashboardPage = React.lazy(() => import('../features/admin/AdminDashb
 const AdminUserManagementPage = React.lazy(() => import('../features/admin/AdminUserManagementPage').then(m => ({ default: m.AdminUserManagementPage })));
 const AdminDoctorVerificationPage = React.lazy(() => import('../features/admin/AdminDoctorVerificationPage').then(m => ({ default: m.AdminDoctorVerificationPage })));
 const AdminReviewModerationPage = React.lazy(() => import('../features/admin/AdminReviewModerationPage').then(m => ({ default: m.AdminReviewModerationPage })));
+const AdminConsultationsPage = React.lazy(() => import('../features/admin/AdminConsultationsPage').then(m => ({ default: m.AdminConsultationsPage })));
+const AdminAppointmentsPage = React.lazy(() => import('../features/admin/AdminAppointmentsPage').then(m => ({ default: m.AdminAppointmentsPage })));
 const ChatListPage = React.lazy(() => import('../features/chat/ChatListPage').then(m => ({ default: m.ChatListPage })));
 const ChatRoomPage = React.lazy(() => import('../features/chat/ChatRoomPage').then(m => ({ default: m.ChatRoomPage })));
 const MatchRequestPage = React.lazy(() => import('../features/matching/MatchRequestPage').then(m => ({ default: m.MatchRequestPage })));
@@ -173,6 +175,8 @@ function App() {
           <Route path="/admin/users" element={<AdminGuard><Shell><LazyPage><AdminUserManagementPage /></LazyPage></Shell></AdminGuard>} />
           <Route path="/admin/verifications" element={<AdminGuard><Shell><LazyPage><AdminDoctorVerificationPage /></LazyPage></Shell></AdminGuard>} />
           <Route path="/admin/reviews" element={<AdminGuard><Shell><LazyPage><AdminReviewModerationPage /></LazyPage></Shell></AdminGuard>} />
+          <Route path="/admin/consultations" element={<AdminGuard><Shell><LazyPage><AdminConsultationsPage /></LazyPage></Shell></AdminGuard>} />
+          <Route path="/admin/appointments" element={<AdminGuard><Shell><LazyPage><AdminAppointmentsPage /></LazyPage></Shell></AdminGuard>} />
 
           {/* Chat routes */}
           <Route path="/chat" element={<AuthGuard><Shell><LazyPage><ChatListPage /></LazyPage></Shell></AuthGuard>} />

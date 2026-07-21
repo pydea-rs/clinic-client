@@ -102,7 +102,17 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
         },
       ];
       if (isAdmin) {
-        groups.push({ label: 'Admin', items: [{ label: 'Admin', icon: Shield, path: '/admin' }] });
+        groups.push({
+          label: 'Admin',
+          items: [
+            { label: 'Dashboard', icon: Shield, path: '/admin' },
+            { label: 'Users', icon: Users, path: '/admin/users' },
+            { label: 'Verifications', icon: UserCheck, path: '/admin/verifications' },
+            { label: 'Consultations', icon: ClipboardList, path: '/admin/consultations' },
+            { label: 'Appointments', icon: Calendar, path: '/admin/appointments' },
+            { label: 'Reviews', icon: MessageSquare, path: '/admin/reviews' },
+          ],
+        });
       }
       return groups;
     }
@@ -116,19 +126,15 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
       { label: 'Patient', icon: User, path: '/patient', role: 'PATIENT' },
       { label: 'Chat', icon: MessageSquare, path: '/chat' },
       { label: 'Notifications', icon: Bell, path: '/notifications' },
-      { label: 'Admin', icon: Shield, path: '/admin', role: 'ADMIN' },
     ];
 
     const filteredNavItems = navItems.filter(item => {
-      if (item.role === 'ADMIN') return isAdmin;
       return !item.role || item.role === role;
     });
 
     const mainPaths = ['/dashboard', '/ai'];
     const carePaths = ['/matching/request', '/doctors', '/appointments'];
     const accountPaths = ['/patient', '/chat', '/notifications'];
-    const adminPaths = ['/admin'];
-
     const groups: NavGroup[] = [];
 
     const mainItems = filteredNavItems.filter(i => mainPaths.includes(i.path));
@@ -140,8 +146,19 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
     const accountItems = filteredNavItems.filter(i => accountPaths.includes(i.path));
     if (accountItems.length > 0) groups.push({ label: 'Account', items: accountItems });
 
-    const adminItems = filteredNavItems.filter(i => adminPaths.includes(i.path));
-    if (adminItems.length > 0) groups.push({ label: 'Admin', items: adminItems });
+    if (isAdmin) {
+      groups.push({
+        label: 'Admin',
+        items: [
+          { label: 'Dashboard', icon: Shield, path: '/admin' },
+          { label: 'Users', icon: Users, path: '/admin/users' },
+          { label: 'Verifications', icon: UserCheck, path: '/admin/verifications' },
+          { label: 'Consultations', icon: ClipboardList, path: '/admin/consultations' },
+          { label: 'Appointments', icon: Calendar, path: '/admin/appointments' },
+          { label: 'Reviews', icon: MessageSquare, path: '/admin/reviews' },
+        ],
+      });
+    }
 
     return groups;
   }, [isDoctor, isAdmin, role]);

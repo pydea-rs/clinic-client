@@ -68,6 +68,10 @@ export interface User {
   isSuperAdmin: boolean;
   isPrivate: boolean;
   isActive: boolean;
+  isBanned?: boolean;
+  banReason?: string;
+  bannedAt?: string;
+  bannedBy?: string;
   avatar?: string;
   createdAt: string;
   updatedAt: string;
@@ -394,4 +398,9 @@ export interface PlatformStats {
   totalPatients: number;
   totalConsultations: number;
   pendingVerifications: number;
+  activeConsultations: number;
+  bannedUsers: number;
+  totalAppointments: number;
+  newUsersThisMonth: number;
+  totalRevenue: number;
 }
