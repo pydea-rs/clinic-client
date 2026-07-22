@@ -24,7 +24,7 @@ export const userApi = {
     await apiClient.patch('/user/change-password', payload);
   },
 
-  uploadAvatar: async (file: File): Promise<{ url: string }> => {
+  uploadAvatar: async (file: File): Promise<{ id: string; avatar: string }> => {
     const formData = new FormData();
     formData.append('file', file);
     const response = await apiClient.post('/user/avatar', formData);

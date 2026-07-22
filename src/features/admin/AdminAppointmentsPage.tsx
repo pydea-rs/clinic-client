@@ -35,7 +35,7 @@ export const AdminAppointmentsPage: React.FC = () => {
   const { data, isLoading } = useQuery({
     queryKey: ['admin-appointments', page],
     queryFn: () => schedulingApi.getAppointments(page, LIMIT),
-    keepPreviousData: true,
+    placeholderData: (prev) => prev,
   });
 
   const appointments = data?.appointments ?? [];

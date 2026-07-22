@@ -8,7 +8,11 @@ import { formatStatus, formatVisitMethod } from '../../lib/format';
 
 const STATUS_OPTIONS = [
   { value: '', label: 'All Statuses' },
+  { value: 'CREATED', label: 'Created' },
   { value: 'PENDING_DOCTOR_REVIEW', label: 'Pending Doctor Review' },
+  { value: 'DOCTOR_DECIDED', label: 'Doctor Decided' },
+  { value: 'PENDING_PAYMENT', label: 'Pending Payment' },
+  { value: 'PAYMENT_CONFIRMED', label: 'Payment Confirmed' },
   { value: 'IN_PROGRESS', label: 'In Progress' },
   { value: 'COMPLETED', label: 'Completed' },
   { value: 'CANCELLED', label: 'Cancelled' },

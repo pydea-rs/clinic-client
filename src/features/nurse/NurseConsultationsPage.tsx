@@ -3,14 +3,17 @@ import { ClipboardList, Loader2, Eye, Filter } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { consultationApi } from '../../api/consultation.api';
 import { useNurseAssignments } from './useNurseAssignments';
-import { formatStatus } from '../../lib/format';
+import { formatStatus, formatEnum } from '../../lib/format';
 import { Link } from 'react-router-dom';
+import { Consultation } from '../../lib/types/api';
 
 const STATUS_OPTIONS = [
   { value: '', label: 'All Statuses' },
-  { value: 'PENDING', label: 'Pending' },
+  { value: 'CREATED', label: 'Created' },
+  { value: 'PENDING_DOCTOR_REVIEW', label: 'Pending Review' },
   { value: 'DOCTOR_DECIDED', label: 'Doctor Decided' },
   { value: 'PENDING_PAYMENT', label: 'Pending Payment' },
+  { value: 'PAYMENT_CONFIRMED', label: 'Payment Confirmed' },
   { value: 'IN_PROGRESS', label: 'In Progress' },
   { value: 'COMPLETED', label: 'Completed' },
   { value: 'CANCELLED', label: 'Cancelled' },
@@ -49,7 +52,7 @@ export const NurseConsultationsPage: React.FC = () => {
 
   const allConsultations = data?.consultations || [];
   const consultations = statusFilter
-    ? allConsultations.filter((c: any) => c.status === statusFilter)
+    ? allConsultations.filter((c: Consultation) => c.status === statusFilter)
     : allConsultations;
 
   return (
@@ -99,7 +102,7 @@ export const NurseConsultationsPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {consultations.map((c: any) => (
+              {consultations.map((c: Consultation) => (
                 <tr key={c.id} className="hover:bg-gray-50/80 transition-colors">
                   <td className="px-4 py-3 font-medium text-gray-900">
                     {c.patient?.firstname || 'Patient'} {c.patient?.lastname || ''}
@@ -110,7 +113,7 @@ export const NurseConsultationsPage: React.FC = () => {
                       : '—'}
                   </td>
                   <td className="px-4 py-3 text-gray-600">
-                    {c.consultationMode || 'N/A'}
+                    {c.doctorDecision ? formatEnum(c.doctorDecision) : 'N/A'}
                   </td>
                   <td className="px-4 py-3 text-gray-600">
                     {new Date(c.createdAt).toLocaleDateString()}

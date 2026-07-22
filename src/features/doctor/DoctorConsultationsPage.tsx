@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { consultationApi } from '../../api/consultation.api';
 import { ConsultationStatus } from '../../lib/types/api';
 import { formatStatus, formatVisitMethod, formatEnum } from '../../lib/format';
-import { ClipboardList, Loader2, ChevronRight, Filter, FileText, Calendar, User } from 'lucide-react';
+import { ClipboardList, ChevronRight, FileText, Calendar, User } from 'lucide-react';
 
 type StatusTab = 'ALL' | ConsultationStatus;
 

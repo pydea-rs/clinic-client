@@ -56,7 +56,7 @@ export const DoctorWorkspacePage: React.FC = () => {
           <p className="text-gray-500 text-sm">Communicate with patients</p>
         </Link>
         
-        <Link to="/doctor/settings" className="card-interactive p-6 animate-slide-in-up">
+        <Link to="/doctor/profile" className="card-interactive p-6 animate-slide-in-up">
           <div className="w-12 h-12 bg-gradient-to-br from-gray-500 to-slate-600 rounded-xl shadow-soft flex items-center justify-center mb-4">
             <Settings className="w-6 h-6 text-white" />
           </div>

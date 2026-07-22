@@ -18,6 +18,9 @@ const STATUS_LABELS: Record<string, string> = {
   TIMEOUT: 'Timed Out',
   MANUAL_BROWSE: 'Manual Browse',
   CONSULTATION_CREATED: 'Consultation Created',
+  MATCHED: 'Matched',
+  ACCEPTED: 'Accepted',
+  NO_SHOW: 'No Show',
 };
 
 const SPECIALTY_LABELS: Record<string, string> = {
@@ -64,10 +67,10 @@ const TRIAGE_LABELS: Record<string, string> = {
 };
 
 const VISIT_METHOD_LABELS: Record<string, string> = {
-  VIDEO: 'Video Call',
-  VOICE: 'Voice Call',
+  VIDEO_CALL: 'Video Call',
+  VOICE_CALL: 'Voice Call',
   CHAT: 'Chat',
-  IN_PERSON: 'In Person',
+  ON_SITE: 'On-Site',
 };
 
 const DOC_TYPE_LABELS: Record<string, string> = {

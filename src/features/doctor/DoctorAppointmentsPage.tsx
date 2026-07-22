@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { schedulingApi } from '../../api/scheduling.api';
 import { AppointmentStatus } from '../../lib/types/api';
 import { formatStatus, formatVisitMethod } from '../../lib/format';
-import { Calendar, Loader2, ChevronRight, Filter, Clock, MapPin } from 'lucide-react';
+import { Calendar, Loader2, ChevronRight, Filter, Clock, Timer } from 'lucide-react';
 
 const STATUS_OPTIONS: Array<{ value: string; label: string }> = [
   { value: 'ALL', label: 'All' },
@@ -202,7 +202,7 @@ export const DoctorAppointmentsPage: React.FC = () => {
                       {new Date(apt.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <MapPin className="w-3.5 h-3.5" />
+                      <Timer className="w-3.5 h-3.5" />
                       {apt.durationMinutes} min
                     </span>
                   </div>
