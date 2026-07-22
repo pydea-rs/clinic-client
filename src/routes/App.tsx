@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { ToastProvider } from '../components/Toast';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { useAuth } from '../features/auth/hooks/useAuth';
-import { AuthGuard, PatientGuard, DoctorGuard, AdminGuard } from '../lib/guards/route-guards';
+import { AuthGuard, PatientGuard, DoctorGuard, NurseGuard, AdminGuard } from '../lib/guards/route-guards';
 import { Shell } from '../components/Shell';
 const AuthForm = React.lazy(() => import('../features/auth/components/AuthForm').then(m => ({ default: m.AuthForm })));
 const ChatInterface = React.lazy(() => import('../features/ai-chat/components/ChatInterface').then(m => ({ default: m.ChatInterface })));
@@ -51,6 +51,13 @@ const MatchRequestPage = React.lazy(() => import('../features/matching/MatchRequ
 const MatchWaitingPage = React.lazy(() => import('../features/matching/MatchWaitingPage').then(m => ({ default: m.MatchWaitingPage })));
 const DoctorMatchRequestsPage = React.lazy(() => import('../features/matching/DoctorMatchRequestsPage').then(m => ({ default: m.DoctorMatchRequestsPage })));
 const NotificationPage = React.lazy(() => import('../features/notification/NotificationPage').then(m => ({ default: m.NotificationPage })));
+const NurseDashboardPage = React.lazy(() => import('../features/nurse/NurseDashboardPage').then(m => ({ default: m.NurseDashboardPage })));
+const NurseProfilePage = React.lazy(() => import('../features/nurse/NurseProfilePage').then(m => ({ default: m.NurseProfilePage })));
+const NurseAppointmentsPage = React.lazy(() => import('../features/nurse/NurseAppointmentsPage').then(m => ({ default: m.NurseAppointmentsPage })));
+const NurseChatPage = React.lazy(() => import('../features/nurse/NurseChatPage').then(m => ({ default: m.NurseChatPage })));
+const NurseConsultationsPage = React.lazy(() => import('../features/nurse/NurseConsultationsPage').then(m => ({ default: m.NurseConsultationsPage })));
+const NurseSOAPNotesPage = React.lazy(() => import('../features/nurse/NurseSOAPNotesPage').then(m => ({ default: m.NurseSOAPNotesPage })));
+const NurseSchedulePage = React.lazy(() => import('../features/nurse/NurseSchedulePage').then(m => ({ default: m.NurseSchedulePage })));
 
 // Placeholder components for unsupported modules
 const PlaceholderPage: React.FC<{ title: string; phase: string }> = ({ title, phase }) => (
@@ -193,7 +200,15 @@ function App() {
           {/* Unsupported modules placeholders */}
           <Route path="/calls" element={<AuthGuard><Shell><PlaceholderPage title="Calls & WebRTC" phase="Phase 19 pending" /></Shell></AuthGuard>} />
           <Route path="/payment" element={<AuthGuard><Shell><PlaceholderPage title="Payment" phase="Provider TBD" /></Shell></AuthGuard>} />
-          <Route path="/nurse" element={<AuthGuard><Shell><PlaceholderPage title="Nurse Panel" phase="Phase 16 pending" /></Shell></AuthGuard>} />
+          {/* Nurse panel routes */}
+          <Route path="/nurse" element={<NurseGuard><Navigate to="/nurse/dashboard" replace /></NurseGuard>} />
+          <Route path="/nurse/dashboard" element={<NurseGuard><Shell><LazyPage><NurseDashboardPage /></LazyPage></Shell></NurseGuard>} />
+          <Route path="/nurse/profile" element={<NurseGuard><Shell><LazyPage><NurseProfilePage /></LazyPage></Shell></NurseGuard>} />
+          <Route path="/nurse/appointments" element={<NurseGuard><Shell><LazyPage><NurseAppointmentsPage /></LazyPage></Shell></NurseGuard>} />
+          <Route path="/nurse/chat" element={<NurseGuard><Shell><LazyPage><NurseChatPage /></LazyPage></Shell></NurseGuard>} />
+          <Route path="/nurse/consultations" element={<NurseGuard><Shell><LazyPage><NurseConsultationsPage /></LazyPage></Shell></NurseGuard>} />
+          <Route path="/nurse/soaps" element={<NurseGuard><Shell><LazyPage><NurseSOAPNotesPage /></LazyPage></Shell></NurseGuard>} />
+          <Route path="/nurse/schedule" element={<NurseGuard><Shell><LazyPage><NurseSchedulePage /></LazyPage></Shell></NurseGuard>} />
 
           {/* 404 */}
           <Route path="*" element={

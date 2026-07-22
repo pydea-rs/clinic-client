@@ -24,10 +24,12 @@ import {
   ClipboardList,
   Users,
   CalendarClock,
+  FileText,
 } from 'lucide-react';
 import { NotificationBell } from '../features/notification/NotificationBell';
 import { ThemeCustomizer } from './ThemeCustomizer';
 import { ProfileModal } from './ProfileModal';
+import { useNurseAssignments } from '../features/nurse/useNurseAssignments';
 
 interface ShellProps {
   children: React.ReactNode;
@@ -55,6 +57,9 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
   const role = user?.role || 'NONE';
   const isAdmin = user?.isAdmin || false;
   const isDoctor = role === 'DOCTOR';
+  const isNurse = role === 'NURSE';
+
+  const { assignments: nurseAssignments } = useNurseAssignments();
 
   const handleLogout = async () => {
     try {
@@ -117,6 +122,61 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
       return groups;
     }
 
+    if (isNurse) {
+      const perms = nurseAssignments.flatMap((a) => a.permissions);
+      const has = (p: string) => perms.includes(p as any);
+
+      const practiceItems: NavItem[] = [];
+      if (has('CHAT_WITH_PATIENTS'))
+        practiceItems.push({ label: 'Patient Chat', icon: MessageSquare, path: '/nurse/chat' });
+      if (has('MANAGE_APPOINTMENTS'))
+        practiceItems.push({ label: 'Appointments', icon: Calendar, path: '/nurse/appointments' });
+      if (has('VIEW_CONSULTATION_NOTES'))
+        practiceItems.push({ label: 'Consultations', icon: ClipboardList, path: '/nurse/consultations' });
+      if (has('VIEW_SOAPS'))
+        practiceItems.push({ label: 'SOAP Notes', icon: FileText, path: '/nurse/soaps' });
+      if (has('MANAGE_SCHEDULE'))
+        practiceItems.push({ label: 'Schedule', icon: CalendarClock, path: '/nurse/schedule' });
+
+      const groups: NavGroup[] = [
+        {
+          label: 'Overview',
+          items: [
+            { label: 'Dashboard', icon: Home, path: '/nurse/dashboard' },
+            { label: 'AI Assistant', icon: Bot, path: '/ai' },
+          ],
+        },
+      ];
+
+      if (practiceItems.length > 0) {
+        groups.push({ label: 'Practice', items: practiceItems });
+      }
+
+      groups.push({
+        label: 'Account',
+        items: [
+          { label: 'My Profile', icon: User, path: '/nurse/profile' },
+          { label: 'Notifications', icon: Bell, path: '/notifications' },
+        ],
+      });
+
+      if (isAdmin) {
+        groups.push({
+          label: 'Admin',
+          items: [
+            { label: 'Dashboard', icon: Shield, path: '/admin' },
+            { label: 'Users', icon: Users, path: '/admin/users' },
+            { label: 'Verifications', icon: UserCheck, path: '/admin/verifications' },
+            { label: 'Consultations', icon: ClipboardList, path: '/admin/consultations' },
+            { label: 'Appointments', icon: Calendar, path: '/admin/appointments' },
+            { label: 'Reviews', icon: MessageSquare, path: '/admin/reviews' },
+          ],
+        });
+      }
+
+      return groups;
+    }
+
     const navItems: NavItem[] = [
       { label: 'Dashboard', icon: Home, path: '/dashboard' },
       { label: 'AI Chat', icon: Bot, path: '/ai' },
@@ -161,7 +221,7 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
     }
 
     return groups;
-  }, [isDoctor, isAdmin, role]);
+  }, [isDoctor, isNurse, isAdmin, role, nurseAssignments]);
 
   const userInitials = user ? `${user.firstname?.[0] || ''}${user.lastname?.[0] || ''}`.toUpperCase() : '';
 

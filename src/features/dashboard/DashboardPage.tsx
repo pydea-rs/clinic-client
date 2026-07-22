@@ -16,6 +16,10 @@ export const DashboardPage: React.FC = () => {
     return <Navigate to="/doctor/dashboard" replace />;
   }
 
+  if (user?.role === 'NURSE') {
+    return <Navigate to="/nurse/dashboard" replace />;
+  }
+
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
 

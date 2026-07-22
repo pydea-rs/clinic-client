@@ -83,6 +83,26 @@ export const AdminGuard: React.FC<GuardProps> = ({ children }) => {
   return <>{children}</>;
 };
 
+// Nurse guard - requires NURSE role
+export const NurseGuard: React.FC<GuardProps> = ({ children }) => {
+  const { isAuthenticated, initializing, user } = useAuthStore();
+  const location = useLocation();
+
+  if (initializing) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/auth" state={{ from: location }} replace />;
+  }
+
+  if (user?.role !== 'NURSE') {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+};
+
 // Superadmin guard - requires SUPERADMIN role
 export const SuperAdminGuard: React.FC<GuardProps> = ({ children }) => {
   const { isAuthenticated, initializing, user } = useAuthStore();
