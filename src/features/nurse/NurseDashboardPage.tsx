@@ -1,6 +1,7 @@
 import React from 'react';
-import { Loader2, Home, Shield, Stethoscope, CheckCircle, Lock } from 'lucide-react';
-import { useNurseAssignments } from './useNurseAssignments';
+import { Loader2, Home, Shield, Stethoscope, CheckCircle, Lock, Calendar, ClipboardList, Users } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { nurseApi, NurseDashboardData } from '../../api/nurse.api';
 import { formatSpecialty } from '../../lib/format';
 import { NursePermission } from '../../lib/types/api';
 import { Link } from 'react-router-dom';
@@ -15,7 +16,10 @@ const PERMISSION_META: Record<NursePermission, { label: string; path: string }> 
 };
 
 export const NurseDashboardPage: React.FC = () => {
-  const { assignments, isLoading } = useNurseAssignments();
+  const { data, isLoading } = useQuery<NurseDashboardData>({
+    queryKey: ['nurse-dashboard'],
+    queryFn: () => nurseApi.getDashboard(),
+  });
 
   if (isLoading) {
     return (
@@ -24,6 +28,9 @@ export const NurseDashboardPage: React.FC = () => {
       </div>
     );
   }
+
+  const assignments = data?.assignments || [];
+  const stats = data?.stats;
 
   if (assignments.length === 0) {
     return (
@@ -51,6 +58,45 @@ export const NurseDashboardPage: React.FC = () => {
         </div>
         <h1 className="text-3xl font-bold text-gray-900">Nurse Dashboard</h1>
       </div>
+
+      {/* Stats */}
+      {stats && (
+        <div className="grid gap-4 sm:grid-cols-3 mb-8">
+          <div className="card p-5 animate-slide-in-up">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+                <Users className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900">{stats.assignedDoctors}</p>
+                <p className="text-xs text-gray-500">Assigned Doctors</p>
+              </div>
+            </div>
+          </div>
+          <div className="card p-5 animate-slide-in-up" style={{ animationDelay: '30ms' }}>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-emerald-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900">{stats.upcomingAppointments}</p>
+                <p className="text-xs text-gray-500">Upcoming Appointments</p>
+              </div>
+            </div>
+          </div>
+          <div className="card p-5 animate-slide-in-up" style={{ animationDelay: '60ms' }}>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
+                <ClipboardList className="w-5 h-5 text-purple-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900">{stats.activeConsultations}</p>
+                <p className="text-xs text-gray-500">Active Consultations</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Assigned Doctors */}
       <h2 className="text-lg font-bold text-gray-900 mb-3">Assigned Doctors</h2>

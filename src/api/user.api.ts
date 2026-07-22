@@ -40,4 +40,9 @@ export const userApi = {
     const response = await apiClient.get('/user/all');
     return Array.isArray(response.data) ? response.data : response.data?.data ?? [];
   },
+
+  searchUsers: async (query: string): Promise<Pick<User, 'id' | 'firstname' | 'lastname' | 'email' | 'role' | 'avatar'>[]> => {
+    const response = await apiClient.get('/user/search', { params: { q: query } });
+    return response.data;
+  },
 };

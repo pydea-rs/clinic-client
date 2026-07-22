@@ -1,7 +1,21 @@
 import { apiClient } from '../lib/api/client';
 import { NurseAssignment, NursePermission } from '../lib/types/api';
 
+export interface NurseDashboardData {
+  assignments: NurseAssignment[];
+  stats: {
+    upcomingAppointments: number;
+    activeConsultations: number;
+    assignedDoctors: number;
+  };
+}
+
 export const nurseApi = {
+  getDashboard: async (): Promise<NurseDashboardData> => {
+    const response = await apiClient.get('/nurse/dashboard');
+    return response.data;
+  },
+
   assign: async (nurseId: string, permissions?: NursePermission[]): Promise<NurseAssignment> => {
     const response = await apiClient.post('/nurse/assign', { nurseId, permissions });
     return response.data;

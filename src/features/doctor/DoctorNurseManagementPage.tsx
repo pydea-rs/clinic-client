@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { nurseApi } from '../../api/nurse.api';
+import { userApi } from '../../api/user.api';
 import { NurseAssignment, NursePermission } from '../../lib/types/api';
 import { formatEnum } from '../../lib/format';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../lib/api/error.utils';
-import { UserPlus, Users, Shield, Loader2, X, Search, CheckCircle, ToggleLeft, ToggleRight } from 'lucide-react';
+import { UserPlus, Users, Shield, Loader2, X, Search, CheckCircle, ToggleLeft, ToggleRight, AlertTriangle } from 'lucide-react';
 
 const ALL_PERMISSIONS: NursePermission[] = [
   'VIEW_PATIENTS',
@@ -25,10 +26,23 @@ const permissionDescription: Record<NursePermission, string> = {
   MANAGE_SCHEDULE: 'Manage doctor schedule',
 };
 
+interface SearchResult {
+  id: string;
+  firstname: string;
+  lastname: string;
+  email: string;
+  role: string;
+  avatar?: string;
+}
+
 export const DoctorNurseManagementPage: React.FC = () => {
-  const [nurseId, setNurseId] = useState('');
+  const [userSearch, setUserSearch] = useState('');
+  const [selectedUser, setSelectedUser] = useState<SearchResult | null>(null);
   const [selectedPermissions, setSelectedPermissions] = useState<NursePermission[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
   const { data: assignments, isLoading } = useQuery({
@@ -36,16 +50,35 @@ export const DoctorNurseManagementPage: React.FC = () => {
     queryFn: () => nurseApi.getAssignments(),
   });
 
+  const { data: searchResults = [] } = useQuery<SearchResult[]>({
+    queryKey: ['user-search', userSearch],
+    queryFn: () => userApi.searchUsers(userSearch),
+    enabled: userSearch.trim().length >= 2,
+  });
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const assignMutation = useMutation({
-    mutationFn: () => nurseApi.assign(nurseId, selectedPermissions.length > 0 ? selectedPermissions : undefined),
+    mutationFn: () => nurseApi.assign(selectedUser!.id, selectedPermissions.length > 0 ? selectedPermissions : undefined),
     onSuccess: () => {
       toast.success('Nurse assigned successfully');
-      setNurseId('');
+      setSelectedUser(null);
+      setUserSearch('');
       setSelectedPermissions([]);
+      setShowConfirm(false);
       queryClient.invalidateQueries({ queryKey: ['nurse-assignments'] });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, 'Failed to assign nurse'));
+      setShowConfirm(false);
     },
   });
 
@@ -90,14 +123,29 @@ export const DoctorNurseManagementPage: React.FC = () => {
 
   const handleAssign = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nurseId.trim()) {
-      toast.error('Please enter a nurse user ID');
+    if (!selectedUser) {
+      toast.error('Please select a user');
+      return;
+    }
+    if (selectedUser.role !== 'NURSE') {
+      setShowConfirm(true);
       return;
     }
     assignMutation.mutate();
   };
 
-  // Filter assignments by search
+  const handleSelectUser = (user: SearchResult) => {
+    setSelectedUser(user);
+    setUserSearch('');
+    setShowDropdown(false);
+  };
+
+  const revokeAllPermissions = (assignment: NurseAssignment) => {
+    if (window.confirm(`Revoke all permissions for ${assignment.nurse?.firstname} ${assignment.nurse?.lastname}?`)) {
+      updatePermissionsMutation.mutate({ assignmentId: assignment.id, permissions: [] });
+    }
+  };
+
   const filteredAssignments = (assignments || []).filter((a) => {
     if (!searchQuery.trim()) return true;
     const query = searchQuery.toLowerCase();
@@ -130,14 +178,67 @@ export const DoctorNurseManagementPage: React.FC = () => {
 
         <form onSubmit={handleAssign} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Nurse User ID (UUID)</label>
-            <input
-              type="text"
-              value={nurseId}
-              onChange={(e) => setNurseId(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl bg-gray-50/50 text-sm input-focus"
-              placeholder="e.g., 550e8400-e29b-41d4-a716-446655440000"
-            />
+            <label className="block text-sm font-medium text-gray-700 mb-2">Find User</label>
+            {selectedUser ? (
+              <div className="flex items-center gap-3 px-4 py-3 border border-brand-200 bg-brand-50/30 rounded-xl">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center flex-shrink-0">
+                  <span className="text-xs font-bold text-white">
+                    {selectedUser.firstname[0]}{selectedUser.lastname[0]}
+                  </span>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900">{selectedUser.firstname} {selectedUser.lastname}</p>
+                  <p className="text-xs text-gray-500">{selectedUser.email} &middot; {selectedUser.role || 'NONE'}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedUser(null)}
+                  className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-4 h-4 text-gray-400" />
+                </button>
+              </div>
+            ) : (
+              <div ref={searchRef} className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  value={userSearch}
+                  onChange={(e) => { setUserSearch(e.target.value); setShowDropdown(true); }}
+                  onFocus={() => setShowDropdown(true)}
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-gray-50/50 text-sm input-focus"
+                  placeholder="Search by name or email..."
+                />
+                {showDropdown && searchResults.length > 0 && (
+                  <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                    {searchResults.map((u) => (
+                      <button
+                        key={u.id}
+                        type="button"
+                        onClick={() => handleSelectUser(u)}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-left transition-colors"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                          <span className="text-xs font-medium text-gray-600">
+                            {u.firstname?.[0]}{u.lastname?.[0]}
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{u.firstname} {u.lastname}</p>
+                          <p className="text-xs text-gray-500 truncate">{u.email}</p>
+                        </div>
+                        <span className="text-xs text-gray-400 flex-shrink-0">{u.role || 'NONE'}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {showDropdown && userSearch.trim().length >= 2 && searchResults.length === 0 && (
+                  <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg px-4 py-3 text-sm text-gray-500">
+                    No users found
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div>
@@ -182,7 +283,7 @@ export const DoctorNurseManagementPage: React.FC = () => {
 
           <button
             type="submit"
-            disabled={!nurseId.trim() || assignMutation.isPending}
+            disabled={!selectedUser || assignMutation.isPending}
             className="btn-primary w-full py-3 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {assignMutation.isPending ? (
@@ -199,6 +300,44 @@ export const DoctorNurseManagementPage: React.FC = () => {
           </button>
         </form>
       </div>
+
+      {/* Role Upgrade Confirmation Dialog */}
+      {showConfirm && selectedUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full mx-4 p-6 animate-slide-in-up">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-5 h-5 text-amber-600" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">Role Change Required</h3>
+            </div>
+            <p className="text-sm text-gray-600 mb-4">
+              This will change <strong>{selectedUser.firstname} {selectedUser.lastname}</strong>'s
+              role from <span className="badge badge-gray text-xs">{selectedUser.role || 'NONE'}</span> to{' '}
+              <span className="badge badge-teal text-xs">NURSE</span> and assign them to you.
+            </p>
+            <p className="text-sm text-gray-500 mb-6">
+              This action cannot be automatically reversed. Continue?
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="btn-secondary px-4 py-2 text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => assignMutation.mutate()}
+                disabled={assignMutation.isPending}
+                className="btn-primary px-4 py-2 text-sm flex items-center gap-2"
+              >
+                {assignMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                Confirm & Assign
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Current Nurses */}
       <div className="animate-slide-in-up" style={{ animationDelay: '50ms' }}>
@@ -276,6 +415,14 @@ export const DoctorNurseManagementPage: React.FC = () => {
                       <span className={`badge ${assignment.isActive ? 'badge-green' : 'badge-gray'}`}>
                         {assignment.isActive ? 'Active' : 'Inactive'}
                       </span>
+                      <button
+                        onClick={() => revokeAllPermissions(assignment)}
+                        disabled={updatePermissionsMutation.isPending || (assignment.permissions || []).length === 0}
+                        className="px-2 py-1 text-xs text-amber-600 hover:bg-amber-50 rounded-lg transition-all duration-200 disabled:opacity-30 font-medium"
+                        title="Revoke all permissions"
+                      >
+                        Revoke All
+                      </button>
                       <button
                         onClick={() => {
                           if (window.confirm(`Remove ${nurseName} from your team?`)) {
