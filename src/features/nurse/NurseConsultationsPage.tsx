@@ -1,14 +1,25 @@
-import React from 'react';
-import { ClipboardList, Loader2, Eye } from 'lucide-react';
+import React, { useState } from 'react';
+import { ClipboardList, Loader2, Eye, Filter } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { consultationApi } from '../../api/consultation.api';
 import { useNurseAssignments } from './useNurseAssignments';
 import { formatStatus } from '../../lib/format';
 import { Link } from 'react-router-dom';
 
+const STATUS_OPTIONS = [
+  { value: '', label: 'All Statuses' },
+  { value: 'PENDING', label: 'Pending' },
+  { value: 'DOCTOR_DECIDED', label: 'Doctor Decided' },
+  { value: 'PENDING_PAYMENT', label: 'Pending Payment' },
+  { value: 'IN_PROGRESS', label: 'In Progress' },
+  { value: 'COMPLETED', label: 'Completed' },
+  { value: 'CANCELLED', label: 'Cancelled' },
+];
+
 export const NurseConsultationsPage: React.FC = () => {
   const { assignments, isLoading: assignLoading } = useNurseAssignments();
   const hasPermission = assignments.some((a) => a.permissions.includes('VIEW_CONSULTATION_NOTES'));
+  const [statusFilter, setStatusFilter] = useState('');
 
   const { data, isLoading } = useQuery({
     queryKey: ['nurse-consultations'],
@@ -36,51 +47,95 @@ export const NurseConsultationsPage: React.FC = () => {
     );
   }
 
-  const consultations = data?.consultations || [];
+  const allConsultations = data?.consultations || [];
+  const consultations = statusFilter
+    ? allConsultations.filter((c: any) => c.status === statusFilter)
+    : allConsultations;
 
   return (
     <div className="max-w-5xl mx-auto p-6 animate-fade-in">
-      <div className="flex items-center gap-3 mb-8">
-        <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-violet-500 rounded-xl flex items-center justify-center shadow-soft">
-          <ClipboardList className="w-5 h-5 text-white" />
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-violet-500 rounded-xl flex items-center justify-center shadow-soft">
+            <ClipboardList className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Consultations</h1>
+            <span className="text-sm text-gray-400">(read-only)</span>
+          </div>
         </div>
-        <h1 className="text-3xl font-bold text-gray-900">Consultations</h1>
-        <span className="text-sm text-gray-400 ml-1">(read-only)</span>
+        <div className="flex items-center gap-2">
+          <Filter className="w-4 h-4 text-gray-400" />
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="input py-1.5 px-3 text-sm w-44"
+          >
+            {STATUS_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {consultations.length === 0 ? (
         <div className="card p-12 text-center">
           <ClipboardList className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500">No consultations found.</p>
+          <p className="text-gray-500">
+            {statusFilter ? 'No consultations match the selected filter.' : 'No consultations found.'}
+          </p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {consultations.map((c: any) => (
-            <Link
-              key={c.id}
-              to={`/consultation/${c.id}`}
-              className="card p-4 flex items-center justify-between hover:shadow-md transition-all duration-200"
-            >
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-900">
-                    {c.patient?.user?.firstname || 'Patient'} {c.patient?.user?.lastname || ''}
-                  </span>
-                  <span className={`badge text-xs ${
-                    c.status === 'COMPLETED' ? 'badge-green' :
-                    c.status === 'IN_PROGRESS' ? 'badge-blue' :
-                    c.status === 'CANCELLED' ? 'badge-red' : 'badge-yellow'
-                  }`}>
-                    {formatStatus(c.status)}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-500 mt-0.5">
-                  {new Date(c.createdAt).toLocaleDateString()} &middot; {c.consultationMode || 'N/A'}
-                </p>
-              </div>
-              <Eye className="w-4 h-4 text-gray-400" />
-            </Link>
-          ))}
+        <div className="card overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 border-b">
+              <tr>
+                <th className="text-left px-4 py-3 font-medium text-gray-500">Patient</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-500">Doctor</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-500">Mode</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-500">Date</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-500">Status</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-500"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {consultations.map((c: any) => (
+                <tr key={c.id} className="hover:bg-gray-50/80 transition-colors">
+                  <td className="px-4 py-3 font-medium text-gray-900">
+                    {c.patient?.firstname || 'Patient'} {c.patient?.lastname || ''}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600">
+                    {c.doctor?.user
+                      ? `Dr. ${c.doctor.user.firstname} ${c.doctor.user.lastname}`
+                      : '—'}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600">
+                    {c.consultationMode || 'N/A'}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600">
+                    {new Date(c.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`badge text-xs ${
+                      c.status === 'COMPLETED' ? 'badge-green' :
+                      c.status === 'IN_PROGRESS' ? 'badge-blue' :
+                      c.status === 'CANCELLED' ? 'badge-red' : 'badge-yellow'
+                    }`}>
+                      {formatStatus(c.status)}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <Link
+                      to={`/consultation/${c.id}`}
+                      className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors inline-flex"
+                    >
+                      <Eye className="w-4 h-4 text-gray-400" />
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>

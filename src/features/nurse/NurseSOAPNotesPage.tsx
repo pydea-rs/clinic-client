@@ -10,14 +10,17 @@ export const NurseSOAPNotesPage: React.FC = () => {
   const { assignments, isLoading: assignLoading } = useNurseAssignments();
   const hasPermission = assignments.some((a) => a.permissions.includes('VIEW_SOAPS'));
 
-  const { data: soaps = [], isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['nurse-soaps'],
     queryFn: async () => {
       const res = await apiClient.get('/soap', { params: { take: 50 } });
-      return res.data?.data || res.data || [];
+      const result = res.data;
+      return result?.data || (Array.isArray(result) ? result : []);
     },
     enabled: hasPermission,
   });
+
+  const soaps = data || [];
 
   if (assignLoading || isLoading) {
     return (
@@ -45,8 +48,10 @@ export const NurseSOAPNotesPage: React.FC = () => {
         <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center shadow-soft">
           <FileText className="w-5 h-5 text-white" />
         </div>
-        <h1 className="text-3xl font-bold text-gray-900">SOAP Notes</h1>
-        <span className="text-sm text-gray-400 ml-1">(read-only)</span>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">SOAP Notes</h1>
+          <span className="text-sm text-gray-400">(read-only)</span>
+        </div>
       </div>
 
       {soaps.length === 0 ? (
@@ -60,7 +65,7 @@ export const NurseSOAPNotesPage: React.FC = () => {
             <Link
               key={soap.id}
               to={`/soap/${soap.id}`}
-              className="card p-4 flex items-center justify-between hover:shadow-md transition-all duration-200"
+              className="card p-4 flex items-center justify-between hover:shadow-md transition-all duration-200 block"
             >
               <div className="flex-1">
                 <div className="flex items-center gap-2">
