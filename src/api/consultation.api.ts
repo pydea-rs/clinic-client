@@ -25,10 +25,10 @@ export const consultationApi = {
   },
 
   // Get consultations (role-aware)
-  getConsultations: async (page?: number, limit?: number): Promise<{ consultations: Consultation[]; total: number }> => {
+  getConsultations: async (page?: number, limit?: number, status?: string): Promise<{ consultations: Consultation[]; total: number }> => {
     const skip = page ? (page - 1) * (limit || 20) : undefined;
     const response = await apiClient.get('/consultation', {
-      params: { skip, take: limit },
+      params: { skip, take: limit, status },
     });
     const result = response.data;
     return { consultations: result?.data || (Array.isArray(result) ? result : []), total: result?.total || 0 };

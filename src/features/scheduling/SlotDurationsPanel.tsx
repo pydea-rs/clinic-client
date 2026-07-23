@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { SlotDuration } from '../../lib/types/api';
 import { getErrorMessage } from '../../lib/api/error.utils';
 
-export const SlotDurationsPanel: React.FC = () => {
+export const SlotDurationsPanel: React.FC<{ doctorId?: number }> = ({ doctorId }) => {
   const [durations, setDurations] = useState<SlotDuration[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -17,11 +17,11 @@ export const SlotDurationsPanel: React.FC = () => {
 
   useEffect(() => {
     loadDurations();
-  }, []);
+  }, [doctorId]);
 
   const loadDurations = async () => {
     try {
-      const data = await schedulingApi.getSlotDurations();
+      const data = await schedulingApi.getSlotDurations(doctorId);
       setDurations(data);
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Failed to load durations'));
@@ -38,7 +38,7 @@ export const SlotDurationsPanel: React.FC = () => {
         price: Number(formData.price),
         label: formData.label || undefined,
         isActive: formData.isActive,
-      });
+      }, doctorId);
       toast.success('Duration created');
       setShowForm(false);
       setFormData({ minutes: 30, price: '50.00', label: '', isActive: true });

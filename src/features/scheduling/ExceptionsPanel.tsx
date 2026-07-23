@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { AvailabilityException } from '../../lib/types/api';
 import { getErrorMessage } from '../../lib/api/error.utils';
 
-export const ExceptionsPanel: React.FC = () => {
+export const ExceptionsPanel: React.FC<{ doctorId?: number }> = ({ doctorId }) => {
   const [exceptions, setExceptions] = useState<AvailabilityException[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -18,11 +18,11 @@ export const ExceptionsPanel: React.FC = () => {
 
   useEffect(() => {
     loadExceptions();
-  }, []);
+  }, [doctorId]);
 
   const loadExceptions = async () => {
     try {
-      const data = await schedulingApi.getExceptions();
+      const data = await schedulingApi.getExceptions(doctorId);
       setExceptions(data);
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Failed to load exceptions'));
@@ -34,7 +34,7 @@ export const ExceptionsPanel: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await schedulingApi.createException(formData);
+      await schedulingApi.createException(formData, doctorId);
       toast.success('Exception created');
       setShowForm(false);
       loadExceptions();
@@ -48,7 +48,7 @@ export const ExceptionsPanel: React.FC = () => {
       return;
     }
     try {
-      await schedulingApi.deleteException(id);
+      await schedulingApi.deleteException(id, doctorId);
       toast.success('Exception deleted');
       loadExceptions();
     } catch (error: unknown) {

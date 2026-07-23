@@ -15,6 +15,7 @@ export const adminApi = {
       email?: string;
       role?: string;
       isActive?: boolean;
+      isPrivate?: boolean;
     }): Promise<User> => {
       const response = await apiClient.patch(`/admin/users/${id}`, payload);
       return response.data;

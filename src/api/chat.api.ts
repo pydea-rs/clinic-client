@@ -43,6 +43,7 @@ export const chatApi = {
     content: string;
     type?: 'TEXT' | 'IMAGE' | 'FILE' | 'AUDIO' | 'VIDEO' | 'SYSTEM';
     fileUrl?: string;
+    repliedToId?: string;
   }): Promise<Message> => {
     const response = await apiClient.post(`/chat/${chatId}/message`, payload);
     return response.data;

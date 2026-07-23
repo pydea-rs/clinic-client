@@ -24,50 +24,50 @@ export interface BookingPayload {
 }
 
 export const schedulingApi = {
-  // Doctor availability CRUD
-  getAvailability: async (): Promise<DoctorAvailability[]> => {
-    const response = await apiClient.get('/scheduling/availability');
+  // Doctor availability CRUD (doctorId is for nurse delegation)
+  getAvailability: async (doctorId?: number): Promise<DoctorAvailability[]> => {
+    const response = await apiClient.get('/scheduling/availability', { params: { doctorId } });
     return response.data;
   },
 
-  createAvailability: async (payload: Partial<DoctorAvailability>): Promise<DoctorAvailability> => {
-    const response = await apiClient.post('/scheduling/availability', payload);
+  createAvailability: async (payload: Partial<DoctorAvailability>, doctorId?: number): Promise<DoctorAvailability> => {
+    const response = await apiClient.post('/scheduling/availability', payload, { params: { doctorId } });
     return response.data;
   },
 
-  updateAvailability: async (id: number, payload: Partial<DoctorAvailability>): Promise<DoctorAvailability> => {
-    const response = await apiClient.patch(`/scheduling/availability/${id}`, payload);
+  updateAvailability: async (id: number, payload: Partial<DoctorAvailability>, doctorId?: number): Promise<DoctorAvailability> => {
+    const response = await apiClient.patch(`/scheduling/availability/${id}`, payload, { params: { doctorId } });
     return response.data;
   },
 
-  deleteAvailability: async (availabilityId: number): Promise<void> => {
-    await apiClient.delete(`/scheduling/availability/${availabilityId}`);
+  deleteAvailability: async (availabilityId: number, doctorId?: number): Promise<void> => {
+    await apiClient.delete(`/scheduling/availability/${availabilityId}`, { params: { doctorId } });
   },
 
-  // Slot durations CRUD
-  getSlotDurations: async (): Promise<SlotDuration[]> => {
-    const response = await apiClient.get('/scheduling/slot-durations');
+  // Slot durations CRUD (doctorId is for nurse delegation)
+  getSlotDurations: async (doctorId?: number): Promise<SlotDuration[]> => {
+    const response = await apiClient.get('/scheduling/slot-durations', { params: { doctorId } });
     return response.data;
   },
 
-  createSlotDuration: async (payload: Partial<SlotDuration>): Promise<SlotDuration> => {
-    const response = await apiClient.post('/scheduling/slot-durations', payload);
+  createSlotDuration: async (payload: Partial<SlotDuration>, doctorId?: number): Promise<SlotDuration> => {
+    const response = await apiClient.post('/scheduling/slot-durations', payload, { params: { doctorId } });
     return response.data;
   },
 
-  // Availability exceptions CRUD
-  getExceptions: async (): Promise<AvailabilityException[]> => {
-    const response = await apiClient.get('/scheduling/exceptions');
+  // Availability exceptions CRUD (doctorId is for nurse delegation)
+  getExceptions: async (doctorId?: number): Promise<AvailabilityException[]> => {
+    const response = await apiClient.get('/scheduling/exceptions', { params: { doctorId } });
     return response.data;
   },
 
-  createException: async (payload: Partial<AvailabilityException>): Promise<AvailabilityException> => {
-    const response = await apiClient.post('/scheduling/exceptions', payload);
+  createException: async (payload: Partial<AvailabilityException>, doctorId?: number): Promise<AvailabilityException> => {
+    const response = await apiClient.post('/scheduling/exceptions', payload, { params: { doctorId } });
     return response.data;
   },
 
-  deleteException: async (exceptionId: number): Promise<void> => {
-    await apiClient.delete(`/scheduling/exceptions/${exceptionId}`);
+  deleteException: async (exceptionId: number, doctorId?: number): Promise<void> => {
+    await apiClient.delete(`/scheduling/exceptions/${exceptionId}`, { params: { doctorId } });
   },
 
   // Public slot explorer
@@ -93,10 +93,10 @@ export const schedulingApi = {
   },
 
   // Appointments
-  getAppointments: async (page?: number, limit?: number): Promise<{ appointments: Appointment[]; total: number }> => {
+  getAppointments: async (page?: number, limit?: number, filters?: { status?: string; from?: string; to?: string }): Promise<{ appointments: Appointment[]; total: number }> => {
     const skip = page ? (page - 1) * (limit || 20) : undefined;
     const response = await apiClient.get('/scheduling/appointments', {
-      params: { skip, take: limit },
+      params: { skip, take: limit, ...filters },
     });
     const result = response.data;
     return { appointments: result?.data || (Array.isArray(result) ? result : []), total: result?.total || 0 };

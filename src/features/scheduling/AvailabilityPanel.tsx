@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { DoctorAvailability } from '../../lib/types/api';
 import { getErrorMessage } from '../../lib/api/error.utils';
 
-export const AvailabilityPanel: React.FC = () => {
+export const AvailabilityPanel: React.FC<{ doctorId?: number }> = ({ doctorId }) => {
   const [availability, setAvailability] = useState<DoctorAvailability[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -18,11 +18,11 @@ export const AvailabilityPanel: React.FC = () => {
 
   useEffect(() => {
     loadAvailability();
-  }, []);
+  }, [doctorId]);
 
   const loadAvailability = async () => {
     try {
-      const data = await schedulingApi.getAvailability();
+      const data = await schedulingApi.getAvailability(doctorId);
       setAvailability(data);
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Failed to load availability'));
@@ -35,10 +35,10 @@ export const AvailabilityPanel: React.FC = () => {
     e.preventDefault();
     try {
       if (editingId !== null) {
-        await schedulingApi.updateAvailability(editingId, formData);
+        await schedulingApi.updateAvailability(editingId, formData, doctorId);
         toast.success('Availability updated');
       } else {
-        await schedulingApi.createAvailability(formData);
+        await schedulingApi.createAvailability(formData, doctorId);
         toast.success('Availability created');
       }
       setShowForm(false);
@@ -60,7 +60,7 @@ export const AvailabilityPanel: React.FC = () => {
       return;
     }
     try {
-      await schedulingApi.deleteAvailability(id);
+      await schedulingApi.deleteAvailability(id, doctorId);
       toast.success('Availability deleted');
       loadAvailability();
     } catch (error: unknown) {

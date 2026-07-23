@@ -72,9 +72,9 @@ export const NurseSchedulePage: React.FC = () => {
       </div>
 
       {/* Tab Content */}
-      {activeTab === 'availability' && <AvailabilityPanel />}
-      {activeTab === 'durations' && <SlotDurationsPanel />}
-      {activeTab === 'exceptions' && <ExceptionsPanel />}
+      {activeTab === 'availability' && <AvailabilityPanel doctorId={doctorAssignment?.doctorId} />}
+      {activeTab === 'durations' && <SlotDurationsPanel doctorId={doctorAssignment?.doctorId} />}
+      {activeTab === 'exceptions' && <ExceptionsPanel doctorId={doctorAssignment?.doctorId} />}
     </div>
   );
 };
