@@ -58,10 +58,10 @@ export const PatientSOAPListPage: React.FC = () => {
               <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-brand-500 transition-colors" />
             </div>
 
-            {soap.specialty && (
+            {soap.suggestedSpecialty && (
               <div className="mb-3">
                 <span className="badge badge-blue">
-                  {formatSpecialty(soap.specialty)}
+                  {formatSpecialty(soap.suggestedSpecialty)}
                 </span>
               </div>
             )}

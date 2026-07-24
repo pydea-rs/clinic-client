@@ -5,7 +5,7 @@ import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { patientApi } from '../../api/patient.api';
 import { Loader2, FileText, Calendar, Tag, AlertTriangle } from 'lucide-react';
-import { formatSpecialty } from '../../lib/format';
+import { formatSpecialty, formatTriageLevel } from '../../lib/format';
 
 const mdComponents: Components = {
   p: ({ children }) => <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>,
