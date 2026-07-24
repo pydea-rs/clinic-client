@@ -244,12 +244,13 @@ export const ChatRoomPage: React.FC = () => {
 
     socketService.sendMessage(id, trimmed);
 
-    // Rollback if server never confirms within 10s
+    // Remove optimistic message if server never confirms within 10s
     setTimeout(() => {
       setMessages(prev => {
-        const stillTemp = prev.find(m => m.id === tempId);
+        const stillTemp = prev.some(m => m.id === tempId);
         if (stillTemp) {
           toast.error('Message may not have been delivered');
+          return prev.filter(m => m.id !== tempId);
         }
         return prev;
       });

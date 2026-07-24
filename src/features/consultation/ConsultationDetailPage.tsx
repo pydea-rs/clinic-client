@@ -194,7 +194,7 @@ export const ConsultationDetailPage: React.FC = () => {
             </div>
             <div>
               <span className="text-gray-500">Visit Method:</span>
-              <p className="font-medium">{formatVisitMethod(consultation.visitMethod!)}</p>
+              <p className="font-medium">{consultation.visitMethod ? formatVisitMethod(consultation.visitMethod) : '—'}</p>
             </div>
           </div>
         )}

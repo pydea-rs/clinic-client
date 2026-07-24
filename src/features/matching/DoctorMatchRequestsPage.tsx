@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { matchingApi } from '../../api/matching.api';
 import { matchingSocket } from '../../lib/socket/matching.socket';
@@ -32,8 +32,21 @@ const MatchRequestCard: React.FC<{
   onReject: (id: string) => void;
   isProcessing: boolean;
 }> = ({ request, onAccept, onReject, isProcessing }) => {
-  const elapsed = Math.floor((Date.now() - new Date(request.createdAt).getTime()) / 1000);
-  const remaining = Math.max(0, 300 - elapsed);
+  const [remaining, setRemaining] = useState(() => {
+    const elapsed = Math.floor((Date.now() - new Date(request.createdAt).getTime()) / 1000);
+    return Math.max(0, 300 - elapsed);
+  });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - new Date(request.createdAt).getTime()) / 1000);
+      const r = Math.max(0, 300 - elapsed);
+      setRemaining(r);
+      if (r <= 0) clearInterval(interval);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [request.createdAt]);
+
   const minutes = Math.floor(remaining / 60);
   const seconds = remaining % 60;
 

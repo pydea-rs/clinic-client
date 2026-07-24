@@ -60,6 +60,18 @@ export const DoctorProfileEnhancedPage: React.FC = () => {
     );
   }
 
+  if (!profile) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh] animate-fade-in">
+        <div className="text-center">
+          <User className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+          <h2 className="text-lg font-bold text-gray-900 mb-1">Profile Not Found</h2>
+          <p className="text-sm text-gray-500">Unable to load your doctor profile.</p>
+        </div>
+      </div>
+    );
+  }
+
   // Initials for avatar
   const initials = profile?.user
     ? `${profile.user.firstname[0] || ''}${profile.user.lastname[0] || ''}`.toUpperCase()

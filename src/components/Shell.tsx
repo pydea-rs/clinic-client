@@ -298,7 +298,13 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
 
                   <div className="space-y-0.5">
                     {group.items.map((item) => {
-                      const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
+                      const isActive = location.pathname === item.path ||
+                        (location.pathname.startsWith(item.path + '/') &&
+                         !group.items.some(other =>
+                           other.path !== item.path &&
+                           other.path.startsWith(item.path + '/') &&
+                           (location.pathname === other.path || location.pathname.startsWith(other.path + '/'))
+                         ));
                       return (
                         <Link
                           key={item.path}
