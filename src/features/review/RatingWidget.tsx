@@ -18,8 +18,7 @@ export const RatingWidget: React.FC<RatingWidgetProps> = ({
   distribution,
 }) => {
   const getStarColor = (star: number) => {
-    if (averageRating >= star) return 'text-yellow-400';
-    if (averageRating >= star - 0.5) return 'text-yellow-400';
+    if (averageRating >= star - 0.25) return 'text-yellow-400';
     return 'text-gray-300';
   };
 

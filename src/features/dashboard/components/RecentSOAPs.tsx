@@ -86,7 +86,7 @@ export const RecentSOAPs: React.FC = () => {
                 )}
                 <div className="flex gap-3">
                   <Link
-                    to={`/doctors?specialty=${soap.suggestedSpecialty || ''}&soapId=${soap.id}`}
+                    to={`/doctors?${soap.suggestedSpecialty ? `specialty=${soap.suggestedSpecialty}&` : ''}soapId=${soap.id}`}
                     className="inline-flex items-center gap-1.5 text-xs text-brand-600 hover:text-brand-700 font-semibold transition-colors"
                   >
                     <Search className="w-3 h-3" />

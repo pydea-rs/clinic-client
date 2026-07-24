@@ -197,7 +197,9 @@ export const MatchWaitingPage: React.FC = () => {
             <div
               className="absolute inset-0 rounded-full border-4 border-white transition-all duration-1000"
               style={{
-                clipPath: `polygon(50% 50%, 50% 0%, ${progress > 25 ? '100% 0%' : `${50 + progress * 2}% 0%`}, ${progress > 25 ? '100%' : '100%'} ${progress > 50 ? '100%' : `${(progress - 25) * 4}%`}, ${progress > 75 ? '0%' : `${100 - (progress - 50) * 4}%`} 100%, 0% ${progress > 75 ? `${100 - (progress - 75) * 4}%` : '100%'})`,
+                background: `conic-gradient(white ${progress * 3.6}deg, transparent ${progress * 3.6}deg)`,
+                mask: 'radial-gradient(farthest-side, transparent calc(100% - 4px), white calc(100% - 4px))',
+                WebkitMask: 'radial-gradient(farthest-side, transparent calc(100% - 4px), white calc(100% - 4px))',
               }}
             />
             <div className="absolute inset-0 flex items-center justify-center">

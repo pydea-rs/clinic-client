@@ -92,7 +92,9 @@ export const AdminUsersQuickList: React.FC = () => {
       {/* Pagination */}
       <div className="px-6 py-4 border-t flex items-center justify-between">
         <p className="text-sm text-gray-600">
-          Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)} of {total} users
+          {total > 0
+            ? `Showing ${(page - 1) * limit + 1} to ${Math.min(page * limit, total)} of ${total} users`
+            : 'No users found'}
         </p>
         <div className="flex gap-2">
           <button

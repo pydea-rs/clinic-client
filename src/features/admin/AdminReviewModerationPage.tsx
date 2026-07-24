@@ -102,7 +102,7 @@ export const AdminReviewModerationPage: React.FC = () => {
                   <div>
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-amber-400 text-lg">
-                        {'★'.repeat(Math.round(review.rating))}{'☆'.repeat(5 - Math.round(review.rating))}
+                        {'★'.repeat(Math.min(5, Math.max(0, Math.round(review.rating))))}{'☆'.repeat(Math.max(0, 5 - Math.min(5, Math.round(review.rating))))}
                       </span>
                       <span className="text-sm text-gray-500">
                         {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : ''}

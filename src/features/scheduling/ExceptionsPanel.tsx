@@ -37,6 +37,7 @@ export const ExceptionsPanel: React.FC<{ doctorId?: number }> = ({ doctorId }) =
       await schedulingApi.createException(formData, doctorId);
       toast.success('Exception created');
       setShowForm(false);
+      setFormData({ date: new Date().toISOString().split('T')[0], isBlocked: true, startTime: '', endTime: '', reason: '' });
       loadExceptions();
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Failed to save exception'));

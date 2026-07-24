@@ -49,7 +49,7 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
       const result = await userApi.uploadAvatar(file);
       toast.success('Avatar uploaded successfully');
       setFile(null);
-      onUploadSuccess?.(result.url);
+      onUploadSuccess?.(result.avatar);
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Failed to upload avatar'));
     } finally {

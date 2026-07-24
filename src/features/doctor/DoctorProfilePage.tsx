@@ -152,7 +152,7 @@ export const DoctorProfilePage: React.FC = () => {
               <div className="text-center">
                 <p className="counter-value text-3xl font-bold text-brand-600">
                   {doctor.startedAt
-                    ? new Date().getFullYear() - new Date(doctor.startedAt).getFullYear()
+                    ? Math.max(0, Math.floor((Date.now() - new Date(doctor.startedAt).getTime()) / (365.25 * 24 * 60 * 60 * 1000)))
                     : '--'}
                 </p>
                 <p className="text-sm text-gray-500 mt-1">Years Experience</p>
