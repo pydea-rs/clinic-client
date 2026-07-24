@@ -4,7 +4,6 @@ import { useAuthStore } from '../stores/auth.store';
 
 interface GuardProps {
   children: React.ReactNode;
-  requiredRole?: 'PATIENT' | 'DOCTOR' | 'ADMIN' | 'SUPERADMIN';
 }
 
 // Auth guard - requires authentication

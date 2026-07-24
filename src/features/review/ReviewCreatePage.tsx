@@ -3,8 +3,6 @@ import { reviewApi } from '../../api/review.api';
 import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../lib/api/error.utils';
-import { PenLine } from 'lucide-react';
-
 export const ReviewCreatePage: React.FC = () => {
   const { id: doctorId } = useParams<{ id: string }>();
   const navigate = useNavigate();

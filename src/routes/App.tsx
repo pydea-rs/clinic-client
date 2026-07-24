@@ -14,7 +14,6 @@ const PatientConsultationsListPage = React.lazy(() => import('../features/patien
 const PatientSOAPListPage = React.lazy(() => import('../features/patient/PatientSOAPListPage').then(m => ({ default: m.PatientSOAPListPage })));
 const SOAPDetailPage = React.lazy(() => import('../features/patient/SOAPDetailPage').then(m => ({ default: m.SOAPDetailPage })));
 const UserDetailPage = React.lazy(() => import('../features/patient/UserDetailPage').then(m => ({ default: m.UserDetailPage })));
-const DoctorWorkspacePage = React.lazy(() => import('../features/doctor/DoctorWorkspacePage').then(m => ({ default: m.DoctorWorkspacePage })));
 const DoctorDocumentsPage = React.lazy(() => import('../features/doctor/DoctorDocumentsPage').then(m => ({ default: m.DoctorDocumentsPage })));
 const DoctorListPage = React.lazy(() => import('../features/doctor/DoctorListPage').then(m => ({ default: m.DoctorListPage })));
 const DoctorProfilePage = React.lazy(() => import('../features/doctor/DoctorProfilePage').then(m => ({ default: m.DoctorProfilePage })));
@@ -29,10 +28,6 @@ const DoctorProfileEnhancedPage = React.lazy(() => import('../features/doctor/Do
 const ConsultationCreatePage = React.lazy(() => import('../features/consultation/ConsultationCreatePage').then(m => ({ default: m.ConsultationCreatePage })));
 const ConsultationListPage = React.lazy(() => import('../features/consultation/ConsultationListPage').then(m => ({ default: m.ConsultationListPage })));
 const ConsultationDetailPage = React.lazy(() => import('../features/consultation/ConsultationDetailPage').then(m => ({ default: m.ConsultationDetailPage })));
-const SchedulingPage = React.lazy(() => import('../features/scheduling/SchedulingPage').then(m => ({ default: m.SchedulingPage })));
-const AvailabilityPanel = React.lazy(() => import('../features/scheduling/AvailabilityPanel').then(m => ({ default: m.AvailabilityPanel })));
-const SlotDurationsPanel = React.lazy(() => import('../features/scheduling/SlotDurationsPanel').then(m => ({ default: m.SlotDurationsPanel })));
-const ExceptionsPanel = React.lazy(() => import('../features/scheduling/ExceptionsPanel').then(m => ({ default: m.ExceptionsPanel })));
 const SlotExplorer = React.lazy(() => import('../features/scheduling/SlotExplorer').then(m => ({ default: m.SlotExplorer })));
 const BookingPage = React.lazy(() => import('../features/scheduling/BookingPage').then(m => ({ default: m.BookingPage })));
 const AppointmentsPage = React.lazy(() => import('../features/scheduling/AppointmentsPage').then(m => ({ default: m.AppointmentsPage })));
