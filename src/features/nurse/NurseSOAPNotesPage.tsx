@@ -5,6 +5,7 @@ import { useNurseAssignments } from './useNurseAssignments';
 import { Link } from 'react-router-dom';
 import { apiClient } from '../../lib/api/client';
 import { formatTriageLevel } from '../../lib/format';
+import { PatientSOAP } from '../../lib/types/api';
 
 export const NurseSOAPNotesPage: React.FC = () => {
   const { assignments, isLoading: assignLoading } = useNurseAssignments();
@@ -61,11 +62,11 @@ export const NurseSOAPNotesPage: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-3">
-          {soaps.map((soap: any) => (
+          {soaps.map((soap: PatientSOAP) => (
             <Link
               key={soap.id}
               to={`/soap/${soap.id}`}
-              className="card p-4 flex items-center justify-between hover:shadow-md transition-all duration-200 block"
+              className="card p-4 flex items-center justify-between hover:shadow-md transition-all duration-200"
             >
               <div className="flex-1">
                 <div className="flex items-center gap-2">

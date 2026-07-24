@@ -130,7 +130,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose }) => 
     setAvatarUploading(true);
     try {
       const result = await userApi.uploadAvatar(avatarFile);
-      setUser({ ...user, avatar: result.url });
+      setUser({ ...user, avatar: result.avatar });
       setAvatarFile(null);
       toast.success('Avatar updated');
     } catch (error: unknown) {

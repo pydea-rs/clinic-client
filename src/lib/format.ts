@@ -24,39 +24,19 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const SPECIALTY_LABELS: Record<string, string> = {
-  GENERAL_PRACTICE: 'General Practice',
-  INTERNAL_MEDICINE: 'Internal Medicine',
-  FAMILY_MEDICINE: 'Family Medicine',
-  PEDIATRICS: 'Pediatrics',
   CARDIOLOGY: 'Cardiology',
   DERMATOLOGY: 'Dermatology',
-  ENDOCRINOLOGY: 'Endocrinology',
+  ENT: 'ENT',
   GASTROENTEROLOGY: 'Gastroenterology',
+  GYNECOLOGY: 'Gynecology',
   NEUROLOGY: 'Neurology',
   ONCOLOGY: 'Oncology',
-  OPHTHALMOLOGY: 'Ophthalmology',
   ORTHOPEDICS: 'Orthopedics',
-  OTOLARYNGOLOGY: 'ENT',
+  PEDIATRICS: 'Pediatrics',
   PSYCHIATRY: 'Psychiatry',
-  PULMONOLOGY: 'Pulmonology',
-  RHEUMATOLOGY: 'Rheumatology',
   UROLOGY: 'Urology',
-  OBSTETRICS_GYNECOLOGY: 'OB/GYN',
-  EMERGENCY_MEDICINE: 'Emergency Medicine',
-  ANESTHESIOLOGY: 'Anesthesiology',
-  RADIOLOGY: 'Radiology',
-  PATHOLOGY: 'Pathology',
-  SPORTS_MEDICINE: 'Sports Medicine',
-  ALLERGY_IMMUNOLOGY: 'Allergy & Immunology',
-  INFECTIOUS_DISEASE: 'Infectious Disease',
-  GERIATRICS: 'Geriatrics',
-  NEPHROLOGY: 'Nephrology',
-  HEMATOLOGY: 'Hematology',
-  PLASTIC_SURGERY: 'Plastic Surgery',
-  GENERAL_SURGERY: 'General Surgery',
-  PHYSICAL_THERAPY: 'Physical Therapy',
-  NUTRITION: 'Nutrition',
-  PSYCHOLOGY: 'Psychology',
+  GENERAL: 'General',
+  OTHER: 'Other',
 };
 
 const TRIAGE_LABELS: Record<string, string> = {
@@ -82,16 +62,16 @@ const DOC_TYPE_LABELS: Record<string, string> = {
 };
 
 const NOTIFICATION_TYPE_LABELS: Record<string, string> = {
-  CONSULTATION_UPDATE: 'Consultation Update',
+  CONSULTATION_REQUEST: 'Consultation Request',
+  DOCTOR_DECISION: 'Doctor Decision',
   PAYMENT_CONFIRMED: 'Payment Confirmed',
   APPOINTMENT_REMINDER: 'Appointment Reminder',
   APPOINTMENT_CANCELLED: 'Appointment Cancelled',
-  MATCH_FOUND: 'Match Found',
-  MATCH_ACCEPTED: 'Match Accepted',
-  MATCH_REJECTED: 'Match Rejected',
-  NEW_MESSAGE: 'New Message',
+  NEW_CHAT_MESSAGE: 'New Message',
+  NEW_REVIEW: 'New Review',
+  DOCTOR_VERIFIED: 'Doctor Verified',
   SOAP_READY: 'SOAP Ready',
-  GENERAL: 'General',
+  SYSTEM: 'System',
 };
 
 function toTitleCase(str: string): string {

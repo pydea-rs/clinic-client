@@ -52,10 +52,6 @@ export const doctorApi = {
     return response.data;
   },
 
-  deleteDocument: async (documentId: number): Promise<void> => {
-    await apiClient.delete(`/doctor/documents/${documentId}`);
-  },
-
   getStats: async (): Promise<DoctorStats> => {
     const response = await apiClient.get('/doctor/stats');
     return response.data;

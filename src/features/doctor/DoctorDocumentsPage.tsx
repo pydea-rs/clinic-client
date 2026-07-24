@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { doctorApi } from '../../api/doctor.api';
-import { Loader2, Upload, FileText, Trash2, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { Loader2, Upload, FileText, CheckCircle, Clock, XCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../lib/api/error.utils';
 import { formatDocType, formatStatus } from '../../lib/format';
@@ -34,17 +34,6 @@ export const DoctorDocumentsPage: React.FC = () => {
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, 'Failed to upload document'));
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (documentId: number) => doctorApi.deleteDocument(documentId),
-    onSuccess: () => {
-      toast.success('Document deleted successfully');
-      queryClient.invalidateQueries({ queryKey: ['doctor-documents'] });
-    },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, 'Failed to delete document'));
     },
   });
 
@@ -204,13 +193,6 @@ export const DoctorDocumentsPage: React.FC = () => {
 
                 <div className="flex items-center gap-4">
                   {getStatusBadge(doc.status)}
-                  <button
-                    onClick={() => deleteMutation.mutate(doc.id)}
-                    disabled={deleteMutation.isPending}
-                    className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 disabled:opacity-50 hover:scale-105"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
                 </div>
               </div>
             ))}

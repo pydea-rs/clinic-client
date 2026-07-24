@@ -74,10 +74,10 @@ export const SOAPDetailPage: React.FC = () => {
               {formatDate(soap.createdAt)}
             </p>
           </div>
-          {soap.specialty && (
+          {soap.suggestedSpecialty && (
             <div className="text-right">
               <p className="text-white/70 text-sm mb-2">Specialty</p>
-              <p className="text-xl font-semibold">{formatSpecialty(soap.specialty)}</p>
+              <p className="text-xl font-semibold">{formatSpecialty(soap.suggestedSpecialty)}</p>
             </div>
           )}
         </div>
@@ -149,15 +149,12 @@ export const SOAPDetailPage: React.FC = () => {
             </div>
 
             {/* Triage */}
-            {soap.triage && (
+            {soap.triageLevel && (
               <div className="card p-6 border-l-4 border-red-500 animate-slide-in-up" style={{ animationDelay: '400ms' }}>
                 <div className="flex items-center gap-3 mb-4">
                   <AlertTriangle className="w-6 h-6 text-red-500" />
                   <h2 className="text-2xl font-bold text-gray-900">Triage</h2>
-                  <span className="badge badge-red text-base font-semibold px-4 py-1.5">Priority Assessment</span>
-                </div>
-                <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{soap.triage}</ReactMarkdown>
+                  <span className="badge badge-red text-base font-semibold px-4 py-1.5">{formatTriageLevel(soap.triageLevel)}</span>
                 </div>
               </div>
             )}
@@ -180,11 +177,6 @@ export const SOAPDetailPage: React.FC = () => {
         <p>
           <span className="font-medium">Conversation ID:</span> {soap.conversationId}
         </p>
-        {soap.doctorId && (
-          <p>
-            <span className="font-medium">Doctor ID:</span> {soap.doctorId}
-          </p>
-        )}
         <p>
           <span className="font-medium">Last Updated:</span> {formatDate(soap.updatedAt)}
         </p>
