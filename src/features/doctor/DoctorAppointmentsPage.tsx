@@ -43,28 +43,20 @@ export const DoctorAppointmentsPage: React.FC = () => {
   const [dateTo, setDateTo] = useState('');
   const limit = 10;
 
+  const filters = {
+    ...(statusFilter !== 'ALL' && { status: statusFilter }),
+    ...(dateFrom && { from: dateFrom }),
+    ...(dateTo && { to: dateTo }),
+  };
+
   const { data, isLoading } = useQuery({
-    queryKey: ['doctor-appointments', page, limit],
-    queryFn: () => schedulingApi.getAppointments(page, limit),
+    queryKey: ['doctor-appointments', page, limit, filters],
+    queryFn: () => schedulingApi.getAppointments(page, limit, filters),
   });
 
-  const appointments = data?.appointments || [];
+  const filtered = data?.appointments || [];
   const total = data?.total || 0;
   const totalPages = Math.max(1, Math.ceil(total / limit));
-
-  // Client-side filtering for status and date range
-  const filtered = appointments.filter((apt) => {
-    if (statusFilter !== 'ALL' && apt.status !== statusFilter) return false;
-    if (dateFrom) {
-      const aptDate = new Date(apt.dateTime).toISOString().split('T')[0];
-      if (aptDate < dateFrom) return false;
-    }
-    if (dateTo) {
-      const aptDate = new Date(apt.dateTime).toISOString().split('T')[0];
-      if (aptDate > dateTo) return false;
-    }
-    return true;
-  });
 
   if (isLoading) {
     return (
@@ -121,7 +113,7 @@ export const DoctorAppointmentsPage: React.FC = () => {
           </div>
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
             className="px-3 py-2 border border-gray-200 rounded-xl bg-gray-50/50 text-sm input-focus"
           >
             {STATUS_OPTIONS.map((opt) => (
@@ -133,7 +125,7 @@ export const DoctorAppointmentsPage: React.FC = () => {
             <input
               type="date"
               value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
+              onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
               className="px-3 py-2 border border-gray-200 rounded-xl bg-gray-50/50 text-sm input-focus"
             />
           </div>
@@ -142,13 +134,13 @@ export const DoctorAppointmentsPage: React.FC = () => {
             <input
               type="date"
               value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
+              onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
               className="px-3 py-2 border border-gray-200 rounded-xl bg-gray-50/50 text-sm input-focus"
             />
           </div>
           {(statusFilter !== 'ALL' || dateFrom || dateTo) && (
             <button
-              onClick={() => { setStatusFilter('ALL'); setDateFrom(''); setDateTo(''); }}
+              onClick={() => { setStatusFilter('ALL'); setDateFrom(''); setDateTo(''); setPage(1); }}
               className="text-sm text-brand-600 hover:text-brand-700 font-medium"
             >
               Clear filters

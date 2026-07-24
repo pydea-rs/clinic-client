@@ -49,21 +49,18 @@ export const AdminConsultationsPage: React.FC = () => {
   const [dateTo, setDateTo] = useState('');
   const limit = 20;
 
+  const statusParam = statusFilter || undefined;
+
   const { data, isLoading } = useQuery({
-    queryKey: ['admin-consultations', page, limit],
-    queryFn: () => consultationApi.getConsultations(page, limit),
+    queryKey: ['admin-consultations', page, limit, statusParam],
+    queryFn: () => consultationApi.getConsultations(page, limit, statusParam),
   });
 
   const consultations = data?.consultations || [];
   const total = data?.total || 0;
 
-  // Client-side filtering
   const filteredConsultations = useMemo(() => {
     let result = consultations;
-
-    if (statusFilter) {
-      result = result.filter((c) => c.status === statusFilter);
-    }
 
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
@@ -86,7 +83,7 @@ export const AdminConsultationsPage: React.FC = () => {
     }
 
     return result;
-  }, [consultations, statusFilter, searchTerm, dateFrom, dateTo]);
+  }, [consultations, searchTerm, dateFrom, dateTo]);
 
   const totalPages = Math.ceil(total / limit);
   const hasActiveFilters = statusFilter || searchTerm || dateFrom || dateTo;
@@ -159,7 +156,7 @@ export const AdminConsultationsPage: React.FC = () => {
         </div>
         <select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
+          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
           className="px-4 py-2 input-focus"
         >
           {STATUS_OPTIONS.map((opt) => (

@@ -20,9 +20,11 @@ export const NurseAppointmentsPage: React.FC = () => {
   const hasPermission = assignments.some((a) => a.permissions.includes('MANAGE_APPOINTMENTS'));
   const [statusFilter, setStatusFilter] = useState<'' | AppointmentStatus>('');
 
+  const filters = statusFilter ? { status: statusFilter } : undefined;
+
   const { data, isLoading } = useQuery({
-    queryKey: ['nurse-appointments'],
-    queryFn: () => schedulingApi.getAppointments(),
+    queryKey: ['nurse-appointments', filters],
+    queryFn: () => schedulingApi.getAppointments(undefined, undefined, filters),
     enabled: hasPermission,
   });
 
@@ -46,10 +48,7 @@ export const NurseAppointmentsPage: React.FC = () => {
     );
   }
 
-  const allAppointments: Appointment[] = data?.appointments || [];
-  const appointments = statusFilter
-    ? allAppointments.filter((a) => a.status === statusFilter)
-    : allAppointments;
+  const appointments: Appointment[] = data?.appointments || [];
 
   return (
     <div className="max-w-5xl mx-auto p-6 animate-fade-in">

@@ -35,19 +35,16 @@ export const DoctorConsultationsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<StatusTab>('ALL');
   const limit = 10;
 
+  const statusParam = activeTab === 'ALL' ? undefined : activeTab;
+
   const { data, isLoading } = useQuery({
-    queryKey: ['doctor-consultations', page, limit],
-    queryFn: () => consultationApi.getConsultations(page, limit),
+    queryKey: ['doctor-consultations', page, limit, statusParam],
+    queryFn: () => consultationApi.getConsultations(page, limit, statusParam),
   });
 
-  const consultations = data?.consultations || [];
+  const filtered = data?.consultations || [];
   const total = data?.total || 0;
   const totalPages = Math.max(1, Math.ceil(total / limit));
-
-  // Client-side tab filtering
-  const filtered = activeTab === 'ALL'
-    ? consultations
-    : consultations.filter((c) => c.status === activeTab);
 
   if (isLoading) {
     return (
@@ -97,7 +94,7 @@ export const DoctorConsultationsPage: React.FC = () => {
         {STATUS_TABS.map((tab) => (
           <button
             key={tab.value}
-            onClick={() => { setActiveTab(tab.value); }}
+            onClick={() => { setActiveTab(tab.value); setPage(1); }}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
               activeTab === tab.value
                 ? 'bg-brand-600 text-white shadow-soft'

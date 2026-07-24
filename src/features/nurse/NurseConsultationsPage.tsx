@@ -24,9 +24,11 @@ export const NurseConsultationsPage: React.FC = () => {
   const hasPermission = assignments.some((a) => a.permissions.includes('VIEW_CONSULTATION_NOTES'));
   const [statusFilter, setStatusFilter] = useState('');
 
+  const statusParam = statusFilter || undefined;
+
   const { data, isLoading } = useQuery({
-    queryKey: ['nurse-consultations'],
-    queryFn: () => consultationApi.getConsultations(1, 50),
+    queryKey: ['nurse-consultations', statusParam],
+    queryFn: () => consultationApi.getConsultations(1, 50, statusParam),
     enabled: hasPermission,
   });
 
@@ -50,10 +52,7 @@ export const NurseConsultationsPage: React.FC = () => {
     );
   }
 
-  const allConsultations = data?.consultations || [];
-  const consultations = statusFilter
-    ? allConsultations.filter((c: Consultation) => c.status === statusFilter)
-    : allConsultations;
+  const consultations = data?.consultations || [];
 
   return (
     <div className="max-w-5xl mx-auto p-6 animate-fade-in">

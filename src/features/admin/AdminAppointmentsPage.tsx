@@ -1,9 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Search, X } from 'lucide-react';
 import { schedulingApi } from '../../api/scheduling.api';
-import { Appointment } from '../../lib/types/api';
 import { formatStatus, formatVisitMethod } from '../../lib/format';
 
 const STATUS_OPTIONS = ['ALL', 'PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED', 'NO_SHOW'] as const;
@@ -32,28 +31,20 @@ export const AdminAppointmentsPage: React.FC = () => {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
 
+  const filters = {
+    ...(statusFilter !== 'ALL' && { status: statusFilter }),
+    ...(dateFrom && { from: dateFrom }),
+    ...(dateTo && { to: dateTo }),
+  };
+
   const { data, isLoading } = useQuery({
-    queryKey: ['admin-appointments', page],
-    queryFn: () => schedulingApi.getAppointments(page, LIMIT),
+    queryKey: ['admin-appointments', page, filters],
+    queryFn: () => schedulingApi.getAppointments(page, LIMIT, filters),
     placeholderData: (prev) => prev,
   });
 
-  const appointments = data?.appointments ?? [];
+  const filteredAppointments = data?.appointments ?? [];
   const total = data?.total ?? 0;
-
-  // Client-side filtering for status and date range
-  const filteredAppointments = useMemo(() => {
-    return appointments.filter((appt: Appointment) => {
-      if (statusFilter !== 'ALL' && appt.status !== statusFilter) return false;
-      if (dateFrom && new Date(appt.dateTime) < new Date(dateFrom)) return false;
-      if (dateTo) {
-        const toEnd = new Date(dateTo);
-        toEnd.setHours(23, 59, 59, 999);
-        if (new Date(appt.dateTime) > toEnd) return false;
-      }
-      return true;
-    });
-  }, [appointments, statusFilter, dateFrom, dateTo]);
 
   const totalPages = Math.ceil(total / LIMIT);
 
@@ -61,6 +52,7 @@ export const AdminAppointmentsPage: React.FC = () => {
     setStatusFilter('ALL');
     setDateFrom('');
     setDateTo('');
+    setPage(1);
   };
 
   const hasActiveFilters = statusFilter !== 'ALL' || dateFrom || dateTo;
@@ -118,7 +110,7 @@ export const AdminAppointmentsPage: React.FC = () => {
           <label className="block text-xs font-medium text-gray-500 mb-1 uppercase">Status</label>
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
             className="px-4 py-2 input-focus"
           >
             {STATUS_OPTIONS.map((s) => (
@@ -133,7 +125,7 @@ export const AdminAppointmentsPage: React.FC = () => {
           <input
             type="date"
             value={dateFrom}
-            onChange={(e) => setDateFrom(e.target.value)}
+            onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
             className="px-4 py-2 input-focus"
           />
         </div>
@@ -142,7 +134,7 @@ export const AdminAppointmentsPage: React.FC = () => {
           <input
             type="date"
             value={dateTo}
-            onChange={(e) => setDateTo(e.target.value)}
+            onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
             className="px-4 py-2 input-focus"
           />
         </div>
