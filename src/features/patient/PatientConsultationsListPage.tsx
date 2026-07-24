@@ -119,7 +119,9 @@ export const PatientConsultationsListPage: React.FC = () => {
                       {consultation.id.substring(0, 8)}...
                     </span>
                     <span className="text-sm font-medium text-gray-900">
-                      Doctor {consultation.doctorId}
+                      {consultation.doctor?.user
+                        ? `Dr. ${consultation.doctor.user.firstname} ${consultation.doctor.user.lastname}`
+                        : `Doctor #${consultation.doctorId}`}
                     </span>
                   </div>
                   <div className="flex items-center gap-3">

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { schedulingApi } from '../../api/scheduling.api';
 import { consultationApi } from '../../api/consultation.api';
+import { doctorApi } from '../../api/doctor.api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../lib/api/error.utils';
 
@@ -31,6 +33,16 @@ export const BookingPage: React.FC = () => {
     notes: '',
   });
   const [slotDisplay, setSlotDisplay] = useState('');
+
+  const { data: doctor } = useQuery({
+    queryKey: ['doctor', doctorId],
+    queryFn: () => doctorApi.getDoctorById(Number(doctorId)),
+    enabled: !!doctorId,
+  });
+
+  const doctorName = doctor?.user
+    ? `Dr. ${doctor.user.firstname} ${doctor.user.lastname}`
+    : `Doctor #${doctorId}`;
 
   useEffect(() => {
     const state = location.state as BookingLocationState | null;
@@ -127,8 +139,8 @@ export const BookingPage: React.FC = () => {
         <h2 className="text-lg font-semibold mb-4">Booking Details</h2>
         <div className="space-y-3">
           <div className="flex justify-between py-2 border-b border-gray-50">
-            <span className="text-gray-500">Doctor ID:</span>
-            <span className="font-medium">{formData.doctorId}</span>
+            <span className="text-gray-500">Doctor:</span>
+            <span className="font-medium">{doctorName}</span>
           </div>
           <div className="flex justify-between py-2 border-b border-gray-50">
             <span className="text-gray-500">Date & Time:</span>

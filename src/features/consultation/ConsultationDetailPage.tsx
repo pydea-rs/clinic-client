@@ -171,11 +171,19 @@ export const ConsultationDetailPage: React.FC = () => {
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <span className="text-gray-500">Patient:</span>
-            <p className="font-medium">{consultation.patientId}</p>
+            <p className="font-medium">
+              {consultation.patient
+                ? `${consultation.patient.firstname} ${consultation.patient.lastname}`
+                : consultation.patientId.substring(0, 8) + '...'}
+            </p>
           </div>
           <div>
             <span className="text-gray-500">Doctor:</span>
-            <p className="font-medium">{consultation.doctorId}</p>
+            <p className="font-medium">
+              {consultation.doctor?.user
+                ? `Dr. ${consultation.doctor.user.firstname} ${consultation.doctor.user.lastname}`
+                : `Doctor #${consultation.doctorId}`}
+            </p>
           </div>
         </div>
 

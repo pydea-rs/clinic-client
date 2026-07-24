@@ -118,7 +118,9 @@ export const AppointmentsPage: React.FC = () => {
                   <div>
                     <h3 className="font-semibold">Appointment #{appointment.id}</h3>
                     <p className="text-sm text-gray-500">
-                      Doctor ID: {appointment.doctorId}
+                      {appointment.doctor?.user
+                        ? `Dr. ${appointment.doctor.user.firstname} ${appointment.doctor.user.lastname}`
+                        : `Doctor #${appointment.doctorId}`}
                     </p>
                   </div>
                   <span className={getStatusColor(appointment.status)}>

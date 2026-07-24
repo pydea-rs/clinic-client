@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { Consultation } from '../../lib/types/api';
 import { getErrorMessage } from '../../lib/api/error.utils';
 import { formatStatus, formatVisitMethod, formatEnum } from '../../lib/format';
-import { Loader2, ClipboardList, ChevronRight } from 'lucide-react';
+import { Loader2, ClipboardList } from 'lucide-react';
 
 export const ConsultationListPage: React.FC = () => {
   const [consultations, setConsultations] = useState<Consultation[]>([]);
@@ -86,9 +86,13 @@ export const ConsultationListPage: React.FC = () => {
                   <div>
                     <h3 className="font-medium">Consultation #{consultation.id.substring(0, 8)}...</h3>
                     <p className="text-sm text-gray-500">
-                      {user?.role === 'PATIENT' 
-                        ? `Doctor ID: ${consultation.doctorId}`
-                        : `Patient ID: ${consultation.patientId}`}
+                      {user?.role === 'PATIENT'
+                        ? (consultation.doctor?.user
+                            ? `Dr. ${consultation.doctor.user.firstname} ${consultation.doctor.user.lastname}`
+                            : `Doctor #${consultation.doctorId}`)
+                        : (consultation.patient
+                            ? `${consultation.patient.firstname} ${consultation.patient.lastname}`
+                            : `Patient ${consultation.patientId.substring(0, 8)}...`)}
                     </p>
                   </div>
                   <span className={`badge ${getStatusColor(consultation.status)}`}>

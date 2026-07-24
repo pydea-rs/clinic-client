@@ -123,10 +123,16 @@ export const ReviewFeedPage: React.FC = () => {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-brand-50 rounded-lg flex items-center justify-center text-xs font-bold text-brand-600 ring-1 ring-brand-100">
-                      {review.reviewerId.substring(0, 2).toUpperCase()}
+                      {review.reviewer
+                        ? `${review.reviewer.firstname[0]}${review.reviewer.lastname[0]}`.toUpperCase()
+                        : review.reviewerId.substring(0, 2).toUpperCase()}
                     </div>
                     <div>
-                      <span className="font-medium text-sm text-gray-900">User {review.reviewerId.substring(0, 8)}...</span>
+                      <span className="font-medium text-sm text-gray-900">
+                        {review.reviewer
+                          ? `${review.reviewer.firstname} ${review.reviewer.lastname}`
+                          : `User ${review.reviewerId.substring(0, 8)}...`}
+                      </span>
                       <span className="text-gray-400 text-xs ml-2">
                         {new Date(review.createdAt).toLocaleDateString()}
                       </span>
