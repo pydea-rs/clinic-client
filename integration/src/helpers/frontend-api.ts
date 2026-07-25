@@ -585,7 +585,7 @@ export function createPaymentApi(client: AxiosInstance) {
       return response.data;
     },
     confirm: async (paymentId: string) => {
-      const response = await client.patch(`/payment/${paymentId}/confirm`);
+      const response = await client.post(`/payment/${paymentId}/confirm`);
       return response.data;
     },
   };

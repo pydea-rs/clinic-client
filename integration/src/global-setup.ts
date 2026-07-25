@@ -1,5 +1,5 @@
 import { execSync } from 'child_process';
-import { readFileSync } from 'fs';
+import { readFileSync, rmSync } from 'fs';
 import path from 'path';
 import { Client } from 'pg';
 
@@ -92,4 +92,14 @@ export default async function globalSetup() {
 
   // Make the URL available to test files via env
   process.env.DATABASE_URL = testDbUrl;
+
+  return async () => {
+    const uploadsDir = path.resolve(__dirname, '../.tmp-uploads');
+    try {
+      rmSync(uploadsDir, { recursive: true, force: true });
+    } catch {
+      // ignore if doesn't exist
+    }
+    console.log('[Integration] Cleanup complete.');
+  };
 }
