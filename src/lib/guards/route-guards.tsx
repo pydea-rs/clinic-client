@@ -6,9 +6,9 @@ interface GuardProps {
   children: React.ReactNode;
 }
 
-// Auth guard - requires authentication
+// Auth guard - requires authentication + active & not banned
 export const AuthGuard: React.FC<GuardProps> = ({ children }) => {
-  const { isAuthenticated, initializing } = useAuthStore();
+  const { isAuthenticated, initializing, user } = useAuthStore();
   const location = useLocation();
 
   if (initializing) {
@@ -17,6 +17,10 @@ export const AuthGuard: React.FC<GuardProps> = ({ children }) => {
 
   if (!isAuthenticated) {
     return <Navigate to="/auth" state={{ from: location }} replace />;
+  }
+
+  if (user?.isBanned || user?.isActive === false) {
+    return <Navigate to="/auth" replace />;
   }
 
   return <>{children}</>;

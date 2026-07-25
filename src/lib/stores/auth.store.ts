@@ -13,7 +13,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   isAuthenticated: false,
   initializing: true,
   
-  setUser: (user) => set({ user }),
+  setUser: (user) => set({ user, isAuthenticated: !!user }),
   setAuthenticated: (authenticated) => set({ isAuthenticated: authenticated }),
   setInitializing: (initializing) => set({ initializing }),
   

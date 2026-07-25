@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { adminApi } from '../../api/admin.api';
 import toast from 'react-hot-toast';
 import { User } from '../../lib/types/api';
@@ -18,12 +18,23 @@ export const AdminUserManagementPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('');
   const [bannedFilter, setBannedFilter] = useState<string>('');
   const [banningUser, setBanningUser] = useState<User | null>(null);
   const [banReason, setBanReason] = useState('');
   const [page, setPage] = useState(1);
   const limit = 20;
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(debounceRef.current);
+  }, [searchTerm]);
 
   useEffect(() => {
     const loadUsers = async () => {
@@ -34,7 +45,7 @@ export const AdminUserManagementPage: React.FC = () => {
           skip,
           take: limit,
           role: roleFilter || undefined,
-          search: searchTerm || undefined,
+          search: debouncedSearch || undefined,
           isBanned: bannedFilter ? bannedFilter === 'true' : undefined,
         });
         setUsers(data.data || []);
@@ -46,7 +57,7 @@ export const AdminUserManagementPage: React.FC = () => {
       }
     };
     loadUsers();
-  }, [page, roleFilter, searchTerm, bannedFilter]);
+  }, [page, roleFilter, debouncedSearch, bannedFilter]);
 
   const handleUpdateUser = async (id: string, payload: UserUpdatePayload) => {
     try {
@@ -182,7 +193,7 @@ export const AdminUserManagementPage: React.FC = () => {
           type="text"
           placeholder="Search users..."
           value={searchTerm}
-          onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
+          onChange={(e) => setSearchTerm(e.target.value)}
           className="flex-1 px-4 py-2 input-focus"
         />
         <select

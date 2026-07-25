@@ -34,7 +34,12 @@ export const ExceptionsPanel: React.FC<{ doctorId?: number }> = ({ doctorId }) =
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await schedulingApi.createException(formData, doctorId);
+      await schedulingApi.createException({
+        ...formData,
+        startTime: formData.startTime || undefined,
+        endTime: formData.endTime || undefined,
+        reason: formData.reason || undefined,
+      }, doctorId);
       toast.success('Exception created');
       setShowForm(false);
       setFormData({ date: new Date().toISOString().split('T')[0], isBlocked: true, startTime: '', endTime: '', reason: '' });

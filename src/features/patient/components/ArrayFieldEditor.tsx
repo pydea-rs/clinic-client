@@ -60,7 +60,7 @@ export const ArrayFieldEditor: React.FC<ArrayFieldEditorProps> = ({
       <div className="flex flex-wrap gap-2">
         {items.map((item, index) => (
           <div
-            key={index}
+            key={item}
             className="flex items-center gap-2 px-3 py-1 bg-brand-100 text-brand-800 rounded-full text-sm"
           >
             <span>{item}</span>

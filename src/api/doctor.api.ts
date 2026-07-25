@@ -43,7 +43,9 @@ export const doctorApi = {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('type', documentType);
-    const response = await apiClient.post('/doctor/documents', formData);
+    const response = await apiClient.post('/doctor/documents', formData, {
+      headers: { 'Content-Type': undefined },
+    });
     return response.data;
   },
 

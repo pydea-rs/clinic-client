@@ -68,7 +68,11 @@ export const BookingPage: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await schedulingApi.bookAppointment(formData);
+      await schedulingApi.bookAppointment({
+        ...formData,
+        consultationId: formData.consultationId || undefined,
+        notes: formData.notes || undefined,
+      });
 
       // If SOAP context exists, auto-create a consultation linking it
       if (soapId) {
