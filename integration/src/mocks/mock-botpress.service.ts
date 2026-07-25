@@ -8,6 +8,7 @@ export class MockBotpressService {
   readonly deliveryMode: 'sse' | 'poll' = 'sse';
   readonly calls: CallRecord[] = [];
   private conversationCounter = 0;
+  nextPollMessages: any[] | null = null;
 
   private record(method: string, ...args: any[]) {
     this.calls.push({ method, args, timestamp: Date.now() });
@@ -16,6 +17,7 @@ export class MockBotpressService {
   clear() {
     this.calls.length = 0;
     this.conversationCounter = 0;
+    this.nextPollMessages = null;
   }
 
   async start(user: any) {
@@ -77,6 +79,11 @@ export class MockBotpressService {
 
   async pollForNewMessages(_user: any, _conversationId: string, _dateOffset?: Date) {
     this.record('pollForNewMessages', _user.id, _conversationId);
+    if (this.nextPollMessages) {
+      const messages = this.nextPollMessages;
+      this.nextPollMessages = null;
+      return messages;
+    }
     return [
       {
         id: `msg-bot-${Date.now()}`,

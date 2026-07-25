@@ -49,6 +49,7 @@ const { AppModule } = require(path.join(serverDist, 'app.module'));
 const { ExceptionTemplateFilter } = require(path.join(serverDist, 'common/filters/exception-template.filter'));
 const { ResponseTemplateInterceptor } = require(path.join(serverDist, 'common/interceptors/response-template.interceptor'));
 const { CsrfGuard } = require(path.join(serverDist, 'common/guards/csrf.guard'));
+const { PrismaService } = require(path.join(serverDist, 'prisma/prisma.service'));
 const { BotpressService } = require(path.join(serverDist, 'ai-agents/botpress.service'));
 const { OpenAiService } = require(path.join(serverDist, 'ai-agents/openai/openai.service'));
 const { CalendlyService } = require(path.join(serverDist, 'calendly/calendly.service'));
@@ -216,4 +217,9 @@ export function getApp(): NestFastifyApplication {
     throw new Error('Test server not running.');
   }
   return app;
+}
+
+export function getPrisma(): any {
+  if (!app) throw new Error('Test server not running.');
+  return app.get(PrismaService);
 }
