@@ -25,3 +25,4 @@ dist-ssr
 .env
 integration/.env.test
 docs
+integration/.tmp-uploads
