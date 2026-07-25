@@ -18,6 +18,25 @@ import { MockWebPushChannel } from '../mocks/mock-webpush.channel.js';
 const require = createRequire(path.resolve(__dirname, '../../node_modules/'));
 const serverDist = path.resolve(__dirname, '../../../../server/dist/src');
 
+// Pre-load sodium-native into Node's module cache so the gateway's require() finds it
+// (the gateway resolves from server/dist which doesn't have sodium-native in its path)
+try {
+  const Module = require('module');
+  const sodiumPath = require.resolve('sodium-native');
+  if (!Module._cache[sodiumPath]) {
+    require('sodium-native');
+  }
+  const originalResolveFilename = Module._resolveFilename;
+  Module._resolveFilename = function (request: string, parent: any, ...args: any[]) {
+    if (request === 'sodium-native') {
+      return sodiumPath;
+    }
+    return originalResolveFilename.call(this, request, parent, ...args);
+  };
+} catch {
+  // sodium-native not available, WebSocket auth tests will fail
+}
+
 const { FastifyAdapter } = require('@nestjs/platform-fastify');
 const fastifyCookie = require('@fastify/cookie');
 const fastifySecureSession = require('@fastify/secure-session');
