@@ -194,14 +194,14 @@ export const DoctorListPage: React.FC = () => {
                           </div>
                         )}
 
-                        {doctor.rating !== undefined && (
+                        {doctor.averageRating != null && (
                           <div className="flex items-center gap-2 mb-4">
                             <div className="flex items-center gap-1">
                               {[...Array(5)].map((_, i) => (
                                 <Star
                                   key={i}
                                   className={`w-5 h-5 ${
-                                    i < Math.round(doctor.rating || 0)
+                                    i < Math.round(doctor.averageRating || 0)
                                       ? 'fill-amber-400 text-amber-400'
                                       : 'text-gray-300'
                                   }`}
@@ -209,7 +209,7 @@ export const DoctorListPage: React.FC = () => {
                               ))}
                             </div>
                             <span className="text-sm font-semibold text-gray-800">
-                              {doctor.rating?.toFixed(1)}
+                              {doctor.averageRating?.toFixed(1)}
                             </span>
                             <span className="text-sm text-gray-500">
                               ({doctor.totalReviews || 0})

@@ -63,10 +63,10 @@ export const FeaturedDoctors: React.FC = () => {
                 <span className="truncate">{doctor.clinicLocation}</span>
               </div>
             )}
-            {doctor.rating !== undefined && doctor.rating > 0 && (
+            {doctor.averageRating != null && doctor.averageRating > 0 && (
               <div className="flex items-center gap-1 bg-amber-50 rounded-md px-1.5 py-0.5 w-fit">
                 <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                <span className="text-[11px] font-semibold text-amber-700">{doctor.rating.toFixed(1)}</span>
+                <span className="text-[11px] font-semibold text-amber-700">{doctor.averageRating.toFixed(1)}</span>
               </div>
             )}
           </Link>

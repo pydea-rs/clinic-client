@@ -147,8 +147,8 @@ export interface DoctorProfile {
   platformSummary?: string;
   createdAt: string;
   updatedAt: string;
-  user?: Pick<User, 'id' | 'firstname' | 'lastname' | 'email' | 'avatar'>;
-  rating?: number;
+  user?: Pick<User, 'id' | 'firstname' | 'lastname' | 'avatar'>;
+  averageRating?: number | null;
   totalReviews?: number;
 }
 
@@ -351,7 +351,7 @@ export interface ScoredDoctor {
   avatar?: string;
   specialty: DoctorSpecialty;
   secondarySpecialties: DoctorSpecialty[];
-  rating?: number;
+  averageRating?: number | null;
   totalReviews: number;
   availableSlots: number;
   score: number;

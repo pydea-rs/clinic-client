@@ -2,7 +2,7 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { userApi } from '../../api/user.api';
-import { Loader2, Mail, User, Calendar } from 'lucide-react';
+import { Loader2, User, Calendar } from 'lucide-react';
 
 export const UserDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -72,7 +72,7 @@ export const UserDetailPage: React.FC = () => {
               <h1 className="text-3xl font-bold">
                 {user.firstname} {user.lastname}
               </h1>
-              <p className="text-blue-100 mt-1">{user.email}</p>
+              {user.email && <p className="text-blue-100 mt-1">{user.email}</p>}
               <div className="mt-3">
                 <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getRoleBadgeColor(user.role)}`}>
                   {user.role}
@@ -86,14 +86,6 @@ export const UserDetailPage: React.FC = () => {
         <div className="px-8 py-6 space-y-6">
           <div className="grid grid-cols-2 gap-6">
             <div className="flex items-start gap-3">
-              <Mail className="w-5 h-5 text-gray-400 mt-1" />
-              <div>
-                <p className="text-sm text-gray-600">Email</p>
-                <p className="font-medium text-gray-900">{user.email}</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
               <User className="w-5 h-5 text-gray-400 mt-1" />
               <div>
                 <p className="text-sm text-gray-600">Role</p>
@@ -101,21 +93,15 @@ export const UserDetailPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-start gap-3">
-              <Calendar className="w-5 h-5 text-gray-400 mt-1" />
-              <div>
-                <p className="text-sm text-gray-600">Member Since</p>
-                <p className="font-medium text-gray-900">{formatDate(user.createdAt)}</p>
+            {user.createdAt && (
+              <div className="flex items-start gap-3">
+                <Calendar className="w-5 h-5 text-gray-400 mt-1" />
+                <div>
+                  <p className="text-sm text-gray-600">Member Since</p>
+                  <p className="font-medium text-gray-900">{formatDate(user.createdAt)}</p>
+                </div>
               </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <Calendar className="w-5 h-5 text-gray-400 mt-1" />
-              <div>
-                <p className="text-sm text-gray-600">Last Updated</p>
-                <p className="font-medium text-gray-900">{formatDate(user.updatedAt)}</p>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
