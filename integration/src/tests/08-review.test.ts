@@ -168,13 +168,6 @@ describe('Reviews', () => {
       expect(Array.isArray(reviews)).toBe(true);
       expect(total).toBeGreaterThanOrEqual(1);
     });
-
-    it('should allow admin to delete a review', async () => {
-      // Create another review via a second consultation (need to reuse existing patient-doctor pair)
-      // The unique constraint is per patient-doctor, so we can't create two.
-      // Instead, verify admin can delete the existing review.
-      // But we still need it for later tests, so let's test admin delete at the end.
-    });
   });
 
   describe('Patient Deletes Own Review', () => {
@@ -236,6 +229,25 @@ describe('Reviews', () => {
         title: 'Invalid',
       });
       expect(response.status).toBe(400);
+    });
+  });
+
+  // ─── Admin Delete ───────────────────────────────────────────────
+
+  describe('Admin Deletes Review', () => {
+    it('should allow admin to delete any review', async () => {
+      const review = await patientReview.createReview({
+        doctorId: doctorProfileId,
+        rating: 3,
+        title: 'To be admin-deleted',
+      });
+
+      const adminApi = createAdminApi(adminTc.axios);
+      await adminApi.reviews.delete(review.id);
+
+      const { reviews } = await patientReview.getDoctorReviews(doctorProfileId);
+      const found = reviews.find((r: any) => r.id === review.id);
+      expect(found).toBeUndefined();
     });
   });
 });
