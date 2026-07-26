@@ -507,6 +507,10 @@ export function createNurseApi(client: AxiosInstance) {
       const response = await client.get('/nurse/assignments');
       return response.data;
     },
+    getAssignment: async (assignmentId: number) => {
+      const response = await client.get(`/nurse/assignment/${assignmentId}`);
+      return response.data;
+    },
   };
 }
 
