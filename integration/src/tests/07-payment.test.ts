@@ -138,7 +138,7 @@ describe('Payment', () => {
 
   describe('Get Payment', () => {
     it('should get payment by ID', async () => {
-      const payment = await patientPayment.getById(String(paymentId));
+      const payment = await patientPayment.getById(paymentId);
 
       expect(payment).toBeDefined();
       expect(payment.id).toBe(paymentId);
@@ -149,7 +149,7 @@ describe('Payment', () => {
 
   describe('Confirm Payment', () => {
     it('should confirm a payment → COMPLETED', async () => {
-      const confirmed = await patientPayment.confirm(String(paymentId));
+      const confirmed = await patientPayment.confirm(paymentId);
 
       expect(confirmed.status).toBe('COMPLETED');
       expect(confirmed.paidAt).toBeTruthy();

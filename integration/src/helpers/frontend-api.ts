@@ -553,8 +553,8 @@ export function createAiAgentsApi(client: AxiosInstance) {
       const response = await client.post('/ai-agents/message', { conversationId, text });
       return response.data;
     },
-    getMessages: async (conversationId: string, since?: string) => {
-      const response = await client.get(`/ai-agents/messages/${conversationId}`, { params: { since } });
+    getMessages: async (conversationId: string, dateOffset?: string) => {
+      const response = await client.get(`/ai-agents/messages/${conversationId}`, { params: { dateOffset } });
       return response.data;
     },
     getHistory: async (conversationId: string) => {
@@ -580,7 +580,7 @@ export function createPaymentApi(client: AxiosInstance) {
       const response = await client.get('/payment', { params });
       return response.data;
     },
-    getById: async (paymentId: string) => {
+    getById: async (paymentId: number) => {
       const response = await client.get(`/payment/${paymentId}`);
       return response.data;
     },
@@ -588,7 +588,7 @@ export function createPaymentApi(client: AxiosInstance) {
       const response = await client.post('/payment', payload);
       return response.data;
     },
-    confirm: async (paymentId: string) => {
+    confirm: async (paymentId: number) => {
       const response = await client.post(`/payment/${paymentId}/confirm`);
       return response.data;
     },

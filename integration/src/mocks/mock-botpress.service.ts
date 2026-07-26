@@ -66,6 +66,7 @@ export class MockBotpressService {
     const mockListener = {
       status: 'connected' as const,
       on: () => mockListener,
+      off: () => mockListener,
       disconnect: async () => {},
       connect: async () => {},
     };
