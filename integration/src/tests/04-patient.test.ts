@@ -138,5 +138,19 @@ describe('Patient Profile', () => {
 
       expect(response.status).toBe(409);
     });
+
+    it('should reject unauthenticated access to patient profile with 401', async () => {
+      const unauthTc = createTestClient();
+      const response = await unauthTc.axios.get('/patient/profile');
+      expect(response.status).toBe(401);
+    });
+
+    it('should reject patient profile with extra/unknown fields (400)', async () => {
+      const response = await patientTc.axios.patch('/patient/profile', {
+        allergies: ['None'],
+        hackerField: 'malicious',
+      });
+      expect(response.status).toBe(400);
+    });
   });
 });

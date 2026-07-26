@@ -353,7 +353,6 @@ describe('Scheduling', () => {
 
   describe('Unhappy Paths', () => {
     it('should reject booking an already-taken slot with 409', async () => {
-      // Book a new slot first
       const start = futureMonday();
       const end = new Date(start);
       end.setUTCDate(end.getUTCDate() + 14);
@@ -365,22 +364,25 @@ describe('Scheduling', () => {
         duration: 30,
       });
 
-      const tuesdaySlot = slots.find((s: any) => {
+      // Pick a LATE Tuesday slot to avoid collision with the booking test's slot
+      const tuesdaySlots = slots.filter((s: any) => {
         const d = new Date(s.date + 'T00:00:00Z');
         return d.getUTCDay() === 2;
       });
-      expect(tuesdaySlot).toBeDefined();
+      expect(tuesdaySlots.length).toBeGreaterThanOrEqual(2);
+      const tuesdaySlot = tuesdaySlots[tuesdaySlots.length - 1]; // last available
 
       const dateTime = `${tuesdaySlot.date}T${tuesdaySlot.startTime}:00.000Z`;
 
       // First booking succeeds
-      await patientScheduling.bookAppointment({
+      const first = await patientTc.axios.post('/scheduling/book', {
         doctorId: doctorProfileId,
         dateTime,
         durationMinutes: 30,
         price: 50,
         method: 'CHAT',
       });
+      expect([200, 201]).toContain(first.status);
 
       // Second booking on same slot → 409
       const response = await patientTc.axios.post('/scheduling/book', {
@@ -391,6 +393,15 @@ describe('Scheduling', () => {
         method: 'CHAT',
       });
       expect(response.status).toBe(409);
+    });
+
+    it('should reject patient creating an exception with 403', async () => {
+      const response = await patientTc.axios.post('/scheduling/exceptions', {
+        date: futureMonday().toISOString().split('T')[0],
+        isBlocked: true,
+        reason: 'Hacking',
+      });
+      expect(response.status).toBe(403);
     });
 
     it('should reject booking with invalid doctor ID with 404', async () => {

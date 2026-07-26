@@ -143,7 +143,7 @@ describe('Reviews', () => {
       const rating = await unauthReview.getDoctorRating(doctorProfileId);
 
       expect(rating).toBeDefined();
-      expect(rating.averageRating).toBeDefined();
+      expect(Number(rating.averageRating)).toBe(5);
       expect(rating.totalReviews).toBeGreaterThanOrEqual(1);
     });
   });
@@ -219,14 +219,31 @@ describe('Reviews', () => {
       expect(response.status).toBe(403);
     });
 
-    it('should reject invalid rating value with 400', async () => {
-      // Delete existing review first (unique constraint)
+    it('should reject invalid rating value (too high) with 400', async () => {
       await patientReview.deleteReview(secondReviewId);
 
       const response = await patientTc.axios.post('/review', {
         doctorId: doctorProfileId,
         rating: 10,
         title: 'Invalid',
+      });
+      expect(response.status).toBe(400);
+    });
+
+    it('should reject invalid rating value (zero) with 400', async () => {
+      const response = await patientTc.axios.post('/review', {
+        doctorId: doctorProfileId,
+        rating: 0,
+        title: 'Zero rating',
+      });
+      expect(response.status).toBe(400);
+    });
+
+    it('should reject invalid rating value (negative) with 400', async () => {
+      const response = await patientTc.axios.post('/review', {
+        doctorId: doctorProfileId,
+        rating: -1,
+        title: 'Negative rating',
       });
       expect(response.status).toBe(400);
     });

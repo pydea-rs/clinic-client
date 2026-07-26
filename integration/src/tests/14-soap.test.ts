@@ -249,5 +249,20 @@ describe('SOAP Notes', () => {
 
       expect(response.status).toBe(404);
     });
+
+    it('should return empty list for patient with no SOAP notes', async () => {
+      const patient2SoapApi = createSoapApi(patient2Tc.axios);
+      const result = await patient2SoapApi.list();
+
+      expect(result).toBeDefined();
+      expect(Array.isArray(result.data)).toBe(true);
+      expect(result.data.length).toBe(0);
+    });
+
+    it('should return 401 for unauthenticated SOAP access', async () => {
+      const unauthTc = createTestClient();
+      const response = await unauthTc.axios.get('/soap');
+      expect(response.status).toBe(401);
+    });
   });
 });

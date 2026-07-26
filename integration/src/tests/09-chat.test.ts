@@ -127,8 +127,8 @@ describe('Chat', () => {
 
       expect(chat).toBeDefined();
       expect(chat.id).toBeDefined();
-      expect(chat.parties || chat.participants).toBeDefined();
       chatId = chat.id;
+      expect(chat.parties || chat.participants).toBeDefined();
     });
 
     it('should return existing chat on duplicate create', async () => {
@@ -162,8 +162,8 @@ describe('Chat', () => {
 
       expect(chat).toBeDefined();
       expect(chat.id).toBe(chatId);
-      expect(chat.participants).toBeDefined();
-      expect(chat.participants.length).toBeGreaterThanOrEqual(1);
+      const participants = chat.participants || chat.parties || [];
+      expect(participants.length).toBe(2);
     });
   });
 
@@ -205,7 +205,7 @@ describe('Chat', () => {
       await patientChat.sendMessage(chatId, { content: 'Message 4' });
 
       const { messages } = await patientChat.getMessages(chatId, { page: 1, limit: 2 });
-      expect(messages.length).toBeLessThanOrEqual(2);
+      expect(messages.length).toBe(2);
     });
   });
 
@@ -229,12 +229,12 @@ describe('Chat', () => {
 
   describe('WebSocket: Join & Message', () => {
     it('should join chat room', async () => {
-      // Both join the chat room (gateway auto-joins on connect,
-      // but explicit join ensures we're in the right room for newly created chats)
       patientSocket.emit('chat:join', { chatId });
       doctorSocket.emit('chat:join', { chatId });
-      // Small wait for join to process
       await new Promise((r) => setTimeout(r, 300));
+
+      expect(patientSocket.connected).toBe(true);
+      expect(doctorSocket.connected).toBe(true);
     });
 
     it('should receive message via WebSocket when sent', async () => {
@@ -377,6 +377,16 @@ describe('Chat', () => {
         content: 'I should not be able to send this',
       });
       expect(response.status).toBe(403);
+    });
+
+    it('should reject getting chat details for non-member', async () => {
+      const response = await extraPatientTc.axios.get(`/chat/${chatId}`);
+      expect([400, 403]).toContain(response.status);
+    });
+
+    it('should reject getting messages for chat non-member', async () => {
+      const response = await extraPatientTc.axios.get(`/chat/${chatId}/messages`);
+      expect([400, 403]).toContain(response.status);
     });
 
     it('should reject WebSocket connection without auth', async () => {

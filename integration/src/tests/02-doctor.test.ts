@@ -256,6 +256,29 @@ describe('Doctor Module', () => {
 
   // ─── Error Cases ──────────────────────────────────────────────────
 
+  describe('Validation', () => {
+    it('should reject creating profile with invalid specialty enum (400)', async () => {
+      const tc = createTestClient();
+      await warmUp(tc);
+      await tc.axios.post('/auth/register', {
+        firstname: 'BadSpec',
+        lastname: 'Test',
+        email: `badspec-${Date.now()}@test.local`,
+        password: 'DocPass456!',
+        role: 'DOCTOR',
+      });
+
+      const response = await tc.axios.post('/doctor', {
+        startedAt: '2020-01-01T00:00:00.000Z',
+        specialty: 'RADIOLOGY',
+        visitMethods: ['CHAT'],
+        visitTypes: ['CONSULTATION'],
+        bio: 'Invalid specialty',
+      });
+      expect(response.status).toBe(400);
+    });
+  });
+
   describe('Error Cases', () => {
     it('should return 401 when accessing doctor endpoints without auth', async () => {
       const unauthTc = createTestClient();

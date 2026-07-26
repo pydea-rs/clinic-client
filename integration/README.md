@@ -71,7 +71,7 @@ The global setup automatically:
 - **Cookie jar per client** — each `createTestClient()` simulates an independent browser session
 - **Real CSRF** — the test client captures the `csrf-token` cookie from responses and replays it as the `X-CSRF-Token` header on mutating requests, exactly like the frontend
 - **Response envelope unwrapping** — the test client automatically extracts `contents` from the `{ status, message, contents }` envelope, so test assertions work on the actual data
-- **Sequential execution** — test files run in order (`00` → `16`) because later phases depend on data created by earlier ones
+- **Sequential execution** — test files run in order (`00` → `17`) because later phases depend on data created by earlier ones
 - **`validateStatus: () => true`** — axios never throws on HTTP errors; tests assert on `response.status` directly
 
 ### What's mocked (and why)
@@ -100,25 +100,25 @@ The global setup automatically:
 
 | # | File | Tests | Covers |
 |---|------|-------|--------|
-| 00 | `00-smoke.test.ts` | 2 | Server boot, health check |
-| 01 | `01-auth-user.test.ts` | 29 | Registration, login, logout, session, profile CRUD |
-| 02 | `02-doctor.test.ts` | 17 | Doctor profile creation, update, document upload, public listing |
+| 00 | `00-smoke.test.ts` | 4 | Server boot, health check, DB connectivity, Helmet headers |
+| 01 | `01-auth-user.test.ts` | 30 | Registration, login, logout, session, profile CRUD, password security |
+| 02 | `02-doctor.test.ts` | 18 | Doctor profile creation, update, document upload, public listing, validation |
 | 03 | `03-admin.test.ts` | 32 | User management, verification, ban/unban, promote/demote, stats |
-| 04 | `04-patient.test.ts` | 5 | Patient profile, medical history, allergies |
-| 05 | `05-scheduling.test.ts` | 21 | Availability, slot durations, exceptions, appointments |
-| 06 | `06-consultation.test.ts` | 16 | Full consultation lifecycle (create → assign → SOAP → close) |
-| 07 | `07-payment.test.ts` | 9 | Payment records, status transitions, refunds |
-| 08 | `08-review.test.ts` | 11 | Doctor reviews, ratings, admin deletion |
-| 09 | `09-chat.test.ts` | 24 | WebSocket chat, rooms, messaging, typing indicators, history |
+| 04 | `04-patient.test.ts` | 7 | Patient profile, medical history, allergies, auth/validation guards |
+| 05 | `05-scheduling.test.ts` | 22 | Availability, slot durations, exceptions, appointments, double-booking |
+| 06 | `06-consultation.test.ts` | 18 | Full consultation lifecycle (create → decide → complete), doctor rejection, cancellation |
+| 07 | `07-payment.test.ts` | 11 | Payment records, status transitions, refunds, role/validation guards |
+| 08 | `08-review.test.ts` | 13 | Doctor reviews, ratings, admin deletion, invalid rating validation |
+| 09 | `09-chat.test.ts` | 26 | WebSocket chat, rooms, messaging, typing indicators, history, non-member guards |
 | 10 | `10-matching.test.ts` | 18 | Doctor-patient matching, accept/reject, WebSocket notifications |
 | 11 | `11-ai-agents.test.ts` | 18 | Botpress conversations, OpenAI SOAP generation, AI triage |
-| 12 | `12-notification.test.ts` | 11 | Email/WebPush notifications, preferences, SSE real-time |
+| 12 | `12-notification.test.ts` | 13 | Email/WebPush notifications, pagination, push subscriptions, auth guards |
 | 13 | `13-nurse.test.ts` | 16 | Nurse role, assignment, permissions, dashboard |
-| 14 | `14-soap.test.ts` | 6 | SOAP note access control (doctor, nurse, patient, admin) |
-| 15 | `15-file-upload.test.ts` | 9 | File upload, MIME validation, size limits, retrieval |
+| 14 | `14-soap.test.ts` | 8 | SOAP note access control, AI flow creation, empty list, auth guards |
+| 15 | `15-file-upload.test.ts` | 10 | File upload, MIME validation, size limits, avatar URL validation |
 | 16 | `16-security.test.ts` | 15 | CSRF, role enforcement, ban/deactivation, rate limiting, input validation |
 | 17 | `17-concurrent.test.ts` | 7 | Parallel reads, concurrent bookings, chat races, double-booking, profile races, match accept/cancel race |
-| | **Total** | **266** | |
+| | **Total** | **286** | |
 
 ## File Structure
 

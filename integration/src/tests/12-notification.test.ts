@@ -243,6 +243,23 @@ describe('Notifications', () => {
     });
   });
 
+  describe('Pagination', () => {
+    it('should paginate notifications with skip/take', async () => {
+      const page1 = await doctorNotif.list({ skip: 0, take: 1 });
+      expect(page1.data.length).toBe(1);
+
+      const page2 = await doctorNotif.list({ skip: 1, take: 1 });
+      expect(page2.data.length).toBe(1);
+      expect(page2.data[0].id).not.toBe(page1.data[0].id);
+    });
+
+    it('should return 401 for unauthenticated notification access', async () => {
+      const unauthTc = createTestClient();
+      const response = await unauthTc.axios.get('/notification');
+      expect(response.status).toBe(401);
+    });
+  });
+
   // ─── Push Subscription ────────────────────────────────────────────
 
   describe('Push Subscription', () => {

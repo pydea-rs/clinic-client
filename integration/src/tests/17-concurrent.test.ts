@@ -281,6 +281,11 @@ describe('Concurrent Operations', () => {
       expect(contents).toContain('Concurrent msg 2');
       expect(contents).toContain('Concurrent msg 3');
       expect(contents).toContain('Concurrent msg 4');
+
+      // Verify message IDs are unique (no duplicates from concurrency)
+      const ids = messages.map((m: any) => m.id.toString());
+      const uniqueIds = new Set(ids);
+      expect(uniqueIds.size).toBe(ids.length);
     });
 
     it('should handle concurrent login/logout without session interference', async () => {

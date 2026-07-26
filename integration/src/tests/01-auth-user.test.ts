@@ -429,8 +429,6 @@ describe('Auth & User Management', () => {
     });
 
     it('should set session cookie as HttpOnly', async () => {
-      // Use patientTc which already has a login session
-      // Check the cookies set during the login
       const cookies = await patientTc.jar.getCookies(
         patientTc.axios.defaults.baseURL!,
       );
@@ -438,9 +436,18 @@ describe('Auth & User Management', () => {
         c => c.key === (process.env.SESSION_COOKIE_NAME || 'test-sid'),
       );
 
-      if (sessionCookie) {
-        expect(sessionCookie.httpOnly).toBe(true);
-      }
+      expect(sessionCookie).toBeDefined();
+      expect(sessionCookie!.httpOnly).toBe(true);
+    });
+
+    it('should never expose password in user responses', async () => {
+      const user = await patientUserApi.getCurrentUser();
+      expect(user.password).toBeUndefined();
+      expect(user.passwordHash).toBeUndefined();
+
+      const otherUser = await patientUserApi.getUserById(doctorUserId);
+      expect(otherUser.password).toBeUndefined();
+      expect(otherUser.passwordHash).toBeUndefined();
     });
   });
 });

@@ -178,6 +178,16 @@ describe('Consultation Flow', () => {
 
   // ─── Alternate Paths ─────────────────────────────────────────────
 
+  describe('Doctor Rejection (Cancel)', () => {
+    it('should allow doctor to cancel/reject consultation → CANCELLED', async () => {
+      const consultation = await patientConsultation.create({ doctorId: doctorProfileId });
+      expect(consultation.status).toBe('PENDING_DOCTOR_REVIEW');
+
+      const rejected = await doctorConsultation.cancel(consultation.id);
+      expect(rejected.status).toBe('CANCELLED');
+    });
+  });
+
   describe('Cancel Before Decision', () => {
     it('should allow patient to cancel before doctor decides', async () => {
       const consultation = await patientConsultation.create({ doctorId: doctorProfileId });
@@ -280,6 +290,13 @@ describe('Consultation Flow', () => {
         `/consultation/${mainConsultationId}/cancel`,
       );
       expect(response.status).toBe(400);
+    });
+
+    it('should return 404 for nonexistent consultation ID', async () => {
+      const response = await patientTc.axios.get(
+        '/consultation/00000000-0000-0000-0000-000000000000',
+      );
+      expect(response.status).toBe(404);
     });
   });
 });

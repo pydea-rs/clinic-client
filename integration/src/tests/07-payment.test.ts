@@ -193,5 +193,21 @@ describe('Payment', () => {
       const response = await doctorTc.axios.get(`/payment/${paymentId}`);
       expect(response.status).toBe(403);
     });
+
+    it('should reject creating payment with invalid consultation UUID with 404', async () => {
+      const response = await patientTc.axios.post('/payment', {
+        consultationId: '00000000-0000-0000-0000-000000000000',
+        amount: 50,
+      });
+      expect(response.status).toBe(404);
+    });
+
+    it('should reject doctor creating payment with 403', async () => {
+      const response = await doctorTc.axios.post('/payment', {
+        consultationId: consultationId2,
+        amount: 50,
+      });
+      expect(response.status).toBe(403);
+    });
   });
 });

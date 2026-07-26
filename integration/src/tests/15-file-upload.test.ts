@@ -139,6 +139,21 @@ describe('File Upload', () => {
       expect(result.type).toBe('LICENSE');
     });
 
+    it('should return a valid avatar URL path on upload', async () => {
+      const pngBuffer = makeFile(PNG_MAGIC, 1024);
+      const result = await patientUserApi.uploadAvatar(
+        pngBuffer,
+        'check-url.png',
+        'image/png',
+      );
+      expect(result.avatar).toBeDefined();
+      expect(typeof result.avatar).toBe('string');
+      expect(result.avatar).toContain('/uploads/avatars/');
+
+      const user = await patientTc.axios.get('/user');
+      expect(user.data.avatar).toBe(result.avatar);
+    });
+
     it('should replace previous avatar on re-upload', async () => {
       const png1 = makeFile(PNG_MAGIC, 512);
       const result1 = await patientUserApi.uploadAvatar(
@@ -167,11 +182,9 @@ describe('File Upload', () => {
   // ─── Unhappy Paths ────────────────────────────────────────────────
 
   describe('Unhappy Paths', () => {
-    it('should reject oversized file', async () => {
+    it('should reject oversized file (400 or 413)', async () => {
       const bigBuffer = Buffer.alloc(10 * 1024 * 1024 + 1024);
-      bigBuffer[0] = 0xff;
-      bigBuffer[1] = 0xd8;
-      bigBuffer[2] = 0xff;
+      JPEG_MAGIC.copy(bigBuffer);
 
       const form = new FormData();
       form.append('file', bigBuffer, {
