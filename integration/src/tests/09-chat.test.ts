@@ -128,7 +128,7 @@ describe('Chat', () => {
       expect(chat).toBeDefined();
       expect(chat.id).toBeDefined();
       chatId = chat.id;
-      expect(chat.parties || chat.participants).toBeDefined();
+      expect(chat.participants).toBeDefined();
     });
 
     it('should return existing chat on duplicate create', async () => {
@@ -162,7 +162,7 @@ describe('Chat', () => {
 
       expect(chat).toBeDefined();
       expect(chat.id).toBe(chatId);
-      const participants = chat.participants || chat.parties || [];
+      const participants = chat.participants ?? [];
       expect(participants.length).toBe(2);
     });
   });

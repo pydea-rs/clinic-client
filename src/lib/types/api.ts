@@ -30,7 +30,7 @@ export type NotificationChannel = 'EMAIL' | 'PUSH' | 'BOTH';
 
 export type PaymentStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'REFUNDED';
 
-export type VisitType = 'CONSULTATION' | 'EXAMINATION' | 'SURGERY' | 'LABORATORY' | 'RADIOLOGY';
+export type VisitType = 'CONSULTATION' | 'EXAMINATION' | 'SURGERY' | 'LABORATORY' | 'RADIOLOGY' | 'PHARMACY' | 'DENTISTRY' | 'THERAPY' | 'NUTRITION' | 'OTHER';
 
 export type DoctorSpecialty =
   | 'CARDIOLOGY' | 'DERMATOLOGY' | 'ENT' | 'GASTROENTEROLOGY'
@@ -144,7 +144,7 @@ export interface DoctorProfile {
   phoneNumber?: string;
   languages: string[];
   licenseNumber?: string;
-  verified?: boolean;
+  verified: boolean;
   verifiedAt?: string;
   verifiedBy?: string;
   rejectionReason?: string;
@@ -302,6 +302,7 @@ export interface Payment {
   status: PaymentStatus;
   method?: string;
   gatewayId?: string;
+  gatewayResponse?: Record<string, unknown> | null;
   paidAt?: string;
   createdAt: string;
   updatedAt: string;

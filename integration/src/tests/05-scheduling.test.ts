@@ -214,7 +214,7 @@ describe('Scheduling', () => {
       exceptionDate.setUTCDate(exceptionDate.getUTCDate() + 7); // a week after
       const exc = await doctorScheduling.createException({
         date: exceptionDate.toISOString().split('T')[0],
-        isBlocked: true,
+        isBlocked: false,
         startTime: '10:00',
         endTime: '12:00',
         reason: 'Morning meeting',
