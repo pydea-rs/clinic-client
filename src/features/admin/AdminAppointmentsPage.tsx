@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Search, X } from 'lucide-react';
-import { schedulingApi } from '../../api/scheduling.api';
+import { schedulingApi } from '../../api';
 import { formatStatus, formatVisitMethod } from '../../lib/format';
 
 const STATUS_OPTIONS = ['ALL', 'PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED', 'NO_SHOW'] as const;

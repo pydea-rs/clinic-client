@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Upload, X } from 'lucide-react';
-import { userApi } from '../../../api/user.api';
+import { userApi } from '../../../api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../../lib/api/error.utils';
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { userApi } from '../../api/user.api';
+import { userApi } from '../../api';
 import { Loader2, User, Calendar } from 'lucide-react';
 
 export const UserDetailPage: React.FC = () => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '../lib/stores/auth.store';
-import { userApi, UpdateProfilePayload } from '../api/user.api';
+import { userApi, UpdateProfilePayload } from '../api';
 import { getErrorMessage } from '../lib/api/error.utils';
 import toast from 'react-hot-toast';
 import {

@@ -1,8 +1,7 @@
 import React from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { doctorApi } from '../../api/doctor.api';
-import { reviewApi } from '../../api/review.api';
+import { doctorApi, reviewApi } from '../../api';
 import { Loader2, MapPin, CheckCircle, MessageSquare, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { RatingWidget } from '../review/RatingWidget';

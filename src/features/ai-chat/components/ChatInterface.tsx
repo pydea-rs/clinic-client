@@ -6,7 +6,7 @@ import { TypingIndicator } from './TypingIndicator';
 import { MessageInput } from './MessageInput';
 import { SOAPReadyBanner } from './SOAPReadyBanner';
 import { useChat } from '../hooks/useChat';
-import { soapApi } from '../../../api/soap.api';
+import { soapApi } from '../../../api';
 import { queryClient } from '../../../lib/queryClient';
 import { Loader2, RefreshCw, Stethoscope, Heart, Brain, Thermometer, Pill, ArrowDown } from 'lucide-react';
 

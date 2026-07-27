@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { soapApi } from '../../../api/soap.api';
+import { soapApi } from '../../../api';
 import { FileText, Search, AlertTriangle, CheckCircle, AlertCircle, ClipboardList } from 'lucide-react';
 import { formatTriageLevel, formatSpecialty } from '../../../lib/format';
 

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { schedulingApi } from '../../api/scheduling.api';
+import { schedulingApi } from '../../api';
 import toast from 'react-hot-toast';
 import { Appointment } from '../../lib/types/api';
 import { getErrorMessage } from '../../lib/api/error.utils';

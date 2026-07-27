@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { chatApi } from '../../api/chat.api';
+import { chatApi } from '../../api';
 import { Link } from 'react-router-dom';
 import { socketService } from '../../lib/socket/socket.service';
 import { useAuthStore } from '../../lib/stores/auth.store';

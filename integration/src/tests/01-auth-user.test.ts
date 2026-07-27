@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { createTestClient, createRawClient, TestClient } from '../helpers/api-client.js';
-import { createAuthApi, createUserApi } from '../helpers/frontend-api.js';
+import { createAuthApi } from '@client/api/auth.api';
+import { createUserApi } from '@client/api/user.api';
 import { createTestPng, createTestTxt } from '../helpers/test-files.js';
 
 /*

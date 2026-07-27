@@ -1,13 +1,11 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { createTestClient, TestClient } from '../helpers/api-client.js';
-import {
-  createNurseApi,
-  createDoctorApi,
-  createConsultationApi,
-  createAdminApi,
-  createChatApi,
-  createSoapApi,
-} from '../helpers/frontend-api.js';
+import { createAdminApi } from '@client/api/admin.api';
+import { createChatApi } from '@client/api/chat.api';
+import { createConsultationApi } from '@client/api/consultation.api';
+import { createDoctorApi } from '@client/api/doctor.api';
+import { createNurseApi } from '@client/api/nurse.api';
+import { createSoapApi } from '@client/api/soap.api';
 import { getPrisma } from '../helpers/server.js';
 
 /**

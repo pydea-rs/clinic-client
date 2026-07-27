@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { nurseApi } from '../../api/nurse.api';
-import { userApi } from '../../api/user.api';
+import { nurseApi, userApi } from '../../api';
 import { NurseAssignment, NursePermission } from '../../lib/types/api';
 import { formatEnum } from '../../lib/format';
 import toast from 'react-hot-toast';

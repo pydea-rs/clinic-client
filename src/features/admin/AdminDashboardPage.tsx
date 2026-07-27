@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { adminApi } from '../../api/admin.api';
+import { adminApi } from '../../api';
 import { Link } from 'react-router-dom';
 import {
   User, UserCheck, MessageSquare, Star, Clock, LayoutDashboard,

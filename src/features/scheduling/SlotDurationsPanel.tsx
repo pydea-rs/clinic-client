@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { schedulingApi } from '../../api/scheduling.api';
+import { schedulingApi } from '../../api';
 import toast from 'react-hot-toast';
 import { SlotDuration } from '../../lib/types/api';
 import { getErrorMessage } from '../../lib/api/error.utils';

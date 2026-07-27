@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { consultationApi } from '../../../api/consultation.api';
+import { consultationApi } from '../../../api';
 import { ClipboardList, ChevronRight, Activity } from 'lucide-react';
 import { formatVisitMethod } from '../../../lib/format';
 

@@ -17,7 +17,8 @@
     "strictBindCallApply": true,
     "forceConsistentCasingInFileNames": true,
     "paths": {
-      "@server/*": ["../../server/dist/src/*"]
+      "@server/*": ["../../server/dist/src/*"],
+      "@client/*": ["../src/*"]
     }
   },
   "include": ["src/**/*.ts"]

@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { createTestClient, TestClient } from '../helpers/api-client.js';
-import { createAdminApi, createDoctorApi, createSchedulingApi } from '../helpers/frontend-api.js';
+import { createAdminApi } from '@client/api/admin.api';
+import { createDoctorApi } from '@client/api/doctor.api';
+import { createSchedulingApi } from '@client/api/scheduling.api';
 
 /**
  * Phase 6 — Scheduling integration tests.

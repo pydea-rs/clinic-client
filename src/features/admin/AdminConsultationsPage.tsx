@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { ClipboardList, Search, X } from 'lucide-react';
-import { consultationApi } from '../../api/consultation.api';
+import { consultationApi } from '../../api';
 import { Consultation } from '../../lib/types/api';
 import { formatStatus, formatVisitMethod } from '../../lib/format';
 

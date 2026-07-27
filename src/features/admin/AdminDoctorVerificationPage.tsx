@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { adminApi } from '../../api/admin.api';
+import { adminApi } from '../../api';
 import toast from 'react-hot-toast';
 import { ShieldCheck } from 'lucide-react';
 import { formatDocType, formatStatus } from '../../lib/format';

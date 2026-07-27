@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { consultationApi } from '../../api/consultation.api';
+import { consultationApi } from '../../api';
 import { useAuthStore } from '../../lib/stores/auth.store';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';

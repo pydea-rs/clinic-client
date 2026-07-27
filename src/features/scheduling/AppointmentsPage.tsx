@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { schedulingApi } from '../../api/scheduling.api';
+import { schedulingApi } from '../../api';
 import { useAuthStore } from '../../lib/stores/auth.store';
 import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';

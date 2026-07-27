@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { createTestClient, TestClient } from '../helpers/api-client.js';
-import { createPatientApi } from '../helpers/frontend-api.js';
+import { createPatientApi } from '@client/api/patient.api';
 
 /**
  * Phase 5 — Patient Profile integration tests.

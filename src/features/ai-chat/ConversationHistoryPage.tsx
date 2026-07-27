@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { aiAgentsApi } from '../../api/ai-agents.api';
+import { aiAgentsApi } from '../../api';
 import { Bot, FileText, Plus, ChevronRight, Loader2, MessageCircle, Pencil, Check, X, Sparkles, History } from 'lucide-react';
 
 export const ConversationHistoryPage: React.FC = () => {

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { nurseApi } from '../../api/nurse.api';
+import { nurseApi } from '../../api';
 import { NurseAssignment, NursePermission } from '../../lib/types/api';
 import { useAuthStore } from '../../lib/stores/auth.store';
 

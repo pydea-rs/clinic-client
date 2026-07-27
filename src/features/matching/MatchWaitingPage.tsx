@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { matchingApi } from '../../api/matching.api';
+import { matchingApi } from '../../api';
 import { matchingSocket } from '../../lib/socket/matching.socket';
 import { Loader2, Search, CheckCircle, XCircle, Clock, UserCheck, ArrowRight, X } from 'lucide-react';
 import toast from 'react-hot-toast';

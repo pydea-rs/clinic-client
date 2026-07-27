@@ -1,12 +1,10 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { createTestClient, TestClient } from '../helpers/api-client.js';
-import {
-  createAdminApi,
-  createConsultationApi,
-  createDoctorApi,
-  createPatientApi,
-  createReviewApi,
-} from '../helpers/frontend-api.js';
+import { createAdminApi } from '@client/api/admin.api';
+import { createConsultationApi } from '@client/api/consultation.api';
+import { createDoctorApi } from '@client/api/doctor.api';
+import { createPatientApi } from '@client/api/patient.api';
+import { createReviewApi } from '@client/api/review.api';
 
 /**
  * Phase 9 — Review integration tests.

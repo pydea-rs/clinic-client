@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { reviewApi } from '../../api/review.api';
+import { reviewApi } from '../../api';
 import { useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../../lib/stores/auth.store';

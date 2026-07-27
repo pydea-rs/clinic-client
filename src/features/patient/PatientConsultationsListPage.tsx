@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { patientApi } from '../../api/patient.api';
+import { patientApi } from '../../api';
 import { Link } from 'react-router-dom';
 import { Loader2, ChevronRight, Plus, Stethoscope } from 'lucide-react';
 import { formatStatus } from '../../lib/format';

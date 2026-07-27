@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ClipboardList, Loader2, Eye, Filter } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { consultationApi } from '../../api/consultation.api';
+import { consultationApi } from '../../api';
 import { useNurseAssignments } from './useNurseAssignments';
 import { formatStatus, formatEnum } from '../../lib/format';
 import { Link } from 'react-router-dom';

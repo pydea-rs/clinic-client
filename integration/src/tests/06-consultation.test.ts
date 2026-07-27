@@ -1,11 +1,9 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { createTestClient, TestClient } from '../helpers/api-client.js';
-import {
-  createAdminApi,
-  createConsultationApi,
-  createDoctorApi,
-  createPatientApi,
-} from '../helpers/frontend-api.js';
+import { createAdminApi } from '@client/api/admin.api';
+import { createConsultationApi } from '@client/api/consultation.api';
+import { createDoctorApi } from '@client/api/doctor.api';
+import { createPatientApi } from '@client/api/patient.api';
 
 /**
  * Phase 7 — Consultation Flow integration tests.

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { adminApi } from '../../api/admin.api';
+import { adminApi } from '../../api';
 import toast from 'react-hot-toast';
 import { User } from '../../lib/types/api';
 import { Users, Ban, ShieldOff } from 'lucide-react';

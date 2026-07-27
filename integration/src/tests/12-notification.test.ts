@@ -1,11 +1,9 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { createTestClient, TestClient } from '../helpers/api-client.js';
-import {
-  createNotificationApi,
-  createDoctorApi,
-  createConsultationApi,
-  createAdminApi,
-} from '../helpers/frontend-api.js';
+import { createAdminApi } from '@client/api/admin.api';
+import { createConsultationApi } from '@client/api/consultation.api';
+import { createDoctorApi } from '@client/api/doctor.api';
+import { createNotificationApi } from '@client/api/notification.api';
 import { mockEmail, mockWebPush } from '../helpers/server.js';
 
 /**

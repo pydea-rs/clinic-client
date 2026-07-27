@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { adminApi } from '../../api/admin.api';
+import { adminApi } from '../../api';
 import { Loader2, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { matchingApi } from '../../api/matching.api';
+import { matchingApi } from '../../api';
 import { matchingSocket } from '../../lib/socket/matching.socket';
 import { Loader2, UserPlus, Check, X, Clock, FileText, AlertTriangle, Zap } from 'lucide-react';
 import toast from 'react-hot-toast';

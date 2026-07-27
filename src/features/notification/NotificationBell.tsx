@@ -2,7 +2,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Bell } from 'lucide-react';
-import { notificationApi } from '../../api/notification.api';
+import { notificationApi } from '../../api';
 
 export const NotificationBell: React.FC = () => {
   const { data: unreadCount } = useQuery({

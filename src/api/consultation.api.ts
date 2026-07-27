@@ -1,5 +1,5 @@
-import { apiClient } from '../lib/api/client';
-import { Consultation } from '../lib/types/api';
+import type { AxiosInstance } from 'axios';
+import type { Consultation } from '../lib/types/api';
 
 export interface CreateConsultationPayload {
   doctorId: number;
@@ -17,62 +17,57 @@ export interface CompleteConsultationPayload {
   followUpNeeded?: boolean;
 }
 
-export const consultationApi = {
-  // Create consultation
-  create: async (payload: CreateConsultationPayload): Promise<Consultation> => {
-    const response = await apiClient.post('/consultation', payload);
-    return response.data;
-  },
+export function createConsultationApi(client: AxiosInstance) {
+  return {
+    create: async (payload: CreateConsultationPayload): Promise<Consultation> => {
+      const response = await client.post('/consultation', payload);
+      return response.data;
+    },
 
-  // Get consultations (role-aware)
-  getConsultations: async (page?: number, limit?: number, status?: string): Promise<{ consultations: Consultation[]; total: number }> => {
-    const skip = page ? (page - 1) * (limit || 20) : undefined;
-    const response = await apiClient.get('/consultation', {
-      params: { skip, take: limit, status },
-    });
-    const result = response.data;
-    return { consultations: result?.data || (Array.isArray(result) ? result : []), total: result?.total || 0 };
-  },
+    getConsultations: async (page?: number, limit?: number, status?: string): Promise<{ consultations: Consultation[]; total: number }> => {
+      const skip = page ? (page - 1) * (limit || 20) : undefined;
+      const response = await client.get('/consultation', {
+        params: { skip, take: limit, status },
+      });
+      const result = response.data;
+      return { consultations: result?.data || (Array.isArray(result) ? result : []), total: result?.total || 0 };
+    },
 
-  // Get consultation by ID
-  getConsultationById: async (consultationId: string): Promise<Consultation> => {
-    const response = await apiClient.get(`/consultation/${consultationId}`);
-    return response.data;
-  },
+    getConsultationById: async (consultationId: string): Promise<Consultation> => {
+      const response = await client.get(`/consultation/${consultationId}`);
+      return response.data;
+    },
 
-  // Doctor decides on consultation
-  decide: async (consultationId: string, payload: DecideConsultationPayload): Promise<Consultation> => {
-    const response = await apiClient.patch(`/consultation/${consultationId}/decide`, payload);
-    return response.data;
-  },
+    decide: async (consultationId: string, payload: DecideConsultationPayload): Promise<Consultation> => {
+      const response = await client.patch(`/consultation/${consultationId}/decide`, payload);
+      return response.data;
+    },
 
-  // Doctor completes consultation
-  complete: async (consultationId: string, payload: CompleteConsultationPayload): Promise<Consultation> => {
-    const response = await apiClient.patch(`/consultation/${consultationId}/complete`, payload);
-    return response.data;
-  },
+    complete: async (consultationId: string, payload: CompleteConsultationPayload): Promise<Consultation> => {
+      const response = await client.patch(`/consultation/${consultationId}/complete`, payload);
+      return response.data;
+    },
 
-  // Advance consultation to pending payment
-  advancePayment: async (consultationId: string): Promise<Consultation> => {
-    const response = await apiClient.patch(`/consultation/${consultationId}/advance-payment`);
-    return response.data;
-  },
+    advancePayment: async (consultationId: string): Promise<Consultation> => {
+      const response = await client.patch(`/consultation/${consultationId}/advance-payment`);
+      return response.data;
+    },
 
-  // Confirm payment for consultation
-  confirmPayment: async (consultationId: string): Promise<Consultation> => {
-    const response = await apiClient.patch(`/consultation/${consultationId}/confirm-payment`);
-    return response.data;
-  },
+    confirmPayment: async (consultationId: string): Promise<Consultation> => {
+      const response = await client.patch(`/consultation/${consultationId}/confirm-payment`);
+      return response.data;
+    },
 
-  // Start consultation (doctor)
-  start: async (consultationId: string): Promise<Consultation> => {
-    const response = await apiClient.patch(`/consultation/${consultationId}/start`);
-    return response.data;
-  },
+    start: async (consultationId: string): Promise<Consultation> => {
+      const response = await client.patch(`/consultation/${consultationId}/start`);
+      return response.data;
+    },
 
-  // Cancel consultation
-  cancel: async (consultationId: string): Promise<Consultation> => {
-    const response = await apiClient.patch(`/consultation/${consultationId}/cancel`);
-    return response.data;
-  },
-};
+    cancel: async (consultationId: string): Promise<Consultation> => {
+      const response = await client.patch(`/consultation/${consultationId}/cancel`);
+      return response.data;
+    },
+  };
+}
+
+export type ConsultationApi = ReturnType<typeof createConsultationApi>;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Loader2, Home, Shield, Stethoscope, CheckCircle, Lock, Calendar, ClipboardList, Users } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { nurseApi, NurseDashboardData } from '../../api/nurse.api';
+import { nurseApi, NurseDashboardData } from '../../api';
 import { formatSpecialty } from '../../lib/format';
 import { NursePermission } from '../../lib/types/api';
 import { Link } from 'react-router-dom';

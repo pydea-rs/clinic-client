@@ -1,11 +1,24 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { createTestClient, TestClient } from '../helpers/api-client.js';
-import {
-  createUserApi,
-  createDoctorApi,
-  createAdminApi,
-} from '../helpers/frontend-api.js';
+import { createAdminApi } from '@client/api/admin.api';
+import { createDoctorApi } from '@client/api/doctor.api';
+import type { AxiosInstance } from 'axios';
 import FormData from 'form-data';
+
+async function uploadAvatar(client: AxiosInstance, buffer: Buffer, filename: string, mimetype: string) {
+  const form = new FormData();
+  form.append('file', buffer, { filename, contentType: mimetype });
+  const response = await client.post('/user/avatar', form, { headers: form.getHeaders() });
+  return response.data;
+}
+
+async function uploadDocument(client: AxiosInstance, buffer: Buffer, filename: string, mimetype: string, docType: string) {
+  const form = new FormData();
+  form.append('file', buffer, { filename, contentType: mimetype });
+  form.append('type', docType);
+  const response = await client.post('/doctor/documents', form, { headers: form.getHeaders() });
+  return response.data;
+}
 
 /**
  * Phase 16 — File Upload Tests.
@@ -44,7 +57,6 @@ describe('File Upload', () => {
 
   let doctorTc: TestClient;
   let patientTc: TestClient;
-  let patientUserApi: ReturnType<typeof createUserApi>;
   let doctorApi: ReturnType<typeof createDoctorApi>;
 
   beforeAll(async () => {
@@ -87,7 +99,7 @@ describe('File Upload', () => {
       password: patientPassword,
       role: 'PATIENT',
     });
-    patientUserApi = createUserApi(patientTc.axios);
+    // patientUserApi not needed — upload tests use raw axios helpers
   });
 
   // ─── Happy Paths ──────────────────────────────────────────────────
@@ -95,11 +107,7 @@ describe('File Upload', () => {
   describe('Happy Paths', () => {
     it('should upload avatar as PNG', async () => {
       const pngBuffer = makeFile(PNG_MAGIC, 1024);
-      const result = await patientUserApi.uploadAvatar(
-        pngBuffer,
-        'avatar.png',
-        'image/png',
-      );
+      const result = await uploadAvatar(patientTc.axios, pngBuffer, 'avatar.png', 'image/png');
 
       expect(result).toBeDefined();
       expect(result.id).toBeDefined();
@@ -110,11 +118,7 @@ describe('File Upload', () => {
 
     it('should upload avatar as JPEG', async () => {
       const jpegBuffer = makeFile(JPEG_MAGIC, 1024);
-      const result = await patientUserApi.uploadAvatar(
-        jpegBuffer,
-        'photo.jpg',
-        'image/jpeg',
-      );
+      const result = await uploadAvatar(patientTc.axios, jpegBuffer, 'photo.jpg', 'image/jpeg');
 
       expect(result).toBeDefined();
       expect(result.avatar).toBeDefined();
@@ -124,12 +128,7 @@ describe('File Upload', () => {
 
     it('should upload doctor document as PDF', async () => {
       const pdfBuffer = makeFile(PDF_MAGIC, 2048);
-      const result = await doctorApi.uploadDocument(
-        pdfBuffer,
-        'license.pdf',
-        'application/pdf',
-        'LICENSE',
-      );
+      const result = await uploadDocument(doctorTc.axios, pdfBuffer, 'license.pdf', 'application/pdf', 'LICENSE');
 
       expect(result).toBeDefined();
       expect(result.id).toBeDefined();
@@ -141,11 +140,7 @@ describe('File Upload', () => {
 
     it('should return a valid avatar URL path on upload', async () => {
       const pngBuffer = makeFile(PNG_MAGIC, 1024);
-      const result = await patientUserApi.uploadAvatar(
-        pngBuffer,
-        'check-url.png',
-        'image/png',
-      );
+      const result = await uploadAvatar(patientTc.axios, pngBuffer, 'check-url.png', 'image/png');
       expect(result.avatar).toBeDefined();
       expect(typeof result.avatar).toBe('string');
       expect(result.avatar).toContain('/uploads/avatars/');
@@ -156,19 +151,11 @@ describe('File Upload', () => {
 
     it('should replace previous avatar on re-upload', async () => {
       const png1 = makeFile(PNG_MAGIC, 512);
-      const result1 = await patientUserApi.uploadAvatar(
-        png1,
-        'first.png',
-        'image/png',
-      );
+      const result1 = await uploadAvatar(patientTc.axios, png1, 'first.png', 'image/png');
       const url1 = result1.avatar;
 
       const png2 = makeFile(PNG_MAGIC, 768);
-      const result2 = await patientUserApi.uploadAvatar(
-        png2,
-        'second.png',
-        'image/png',
-      );
+      const result2 = await uploadAvatar(patientTc.axios, png2, 'second.png', 'image/png');
       const url2 = result2.avatar;
 
       expect(url2).not.toBe(url1);

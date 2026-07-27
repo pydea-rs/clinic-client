@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { doctorApi } from '../../../api/doctor.api';
+import { doctorApi } from '../../../api';
 import { MapPin, Star, Stethoscope, Users } from 'lucide-react';
 import { formatSpecialty } from '../../../lib/format';
 

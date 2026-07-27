@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { doctorApi } from '../../api/doctor.api';
+import { doctorApi } from '../../api';
 import { Loader2, Upload, FileText, CheckCircle, Clock, XCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../lib/api/error.utils';

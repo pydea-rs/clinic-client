@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { consultationApi } from '../../api/consultation.api';
-import { doctorApi } from '../../api/doctor.api';
-import { patientApi } from '../../api/patient.api';
+import { consultationApi, doctorApi, patientApi, DoctorProfile } from '../../api';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { DoctorProfile } from '../../api/doctor.api';
 import { PatientSOAP } from '../../lib/types/api';
 import { getErrorMessage } from '../../lib/api/error.utils';
 import { Loader2, PlusCircle } from 'lucide-react';

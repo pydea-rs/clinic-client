@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { patientApi } from '../../api/patient.api';
+import { patientApi } from '../../api';
 import { Loader2, FileText, Calendar, Tag, AlertTriangle } from 'lucide-react';
 import { formatSpecialty, formatTriageLevel } from '../../lib/format';
 

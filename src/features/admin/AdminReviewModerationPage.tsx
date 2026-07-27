@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { reviewApi } from '../../api/review.api';
+import { reviewApi } from '../../api';
 import toast from 'react-hot-toast';
 import { DoctorReview } from '../../lib/types/api';
 import { getErrorMessage } from '../../lib/api/error.utils';

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { doctorApi } from '../../api/doctor.api';
+import { doctorApi } from '../../api';
 import { DoctorProfileForm } from './DoctorProfileForm';
 import { DoctorDocumentsPage } from './DoctorDocumentsPage';
 import { formatSpecialty, formatEnum } from '../../lib/format';

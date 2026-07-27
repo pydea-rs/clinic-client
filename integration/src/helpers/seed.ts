@@ -1,13 +1,21 @@
 import { TestClient, createTestClient } from './api-client.js';
-import {
-  createAuthApi,
-  createUserApi,
-  createDoctorApi,
-  createPatientApi,
-  createAdminApi,
-  createNurseApi,
-} from './frontend-api.js';
+import { createAdminApi } from '@client/api/admin.api';
+import { createAuthApi } from '@client/api/auth.api';
+import { createDoctorApi } from '@client/api/doctor.api';
+import { createNurseApi } from '@client/api/nurse.api';
+import { createPatientApi } from '@client/api/patient.api';
+import { createUserApi } from '@client/api/user.api';
 import { createTestPdf } from './test-files.js';
+import type { AxiosInstance } from 'axios';
+import FormData from 'form-data';
+
+async function uploadDocument(client: AxiosInstance, buffer: Buffer, filename: string, mimetype: string, docType: string) {
+  const form = new FormData();
+  form.append('file', buffer, { filename, contentType: mimetype });
+  form.append('type', docType);
+  const response = await client.post('/doctor/documents', form, { headers: form.getHeaders() });
+  return response.data;
+}
 
 export interface TestUser {
   client: TestClient;
@@ -94,7 +102,7 @@ export async function setupDoctor(
 
   // Upload a document for verification
   const pdfBuffer = createTestPdf();
-  await doctorApi.uploadDocument(pdfBuffer, 'license.pdf', 'application/pdf', 'LICENSE');
+  await uploadDocument(testUser.client.axios, pdfBuffer, 'license.pdf', 'application/pdf', 'LICENSE');
 
   // Admin verifies the doctor
   await admin.adminApi.verifications.verify(doctorProfile.id, true);

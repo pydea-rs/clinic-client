@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { createTestClient, TestClient } from '../helpers/api-client.js';
-import { createAuthApi, createDoctorApi } from '../helpers/frontend-api.js';
+import { createAuthApi } from '@client/api/auth.api';
+import { createDoctorApi } from '@client/api/doctor.api';
 import { createTestPdf, createTestPng, createTestTxt } from '../helpers/test-files.js';
 
 async function warmUp(tc: TestClient): Promise<void> {

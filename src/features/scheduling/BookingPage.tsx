@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { schedulingApi } from '../../api/scheduling.api';
-import { consultationApi } from '../../api/consultation.api';
-import { doctorApi } from '../../api/doctor.api';
+import { schedulingApi, consultationApi, doctorApi } from '../../api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../lib/api/error.utils';
 

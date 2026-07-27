@@ -1,4 +1,4 @@
-import { apiClient } from '../lib/api/client';
+import type { AxiosInstance } from 'axios';
 
 export interface AiConversationSoap {
   id: string;
@@ -25,45 +25,74 @@ export interface AiConversationList {
 
 const AI_TIMEOUT_MS = 60_000;
 
-export const aiAgentsApi = {
-  listConversations: async (params?: {
-    skip?: number;
-    take?: number;
-  }): Promise<AiConversationList> => {
-    const response = await apiClient.get('/ai-agents/conversations', {
-      params,
-    });
-    return response.data;
-  },
+export function createAiAgentsApi(client: AxiosInstance) {
+  return {
+    listConversations: async (params?: {
+      skip?: number;
+      take?: number;
+    }): Promise<AiConversationList> => {
+      const response = await client.get('/ai-agents/conversations', {
+        params,
+      });
+      return response.data;
+    },
 
-  startNewConversation: async (): Promise<AiConversation> => {
-    const response = await apiClient.post(
-      '/ai-agents/start/new',
-      {},
-      { timeout: AI_TIMEOUT_MS },
-    );
-    return response.data;
-  },
+    startNewConversation: async (): Promise<AiConversation> => {
+      const response = await client.post(
+        '/ai-agents/start/new',
+        {},
+        { timeout: AI_TIMEOUT_MS },
+      );
+      return response.data;
+    },
 
-  resumeConversation: async (
-    conversationId: string,
-  ): Promise<AiConversation> => {
-    const response = await apiClient.post(
-      `/ai-agents/start/${conversationId}`,
-      {},
-      { timeout: AI_TIMEOUT_MS },
-    );
-    return response.data;
-  },
+    resumeConversation: async (
+      conversationId: string,
+    ): Promise<AiConversation> => {
+      const response = await client.post(
+        `/ai-agents/start/${conversationId}`,
+        {},
+        { timeout: AI_TIMEOUT_MS },
+      );
+      return response.data;
+    },
 
-  renameConversation: async (
-    conversationId: string,
-    topic: string,
-  ): Promise<AiConversation> => {
-    const response = await apiClient.patch(
-      `/ai-agents/conversations/${conversationId}/rename`,
-      { topic },
-    );
-    return response.data;
-  },
-};
+    renameConversation: async (
+      conversationId: string,
+      topic: string,
+    ): Promise<AiConversation> => {
+      const response = await client.patch(
+        `/ai-agents/conversations/${conversationId}/rename`,
+        { topic },
+      );
+      return response.data;
+    },
+
+    sendMessage: async (conversationId: string, text: string) => {
+      const response = await client.post('/ai-agents/message', { conversationId, text });
+      return response.data;
+    },
+
+    getMessages: async (conversationId: string, dateOffset?: string) => {
+      const response = await client.get(`/ai-agents/messages/${conversationId}`, { params: { dateOffset } });
+      return response.data;
+    },
+
+    getHistory: async (conversationId: string) => {
+      const response = await client.get(`/ai-agents/history/${conversationId}`);
+      return response.data;
+    },
+
+    startConversation: async (): Promise<AiConversation> => {
+      const response = await client.post('/ai-agents/start', {}, { timeout: AI_TIMEOUT_MS });
+      return response.data;
+    },
+
+    openaiChat: async (message: string) => {
+      const response = await client.post('/ai-agents/openai', { message });
+      return response.data;
+    },
+  };
+}
+
+export type AiAgentsApi = ReturnType<typeof createAiAgentsApi>;

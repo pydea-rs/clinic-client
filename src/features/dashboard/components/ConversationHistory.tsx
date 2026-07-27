@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { aiAgentsApi } from '../../../api/ai-agents.api';
+import { aiAgentsApi } from '../../../api';
 import { Bot, ChevronRight, MessageCircle, Sparkles } from 'lucide-react';
 
 export const ConversationHistory: React.FC = () => {

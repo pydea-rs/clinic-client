@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Calendar, Loader2, Filter } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { schedulingApi } from '../../api/scheduling.api';
+import { schedulingApi } from '../../api';
 import { useNurseAssignments } from './useNurseAssignments';
 import { formatStatus, formatVisitMethod } from '../../lib/format';
 import { Appointment, AppointmentStatus } from '../../lib/types/api';

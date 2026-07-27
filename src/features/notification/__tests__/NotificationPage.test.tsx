@@ -11,17 +11,21 @@ vi.mock('react-router-dom', async () => {
 
 vi.mock('react-hot-toast', () => ({ default: { success: vi.fn(), error: vi.fn() } }));
 
-const mockList = vi.fn();
-const mockGetUnreadCount = vi.fn();
-const mockMarkAsRead = vi.fn();
-const mockMarkAllAsRead = vi.fn();
+const { mockList, mockGetUnreadCount, mockMarkAsRead, mockMarkAllAsRead } = vi.hoisted(() => ({
+  mockList: vi.fn(),
+  mockGetUnreadCount: vi.fn(),
+  mockMarkAsRead: vi.fn(),
+  mockMarkAllAsRead: vi.fn(),
+}));
 
-vi.mock('../../../api/notification.api', () => ({
+vi.mock('../../../api', () => ({
   notificationApi: {
     list: (...args: unknown[]) => mockList(...args),
     getUnreadCount: (...args: unknown[]) => mockGetUnreadCount(...args),
     markAsRead: (...args: unknown[]) => mockMarkAsRead(...args),
     markAllAsRead: (...args: unknown[]) => mockMarkAllAsRead(...args),
+    subscribePush: vi.fn(),
+    unsubscribePush: vi.fn(),
   },
 }));
 

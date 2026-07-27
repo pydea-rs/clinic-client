@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { patientApi } from '../../../api/patient.api';
+import { patientApi, PatientProfile } from '../../../api';
 import { ArrayFieldEditor } from './ArrayFieldEditor';
 import toast from 'react-hot-toast';
-import { PatientProfile } from '../../../api/patient.api';
 import { getErrorMessage } from '../../../lib/api/error.utils';
 
 interface PatientProfileFormProps {

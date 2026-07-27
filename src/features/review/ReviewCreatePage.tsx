@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { reviewApi } from '../../api/review.api';
+import { reviewApi } from '../../api';
 import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../lib/api/error.utils';

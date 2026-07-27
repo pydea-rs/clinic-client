@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../../lib/stores/auth.store';
 import { useNurseAssignments } from './useNurseAssignments';
-import { userApi } from '../../api/user.api';
+import { userApi } from '../../api';
 import { Loader2, User, Shield, Stethoscope, CheckCircle, Lock, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../lib/api/error.utils';

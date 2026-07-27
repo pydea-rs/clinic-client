@@ -1,32 +1,31 @@
-import { apiClient } from '../lib/api/client';
-import { User } from '../lib/types/api';
+import type { AxiosInstance } from 'axios';
+import type { User } from '../lib/types/api';
 
-// Auth API Adapter
-export const authApi = {
-  // Login
-  login: async (email: string, password: string): Promise<void> => {
-    await apiClient.post('/auth/login', { email, password });
-  },
+export function createAuthApi(client: AxiosInstance) {
+  return {
+    login: async (email: string, password: string): Promise<void> => {
+      await client.post('/auth/login', { email, password });
+    },
 
-  // Register
-  register: async (payload: {
-    firstname: string;
-    lastname: string;
-    email: string;
-    password: string;
-    role?: 'PATIENT' | 'DOCTOR';
-  }): Promise<void> => {
-    await apiClient.post('/auth/register', payload);
-  },
+    register: async (payload: {
+      firstname: string;
+      lastname: string;
+      email: string;
+      password: string;
+      role?: 'PATIENT' | 'DOCTOR';
+    }): Promise<void> => {
+      await client.post('/auth/register', payload);
+    },
 
-  // Get current user
-  me: async (): Promise<User> => {
-    const response = await apiClient.get('/user');
-    return response.data;
-  },
+    me: async (): Promise<User> => {
+      const response = await client.get('/user');
+      return response.data;
+    },
 
-  // Logout
-  logout: async (): Promise<void> => {
-    await apiClient.post('/auth/logout');
-  },
-};
+    logout: async (): Promise<void> => {
+      await client.post('/auth/logout');
+    },
+  };
+}
+
+export type AuthApi = ReturnType<typeof createAuthApi>;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { userApi, UpdateProfilePayload } from '../../api/user.api';
+import { userApi, UpdateProfilePayload } from '../../api';
 import toast from 'react-hot-toast';
 import { Loader2, Upload, User } from 'lucide-react';
 import { getErrorMessage } from '../../lib/api/error.utils';

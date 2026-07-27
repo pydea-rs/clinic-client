@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { matchingApi } from '../../api/matching.api';
-import { patientApi } from '../../api/patient.api';
+import { matchingApi, patientApi } from '../../api';
 import { Loader2, Search, Zap, FileText, ArrowRight, Stethoscope } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { DoctorSpecialty, TriageLevel } from '../../lib/types/api';

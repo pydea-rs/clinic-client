@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { notificationApi } from '../../api/notification.api';
+import { notificationApi } from '../../api';
 import { useNavigate } from 'react-router-dom';
 import {
   Loader2, Bell, BellRing, CheckCheck, MessageSquare, Calendar, FileText,

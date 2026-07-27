@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { doctorApi, DoctorProfile } from '../../api/doctor.api';
+import { doctorApi, DoctorProfile } from '../../api';
 import { ArrayFieldEditor } from '../patient/components/ArrayFieldEditor';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../lib/api/error.utils';

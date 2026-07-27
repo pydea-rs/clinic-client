@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { authApi } from '../auth.api';
+import { authApi } from '../index';
 import { apiClient } from '../../lib/api/client';
 import { mockPatientUser } from '../../test/mockData';
 

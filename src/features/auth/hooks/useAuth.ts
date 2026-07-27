@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../../../lib/stores/auth.store';
-import { authApi } from '../../../api/auth.api';
+import { authApi } from '../../../api';
 import { queryClient } from '../../../lib/queryClient';
 import { User } from '../../../lib/types/api';
 

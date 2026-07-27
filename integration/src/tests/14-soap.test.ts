@@ -1,12 +1,10 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { createTestClient, TestClient } from '../helpers/api-client.js';
-import {
-  createSoapApi,
-  createDoctorApi,
-  createConsultationApi,
-  createAdminApi,
-  createAiAgentsApi,
-} from '../helpers/frontend-api.js';
+import { createAdminApi } from '@client/api/admin.api';
+import { createAiAgentsApi } from '@client/api/ai-agents.api';
+import { createConsultationApi } from '@client/api/consultation.api';
+import { createDoctorApi } from '@client/api/doctor.api';
+import { createSoapApi } from '@client/api/soap.api';
 import { getPrisma, mockBotpress } from '../helpers/server.js';
 
 /**

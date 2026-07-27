@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { createTestClient, TestClient } from '../helpers/api-client.js';
-import { createAiAgentsApi } from '../helpers/frontend-api.js';
+import { createAiAgentsApi } from '@client/api/ai-agents.api';
 import { createSSEClient } from '../helpers/sse-client.js';
 import { mockBotpress, mockOpenAi, getPrisma } from '../helpers/server.js';
 

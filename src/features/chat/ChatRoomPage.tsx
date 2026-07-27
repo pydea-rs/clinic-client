@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { useParams, useNavigate } from 'react-router-dom';
-import { chatApi } from '../../api/chat.api';
+import { chatApi } from '../../api';
 import { socketService } from '../../lib/socket/socket.service';
 import { useAuthStore } from '../../lib/stores/auth.store';
 import { Chat, Message } from '../../lib/types/api';

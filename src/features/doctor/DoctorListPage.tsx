@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { doctorApi } from '../../api/doctor.api';
+import { doctorApi } from '../../api';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Loader2, MapPin, Star, Search, FileText } from 'lucide-react';
 import { formatSpecialty } from '../../lib/format';

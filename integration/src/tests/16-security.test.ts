@@ -1,8 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { createTestClient, createRawClient, TestClient } from '../helpers/api-client.js';
-import {
-  createAdminApi,
-} from '../helpers/frontend-api.js';
+import { createAdminApi } from '@client/api/admin.api';
 import { io, Socket } from 'socket.io-client';
 import { getServerUrl } from '../helpers/server.js';
 
