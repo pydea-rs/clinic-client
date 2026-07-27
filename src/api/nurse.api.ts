@@ -35,4 +35,9 @@ export const nurseApi = {
     const response = await apiClient.get('/nurse/assignments');
     return response.data;
   },
+
+  getAssignment: async (assignmentId: number): Promise<NurseAssignment> => {
+    const response = await apiClient.get(`/nurse/assignment/${assignmentId}`);
+    return response.data;
+  },
 };

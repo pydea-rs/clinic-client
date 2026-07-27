@@ -28,6 +28,8 @@ export type DocumentStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
 export type NotificationChannel = 'EMAIL' | 'PUSH' | 'BOTH';
 
+export type PaymentStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'REFUNDED';
+
 export type VisitType = 'CONSULTATION' | 'EXAMINATION' | 'SURGERY' | 'LABORATORY' | 'RADIOLOGY';
 
 export type DoctorSpecialty =
@@ -287,6 +289,22 @@ export interface Appointment {
   updatedAt: string;
   patient?: Pick<User, 'id' | 'firstname' | 'lastname' | 'email'>;
   doctor?: DoctorProfile;
+}
+
+// ─── Payment ───────────────────────────────────────────────────────────────
+
+export interface Payment {
+  id: number;
+  userId: string;
+  consultationId?: string;
+  amount: string;
+  currency: string;
+  status: PaymentStatus;
+  method?: string;
+  gatewayId?: string;
+  paidAt?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // ─── Notification ───────────────────────────────────────────────────────────
