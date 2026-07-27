@@ -8,7 +8,7 @@ export interface CreateConsultationPayload {
 
 export interface DecideConsultationPayload {
   doctorDecision: 'ASYNC' | 'ONLINE' | 'IN_PERSON';
-  visitMethod: 'CHAT' | 'VOICE_CALL' | 'VIDEO_CALL' | 'ON_SITE';
+  visitMethod?: 'CHAT' | 'VOICE_CALL' | 'VIDEO_CALL' | 'ON_SITE';
 }
 
 export interface CompleteConsultationPayload {

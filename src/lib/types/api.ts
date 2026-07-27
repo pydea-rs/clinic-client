@@ -28,6 +28,8 @@ export type DocumentStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
 export type NotificationChannel = 'EMAIL' | 'PUSH' | 'BOTH';
 
+export type VisitType = 'CONSULTATION' | 'EXAMINATION' | 'SURGERY' | 'LABORATORY' | 'RADIOLOGY';
+
 export type DoctorSpecialty =
   | 'CARDIOLOGY' | 'DERMATOLOGY' | 'ENT' | 'GASTROENTEROLOGY'
   | 'GYNECOLOGY' | 'NEUROLOGY' | 'ONCOLOGY' | 'ORTHOPEDICS'
@@ -68,7 +70,7 @@ export interface User {
   isSuperAdmin: boolean;
   isPrivate: boolean;
   isActive: boolean;
-  isBanned?: boolean;
+  isBanned: boolean;
   banReason?: string;
   bannedAt?: string;
   bannedBy?: string;
@@ -99,7 +101,7 @@ export interface Consultation {
   completedAt?: string;
   createdAt: string;
   updatedAt: string;
-  patient?: Pick<User, 'id' | 'firstname' | 'lastname' | 'email' | 'avatar'>;
+  patient?: Pick<User, 'id' | 'firstname' | 'lastname' | 'avatar'>;
   doctor?: DoctorProfile;
   soap?: PatientSOAP;
   chat?: Chat;
@@ -130,15 +132,15 @@ export interface DoctorProfile {
   userId: string;
   startedAt: string;
   specialty: DoctorSpecialty | string;
-  secondarySpecialties?: DoctorSpecialty[];
+  secondarySpecialties: DoctorSpecialty[];
   university?: string;
   location?: string;
   clinicLocation?: string;
   bio?: string;
-  visitMethods?: VisitMethod[];
-  visitTypes?: string[];
+  visitMethods: VisitMethod[];
+  visitTypes: VisitType[];
   phoneNumber?: string;
-  languages?: string[];
+  languages: string[];
   licenseNumber?: string;
   verified?: boolean;
   verifiedAt?: string;
@@ -163,8 +165,8 @@ export interface DoctorDocument {
   doctorId: number;
   type: DocumentType | string;
   fileUrl: string;
-  fileName?: string;
-  mimeType?: string;
+  fileName: string;
+  mimeType: string;
   status: DocumentStatus | string;
   reviewedAt?: string;
   reviewedBy?: string;
@@ -278,6 +280,7 @@ export interface Appointment {
   status: AppointmentStatus;
   notes?: string;
   calendlyEventUri?: string;
+  calendlyInviteeUri?: string;
   calendlyRescheduleUrl?: string;
   calendlyCancelUrl?: string;
   createdAt: string;
@@ -291,7 +294,7 @@ export interface Appointment {
 export interface Notification {
   id: number;
   userId: string;
-  type: string;
+  type: NotificationType;
   title: string;
   body: string;
   data?: Record<string, unknown>;

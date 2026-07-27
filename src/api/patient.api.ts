@@ -1,11 +1,12 @@
 import { apiClient } from '../lib/api/client';
-import { Consultation, PatientSOAP } from '../lib/types/api';
+import { Consultation, PatientSOAP, VisitMethod } from '../lib/types/api';
 
 export interface PatientProfile {
   id: string;
   userId: string;
   location?: string;
   bio?: string;
+  visitMethods?: VisitMethod[];
   medicalHistory?: string[];
   allergies?: string[];
   medications?: string[];

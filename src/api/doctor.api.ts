@@ -1,7 +1,23 @@
 import { apiClient } from '../lib/api/client';
-import { DoctorProfile, DoctorRating, DoctorDocument, DoctorStats } from '../lib/types/api';
+import { DoctorProfile, DoctorRating, DoctorDocument, DoctorStats, DoctorSpecialty, VisitMethod, VisitType } from '../lib/types/api';
 
 export type { DoctorProfile, DoctorRating, DoctorDocument };
+
+export interface CreateDoctorProfilePayload {
+  startedAt: string;
+  specialty: DoctorSpecialty;
+  secondarySpecialties?: DoctorSpecialty[];
+  clinicLocation?: string;
+  bio?: string;
+  university?: string;
+  visitMethods?: VisitMethod[];
+  visitTypes?: VisitType[];
+  phoneNumber?: string;
+  languages?: string[];
+  licenseNumber?: string;
+}
+
+export type UpdateDoctorProfilePayload = Partial<Omit<CreateDoctorProfilePayload, 'startedAt'>>;
 
 export const doctorApi = {
   getDoctors: async (params?: {
@@ -29,12 +45,12 @@ export const doctorApi = {
     return response.data;
   },
 
-  createProfile: async (payload: Partial<DoctorProfile>): Promise<DoctorProfile> => {
+  createProfile: async (payload: CreateDoctorProfilePayload): Promise<DoctorProfile> => {
     const response = await apiClient.post('/doctor', payload);
     return response.data;
   },
 
-  updateProfile: async (payload: Partial<DoctorProfile>): Promise<DoctorProfile> => {
+  updateProfile: async (payload: UpdateDoctorProfilePayload): Promise<DoctorProfile> => {
     const response = await apiClient.patch('/doctor/profile', payload);
     return response.data;
   },

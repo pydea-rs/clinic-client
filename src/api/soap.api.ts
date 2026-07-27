@@ -4,7 +4,7 @@ import { PatientSOAP } from '../lib/types/api';
 // SOAP API Adapter
 export const soapApi = {
   // Get own SOAPs (GET /soap with skip/take pagination)
-  list: async (params?: { skip?: number; take?: number }): Promise<{ data: PatientSOAP[]; total: number }> => {
+  list: async (params?: { skip?: number; take?: number }): Promise<{ data: PatientSOAP[]; total: number; skip: number; take: number }> => {
     const response = await apiClient.get('/soap', { params });
     return response.data;
   },
