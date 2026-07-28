@@ -25,9 +25,18 @@ export function createUserApi(client: AxiosInstance) {
       await client.patch('/user/change-password', payload);
     },
 
-    uploadAvatar: async (file: File): Promise<{ id: string; avatar: string }> => {
+    uploadAvatar: async (
+      file: File | Blob,
+      filename?: string,
+      contentType?: string,
+    ): Promise<{ id: string; avatar: string }> => {
       const formData = new FormData();
-      formData.append('file', file);
+      if (filename) {
+        const blob = file instanceof Blob ? file : new Blob([file as unknown as BlobPart], { type: contentType });
+        formData.append('file', blob, filename);
+      } else {
+        formData.append('file', file);
+      }
       const response = await client.post('/user/avatar', formData, {
         headers: { 'Content-Type': undefined },
       });
