@@ -3,7 +3,7 @@ import { FileText, Loader2, Eye } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useNurseAssignments } from './useNurseAssignments';
 import { Link } from 'react-router-dom';
-import { apiClient } from '../../lib/api/client';
+import { soapApi } from '../../api';
 import { formatTriageLevel } from '../../lib/format';
 import { PatientSOAP } from '../../lib/types/api';
 
@@ -14,9 +14,8 @@ export const NurseSOAPNotesPage: React.FC = () => {
   const { data, isLoading } = useQuery({
     queryKey: ['nurse-soaps'],
     queryFn: async () => {
-      const res = await apiClient.get('/soap', { params: { take: 50 } });
-      const result = res.data;
-      return result?.data || (Array.isArray(result) ? result : []);
+      const result = await soapApi.list({ take: 50 });
+      return result?.data || [];
     },
     enabled: hasPermission,
   });

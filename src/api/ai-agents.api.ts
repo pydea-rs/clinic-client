@@ -68,17 +68,17 @@ export function createAiAgentsApi(client: AxiosInstance) {
       return response.data;
     },
 
-    sendMessage: async (conversationId: string, text: string) => {
+    sendMessage: async (conversationId: string, text: string): Promise<unknown> => {
       const response = await client.post('/ai-agents/message', { conversationId, text });
       return response.data;
     },
 
-    getMessages: async (conversationId: string, dateOffset?: string) => {
+    getMessages: async (conversationId: string, dateOffset?: string): Promise<unknown> => {
       const response = await client.get(`/ai-agents/messages/${conversationId}`, { params: { dateOffset } });
       return response.data;
     },
 
-    getHistory: async (conversationId: string) => {
+    getHistory: async (conversationId: string): Promise<unknown> => {
       const response = await client.get(`/ai-agents/history/${conversationId}`);
       return response.data;
     },
@@ -88,7 +88,7 @@ export function createAiAgentsApi(client: AxiosInstance) {
       return response.data;
     },
 
-    openaiChat: async (message: string) => {
+    openaiChat: async (message: string): Promise<unknown> => {
       const response = await client.post('/ai-agents/openai', { message });
       return response.data;
     },
