@@ -13,12 +13,25 @@ export const ReviewCreatePage: React.FC = () => {
     rating: 5,
   });
 
+  const parsedDoctorId = Number(doctorId);
+
+  if (!doctorId || Number.isNaN(parsedDoctorId)) {
+    return (
+      <div className="p-6 max-w-2xl mx-auto">
+        <p className="text-red-600">Invalid doctor ID.</p>
+        <button onClick={() => navigate(-1)} className="mt-4 px-4 py-2 border rounded-lg hover:bg-gray-50">
+          Go Back
+        </button>
+      </div>
+    );
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
       await reviewApi.createReview({
-        doctorId: Number(doctorId),
+        doctorId: parsedDoctorId,
         title: formData.title || undefined,
         overview: formData.overview || undefined,
         rating: formData.rating,
