@@ -325,7 +325,8 @@ describe('Cross-cutting & Security', () => {
         params: { search: "'; DROP TABLE users; --" },
       });
 
-      expect(response.status).toBeLessThan(500);
+      expect(response.status).toBe(200);
+      expect(response.data).toBeDefined();
     });
   });
 

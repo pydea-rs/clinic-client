@@ -182,7 +182,7 @@ describe('File Upload', () => {
         headers: form.getHeaders(),
       });
 
-      expect(response.status).toBeGreaterThanOrEqual(400);
+      expect([400, 413]).toContain(response.status);
     });
 
     it('should reject disallowed MIME type', async () => {

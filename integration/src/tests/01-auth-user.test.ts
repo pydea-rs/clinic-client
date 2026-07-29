@@ -10,7 +10,7 @@ import { createTestPng, createTestTxt } from '../helpers/test-files.js';
  * Auth endpoints are throttled at 5 req/60s per IP (/auth/login, /auth/register).
  * Tests carefully budget these calls and share clients to stay under limits.
  *
- * Register budget (5 total): 3 success + 1 duplicate + 1 validation
+ * Register budget (5 total): 2 success + 1 duplicate + 1 weak-pw + 1 missing-fields
  * Login budget (5 total):    3 success + 1 wrong-password + 1 CSRF test
  */
 
@@ -38,8 +38,8 @@ describe('Auth & User Management', () => {
   // ─── Registration (3 register calls) ──────────────────────────────
 
   describe('Registration', () => {
-    it('should register a patient and auto-create session', async () => {
-      // Register call #1
+    it('should register a patient (defaults to PATIENT role) and auto-create session', async () => {
+      // Register call #1 — role omitted to verify server defaults to PATIENT
       patientTc = createTestClient();
       patientAuthApi = createAuthApi(patientTc.axios);
       patientUserApi = createUserApi(patientTc.axios);
@@ -50,7 +50,6 @@ describe('Auth & User Management', () => {
         lastname: 'Patient',
         email: patientEmail,
         password: patientPassword,
-        role: 'PATIENT',
       });
 
       expect(response.status).toBe(201);
@@ -82,27 +81,7 @@ describe('Auth & User Management', () => {
       doctorUserId = response.data.id;
     });
 
-    it('should default to PATIENT role if none specified', async () => {
-      // Register call #3
-      const tc = createTestClient();
-      await warmUp(tc);
-
-      const defaultEmail = `default-role-${Date.now()}@test.local`;
-      const response = await tc.axios.post('/auth/register', {
-        firstname: 'Default',
-        lastname: 'Role',
-        email: defaultEmail,
-        password: 'TestPass123!',
-      });
-
-      expect(response.status).toBe(201);
-
-      // Registration auto-creates session — check role without login
-      const authApi = createAuthApi(tc.axios);
-      const user = await authApi.me();
-      expect(user.role).toBe('PATIENT');
-    });
-  });
+});
 
   // ─── Login & Session (2 login calls) ──────────────────────────────
 
@@ -158,17 +137,9 @@ describe('Auth & User Management', () => {
       const logoutResponse = await doctorTc.axios.post('/auth/logout');
       expect(logoutResponse.status).toBe(200);
 
-      // After logout, me() should fail
+      // After logout, session is invalidated — must return 401
       const meResponse = await doctorTc.axios.get('/user');
-      // Session may be cleared (401) or cookie still in jar but session data deleted
-      // Either 401 or the cookie gets cleared — verify it's no longer authenticated
-      expect([200, 401].includes(meResponse.status)).toBe(true);
-      if (meResponse.status === 200) {
-        // If cookie persists, verify by creating a new client (no cookies)
-        const freshTc = createTestClient();
-        const freshResponse = await freshTc.axios.get('/user');
-        expect(freshResponse.status).toBe(401);
-      }
+      expect(meResponse.status).toBe(401);
     });
 
     it('should allow re-login after logout', async () => {
@@ -328,13 +299,11 @@ describe('Auth & User Management', () => {
     });
 
     it('should reject missing required fields with 400', async () => {
-      // Uses patientTc (already has CSRF), register throttle may kick in
       const response = await patientTc.axios.post('/auth/register', {
         email: `missing-${Date.now()}@test.local`,
       });
 
-      // Either 400 (validation) or 429 (throttle) — both are valid
-      expect([400, 429]).toContain(response.status);
+      expect(response.status).toBe(400);
     });
   });
 

@@ -242,9 +242,8 @@ describe('Concurrent Operations', () => {
 
       const responses = [r1, r2, r3];
 
-      // No 500s — server handles concurrency gracefully
       for (const r of responses) {
-        expect(r.status).toBeLessThan(500);
+        expect([200, 201, 409]).toContain(r.status);
       }
 
       // At least one booking must succeed (201 wrapped as 200 by envelope)
@@ -333,8 +332,6 @@ describe('Concurrent Operations', () => {
         patient1Tc.axios.post('/scheduling/book', bookingPayload),
         patient2Tc.axios.post('/scheduling/book', bookingPayload),
       ]);
-
-      const codes = [r1.status, r2.status].sort((a, b) => a - b);
 
       // Envelope interceptor returns 200 for successful 201.
       // One succeeds (200/201), one conflicts (409).

@@ -264,18 +264,20 @@ describe('Notifications', () => {
     const testEndpoint = 'https://fcm.googleapis.com/fcm/send/test-sub-12345';
 
     it('should subscribe to push notifications', async () => {
-      await patientNotif.subscribePush({
+      const response = await patientTc.axios.post('/notification/subscribe', {
         endpoint: testEndpoint,
         keys: { p256dh: 'test-p256dh-key', auth: 'test-auth-key' },
       });
 
-      // No error means success (201 Created)
+      expect(response.status).toBe(201);
     });
 
     it('should unsubscribe from push notifications', async () => {
-      await patientNotif.unsubscribePush(testEndpoint);
+      const response = await patientTc.axios.delete('/notification/unsubscribe', {
+        data: { endpoint: testEndpoint },
+      });
 
-      // No error means success (204 No Content)
+      expect([200, 204]).toContain(response.status);
     });
   });
 });
