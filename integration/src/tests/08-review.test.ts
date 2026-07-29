@@ -217,6 +217,16 @@ describe('Reviews', () => {
       expect(response.status).toBe(403);
     });
 
+    it('should reject duplicate review for same doctor with 409', async () => {
+      // secondReviewId exists — try creating another
+      const response = await patientTc.axios.post('/review', {
+        doctorId: doctorProfileId,
+        rating: 2,
+        title: 'Duplicate attempt',
+      });
+      expect(response.status).toBe(409);
+    });
+
     it('should reject invalid rating value (too high) with 400', async () => {
       await patientReview.deleteReview(secondReviewId);
 

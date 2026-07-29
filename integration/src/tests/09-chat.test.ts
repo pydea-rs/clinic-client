@@ -348,6 +348,39 @@ describe('Chat', () => {
     });
   });
 
+  // ─── Ownership: Edit/Delete Another User's Message ─────────────
+
+  describe('WebSocket: Ownership Checks', () => {
+    it('should reject editing another user\'s message', async () => {
+      const sentPromise = waitForEvent<any>(patientSocket, 'chat:message', 10_000);
+      patientSocket.emit('chat:message', { chatId, content: 'Patient owns this' });
+      const sentEvent = await sentPromise;
+      const messageId = sentEvent.message.id;
+
+      const errorPromise = waitForEvent<any>(doctorSocket, 'chat:error', 10_000);
+      doctorSocket.emit('chat:edit', {
+        messageId: messageId.toString(),
+        content: 'Doctor tries to edit',
+      });
+
+      const error = await errorPromise;
+      expect(error.message).toContain('your own messages');
+    });
+
+    it('should reject deleting another user\'s message', async () => {
+      const sentPromise = waitForEvent<any>(patientSocket, 'chat:message', 10_000);
+      patientSocket.emit('chat:message', { chatId, content: 'Patient owns this too' });
+      const sentEvent = await sentPromise;
+      const messageId = sentEvent.message.id;
+
+      const errorPromise = waitForEvent<any>(doctorSocket, 'chat:error', 10_000);
+      doctorSocket.emit('chat:delete', { messageId: messageId.toString() });
+
+      const error = await errorPromise;
+      expect(error.message).toContain('your own messages');
+    });
+  });
+
   // ─── Unhappy Paths ─────────────────────────────────────────────
 
   describe('Unhappy Paths', () => {

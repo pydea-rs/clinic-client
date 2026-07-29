@@ -417,6 +417,38 @@ describe('Scheduling', () => {
       expect(response.status).toBe(404);
     });
 
+    it('should reject booking outside availability hours with 400', async () => {
+      // Doctor has Monday 10:00-18:00 — try booking at 06:00
+      const monday = futureMonday();
+      monday.setUTCHours(6, 0, 0, 0);
+
+      const response = await patientTc.axios.post('/scheduling/book', {
+        doctorId: doctorProfileId,
+        dateTime: monday.toISOString(),
+        durationMinutes: 30,
+        price: 50,
+        method: 'CHAT',
+      });
+      expect(response.status).toBe(400);
+    });
+
+    it('should reject booking on a day with no availability with 400', async () => {
+      // Doctor has no Sunday availability
+      const monday = futureMonday();
+      const sunday = new Date(monday);
+      sunday.setUTCDate(sunday.getUTCDate() - 1); // day before Monday = Sunday
+      sunday.setUTCHours(10, 0, 0, 0);
+
+      const response = await patientTc.axios.post('/scheduling/book', {
+        doctorId: doctorProfileId,
+        dateTime: sunday.toISOString(),
+        durationMinutes: 30,
+        price: 50,
+        method: 'CHAT',
+      });
+      expect(response.status).toBe(400);
+    });
+
     it('should reject booking a past slot with 400', async () => {
       const pastDate = new Date();
       pastDate.setDate(pastDate.getDate() - 7);

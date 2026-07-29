@@ -12,7 +12,7 @@ import { createPatientApi } from '@client/api/patient.api';
  *   PENDING_DOCTOR_REVIEW → DOCTOR_DECIDED → PENDING_PAYMENT
  *   → PAYMENT_CONFIRMED → IN_PROGRESS → COMPLETED
  *
- * Register budget (5/60s): 3 (doctor + patient + extra-doctor) = 3 used
+ * Register budget (5/60s): 4 (doctor + patient + extra-doctor + patient2) = 4 used
  * Login budget (5/60s): 1 (superadmin) = 1 used
  */
 
@@ -29,6 +29,8 @@ describe('Consultation Flow', () => {
   const patientPassword = 'PatPass456!';
   const extraDoctorEmail = `consult-doc2-${Date.now()}@test.local`;
   const extraDoctorPassword = 'DocPass456!';
+  const patient2Email = `consult-pat2-${Date.now()}@test.local`;
+  const patient2Password = 'PatPass456!';
 
   let doctorTc: TestClient;
   let doctorConsultation: ReturnType<typeof createConsultationApi>;
@@ -36,6 +38,9 @@ describe('Consultation Flow', () => {
 
   let patientTc: TestClient;
   let patientConsultation: ReturnType<typeof createConsultationApi>;
+
+  let patient2Tc: TestClient;
+  let patient2Consultation: ReturnType<typeof createConsultationApi>;
 
   let extraDoctorTc: TestClient;
   let extraDoctorConsultation: ReturnType<typeof createConsultationApi>;
@@ -105,6 +110,18 @@ describe('Consultation Flow', () => {
       role: 'DOCTOR',
     });
     extraDoctorConsultation = createConsultationApi(extraDoctorTc.axios);
+
+    // Register #4: second patient (for cross-patient isolation test)
+    patient2Tc = createTestClient();
+    await warmUp(patient2Tc);
+    await patient2Tc.axios.post('/auth/register', {
+      firstname: 'ConsultPat2',
+      lastname: 'Test',
+      email: patient2Email,
+      password: patient2Password,
+      role: 'PATIENT',
+    });
+    patient2Consultation = createConsultationApi(patient2Tc.axios);
   });
 
   // ─── Happy Path: Full Flow ───────────────────────────────────────
@@ -288,6 +305,13 @@ describe('Consultation Flow', () => {
         `/consultation/${mainConsultationId}/cancel`,
       );
       expect(response.status).toBe(400);
+    });
+
+    it('should reject cross-patient access to another patient\'s consultation (403)', async () => {
+      const response = await patient2Tc.axios.get(
+        `/consultation/${mainConsultationId}`,
+      );
+      expect(response.status).toBe(403);
     });
 
     it('should return 404 for nonexistent consultation ID', async () => {

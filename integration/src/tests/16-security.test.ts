@@ -11,7 +11,7 @@ import { getServerUrl } from '../helpers/server.js';
  * handling, rate limiting, and input validation.
  *
  * Register budget (5/60s): 5 (patient + doctor + promoteTarget + banTarget + deactivateTarget) = 5 used
- * Login budget (5/60s): 1 (superadmin) = 1 used
+ * Login budget (5/60s): 4 (superadmin + ban-login + promote-login + ws-ban-login) = 4 used
  *
  * IMPORTANT: the CookieAuthGuard has a static 60s status cache keyed by
  * user ID. Any guarded request (GET /user, PATCH /admin/...) for a given

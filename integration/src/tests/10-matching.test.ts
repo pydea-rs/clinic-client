@@ -389,6 +389,13 @@ describe('Matching', () => {
       await Promise.all([patCancelledPromise, docCancelledPromise]);
     });
 
+    it('should reject doctor cancelling match via REST (403)', async () => {
+      const response = await doctor1Tc.axios.patch(
+        `/matching/${acceptFlowMatchId}/cancel`,
+      );
+      expect(response.status).toBe(403);
+    });
+
     it('should error when non-doctor tries match:accept via WebSocket', async () => {
       const errorPromise = waitForEvent<any>(patientSocket, 'match:error', 10_000);
 

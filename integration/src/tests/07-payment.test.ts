@@ -201,6 +201,22 @@ describe('Payment', () => {
       expect(response.status).toBe(404);
     });
 
+    it('should reject zero amount payment with 400', async () => {
+      const response = await patientTc.axios.post('/payment', {
+        consultationId: consultationId2,
+        amount: 0,
+      });
+      expect(response.status).toBe(400);
+    });
+
+    it('should reject negative amount payment with 400', async () => {
+      const response = await patientTc.axios.post('/payment', {
+        consultationId: consultationId2,
+        amount: -50,
+      });
+      expect(response.status).toBe(400);
+    });
+
     it('should reject doctor creating payment with 403', async () => {
       const response = await doctorTc.axios.post('/payment', {
         consultationId: consultationId2,
