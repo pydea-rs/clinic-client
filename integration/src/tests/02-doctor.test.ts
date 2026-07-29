@@ -129,8 +129,9 @@ describe('Doctor Module', () => {
 
       expect(doc).toBeDefined();
       expect(doc.type).toBe('LICENSE');
-      expect(doc.fileUrl).toBeTruthy();
-      expect(doc.fileName).toBeTruthy();
+      expect(typeof doc.fileUrl).toBe('string');
+      expect(doc.fileUrl).toContain('/uploads/doctor-documents/');
+      expect(doc.fileName).toBe('license.pdf');
       expect(doc.mimeType).toBe('application/pdf');
     });
 

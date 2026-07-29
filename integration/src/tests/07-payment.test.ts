@@ -150,7 +150,8 @@ describe('Payment', () => {
       const confirmed = await patientPayment.confirm(paymentId);
 
       expect(confirmed.status).toBe('COMPLETED');
-      expect(confirmed.paidAt).toBeTruthy();
+      expect(typeof confirmed.paidAt).toBe('string');
+      expect(new Date(confirmed.paidAt!).toISOString()).toBe(confirmed.paidAt);
     });
 
     it('should also update linked consultation to PAYMENT_CONFIRMED', async () => {

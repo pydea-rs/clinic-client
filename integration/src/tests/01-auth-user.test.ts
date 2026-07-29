@@ -228,7 +228,8 @@ describe('Auth & User Management', () => {
       const result = await patientUserApi.uploadAvatar(png, 'avatar.png', 'image/png');
 
       expect(result).toBeDefined();
-      expect(result.avatar).toBeTruthy();
+      expect(typeof result.avatar).toBe('string');
+      expect(result.avatar).toContain('/uploads/avatars/');
     });
 
     it('should reject invalid file type (txt) with 400', async () => {

@@ -319,7 +319,8 @@ describe('Chat', () => {
       const edited = await editedPromise;
       expect(edited.message).toBeDefined();
       expect(edited.message.content).toBe('Edited message content');
-      expect(edited.message.editedAt).toBeTruthy();
+      expect(typeof edited.message.editedAt).toBe('string');
+      expect(new Date(edited.message.editedAt).getTime()).not.toBeNaN();
     });
   });
 
@@ -342,7 +343,8 @@ describe('Chat', () => {
 
       const deleted = await deletedPromise;
       expect(deleted.message).toBeDefined();
-      expect(deleted.message.deletedAt).toBeTruthy();
+      expect(typeof deleted.message.deletedAt).toBe('string');
+      expect(new Date(deleted.message.deletedAt).getTime()).not.toBeNaN();
     });
   });
 

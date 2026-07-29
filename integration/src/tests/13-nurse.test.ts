@@ -163,6 +163,7 @@ describe('Nurse Module', () => {
       expect(result.permissions).toContain('VIEW_PATIENTS');
       expect(result.permissions).toContain('VIEW_SOAPS');
       expect(result.permissions).toContain('CHAT_WITH_PATIENTS');
+      expect(result.permissions).toContain('VIEW_CONSULTATION_NOTES');
       expect(result.nurse).toBeDefined();
       expect(result.nurse.id).toBe(nurseUserId);
       assignmentId = result.id;
