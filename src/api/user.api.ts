@@ -48,9 +48,9 @@ export function createUserApi(client: AxiosInstance) {
       return response.data;
     },
 
-    getAllUsers: async (): Promise<User[]> => {
-      const response = await client.get('/user/all');
-      return Array.isArray(response.data) ? response.data : response.data?.data ?? [];
+    getAllUsers: async (params?: { skip?: number; take?: number }): Promise<{ data: User[]; total: number }> => {
+      const response = await client.get('/user/all', { params });
+      return response.data;
     },
 
     searchUsers: async (query: string): Promise<Pick<User, 'id' | 'firstname' | 'lastname' | 'email' | 'role' | 'avatar'>[]> => {
