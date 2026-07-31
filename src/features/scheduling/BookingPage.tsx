@@ -20,9 +20,10 @@ export const BookingPage: React.FC = () => {
   const { doctorId } = useParams<{ doctorId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const parsedDoctorId = Number(doctorId);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    doctorId: Number(doctorId),
+    doctorId: parsedDoctorId,
     dateTime: '',
     durationMinutes: 30,
     price: 0,
@@ -32,9 +33,20 @@ export const BookingPage: React.FC = () => {
   });
   const [slotDisplay, setSlotDisplay] = useState('');
 
+  if (!doctorId || Number.isNaN(parsedDoctorId)) {
+    return (
+      <div className="p-6 max-w-2xl mx-auto">
+        <p className="text-red-600">Invalid doctor ID.</p>
+        <button onClick={() => navigate(-1)} className="mt-4 px-4 py-2 border rounded-lg hover:bg-gray-50">
+          Go Back
+        </button>
+      </div>
+    );
+  }
+
   const { data: doctor } = useQuery({
     queryKey: ['doctor', doctorId],
-    queryFn: () => doctorApi.getDoctorById(Number(doctorId)),
+    queryFn: () => doctorApi.getDoctorById(parsedDoctorId),
     enabled: !!doctorId,
   });
 
@@ -49,7 +61,7 @@ export const BookingPage: React.FC = () => {
       return;
     }
     setFormData({
-      doctorId: Number(doctorId),
+      doctorId: parsedDoctorId,
       dateTime: new Date(`${state.slot.date}T${state.slot.startTime}`).toISOString(),
       durationMinutes: state.duration || 30,
       price: Number(state.price || 0),
