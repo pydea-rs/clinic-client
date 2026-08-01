@@ -32,19 +32,20 @@ interface AuthFormProps {
 type PasswordStrength = "weak" | "fair" | "good" | "strong";
 
 function getPasswordStrength(password: string): PasswordStrength {
-    if (password.length < 6) return "weak";
-
     const hasLower = /[a-z]/.test(password);
     const hasUpper = /[A-Z]/.test(password);
     const hasNumber = /[0-9]/.test(password);
     const hasSpecial = /[^a-zA-Z0-9]/.test(password);
-    const hasMixedCase = hasLower && hasUpper;
+    const meetsMinimum = password.length >= 8 && hasLower && hasUpper && hasNumber;
 
-    if (password.length >= 10 && hasMixedCase && hasNumber && hasSpecial) return "strong";
-    if (password.length >= 8 && (hasMixedCase || hasNumber)) return "good";
-    if (password.length >= 6) return "fair";
+    if (!meetsMinimum) {
+        if (password.length < 4) return "weak";
+        return "fair";
+    }
 
-    return "weak";
+    if (password.length >= 12 && hasSpecial) return "strong";
+    if (password.length >= 10 || hasSpecial) return "good";
+    return "good";
 }
 
 const strengthConfig: Record<PasswordStrength, { label: string; colorClass: string; barClass: string }> = {

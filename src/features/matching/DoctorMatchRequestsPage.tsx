@@ -172,7 +172,7 @@ export const DoctorMatchRequestsPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
+    <div className="max-w-4xl mx-auto p-6">
       <div className="flex items-center justify-between mb-6 animate-slide-in-up">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gradient-to-br from-brand-600 to-purple-500 rounded-xl flex items-center justify-center shadow-lg shadow-brand-500/20">

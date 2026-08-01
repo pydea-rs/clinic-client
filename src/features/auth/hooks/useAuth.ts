@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../../../lib/stores/auth.store';
 import { authApi } from '../../../api';
@@ -14,7 +14,6 @@ export const useAuth = (): {
   logout: () => Promise<void>;
 } => {
   const { user, isAuthenticated, initializing, setUser, setAuthenticated, setInitializing, clearAuth } = useAuthStore();
-  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const bootstrap = async () => {
@@ -43,50 +42,32 @@ export const useAuth = (): {
   }, [setUser, setAuthenticated, setInitializing, clearAuth]);
 
   const login = async (email: string, password: string) => {
-    setIsLoading(true);
-    try {
-      await authApi.login(email, password);
-      const me = await authApi.me();
-      setUser(me);
-      setAuthenticated(true);
-    } catch (error) {
-      clearAuth();
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
+    await authApi.login(email, password);
+    const me = await authApi.me();
+    setUser(me);
+    setAuthenticated(true);
   };
 
   const register = async (payload: { firstname: string; lastname: string; email: string; password: string; role?: string }) => {
-    setIsLoading(true);
-    try {
-      await authApi.register(payload);
-      const me = await authApi.me();
-      setUser(me);
-      setAuthenticated(true);
-    } catch (error) {
-      clearAuth();
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
+    await authApi.register(payload);
+    const me = await authApi.me();
+    setUser(me);
+    setAuthenticated(true);
   };
 
   const logout = async () => {
-    setIsLoading(true);
     try {
       await authApi.logout();
     } finally {
       queryClient.clear();
       clearAuth();
-      setIsLoading(false);
     }
   };
 
   return {
     user,
     isAuthenticated,
-    initializing: initializing || isLoading,
+    initializing,
     login,
     register,
     logout,

@@ -41,7 +41,7 @@ export const AppointmentDetailPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="p-6 max-w-3xl mx-auto">
+      <div className="p-6 max-w-4xl mx-auto">
         <div className="card p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="shimmer h-7 w-48" />
@@ -73,7 +73,7 @@ export const AppointmentDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6 max-w-3xl mx-auto animate-fade-in">
+    <div className="p-6 max-w-4xl mx-auto animate-fade-in">
       <div className="mb-8 animate-slide-in-up">
         <div className="flex items-center gap-3 mb-2">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white shadow-soft">

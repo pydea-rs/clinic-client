@@ -57,13 +57,13 @@ export const DoctorProfilePage: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Gradient Banner Header */}
       <div className="bg-gradient-to-r from-brand-600 to-purple-500 animate-fade-in">
-        <div className="max-w-4xl mx-auto px-6 pt-10 pb-20">
+        <div className="max-w-5xl mx-auto px-6 pt-10 pb-20">
           {/* Spacer for the gradient banner area */}
         </div>
       </div>
 
       {/* Profile Card overlapping the banner */}
-      <div className="max-w-4xl mx-auto px-6 -mt-16">
+      <div className="max-w-5xl mx-auto px-6 -mt-16">
         <div className="card card-glow rounded-2xl shadow-soft-xl p-8 animate-fade-in">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-6">
@@ -162,7 +162,7 @@ export const DoctorProfilePage: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-6 py-8">
+      <div className="max-w-5xl mx-auto px-6 py-8">
         <div className="grid grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="col-span-2 space-y-8">

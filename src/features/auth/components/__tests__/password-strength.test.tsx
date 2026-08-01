@@ -34,52 +34,66 @@ describe('Password strength indicator', () => {
     expect(getStrengthLabel()).toBeNull();
   });
 
-  it('should show "Weak" for short passwords (< 6 chars)', () => {
+  it('should show "Weak" for very short passwords (< 4 chars)', () => {
     render(<AuthForm onLogin={noop} onRegister={noop} />);
     switchToRegister();
     typePassword('ab1');
     expect(getStrengthLabel()).toBe('Weak');
   });
 
-  it('should show "Fair" for 6+ chars without mixed case or numbers', () => {
+  it('should show "Fair" for passwords not meeting server minimum', () => {
     render(<AuthForm onLogin={noop} onRegister={noop} />);
     switchToRegister();
     typePassword('abcdef');
     expect(getStrengthLabel()).toBe('Fair');
   });
 
-  it('should show "Good" for 8+ chars with mixed case', () => {
-    render(<AuthForm onLogin={noop} onRegister={noop} />);
-    switchToRegister();
-    typePassword('Abcdefgh');
-    expect(getStrengthLabel()).toBe('Good');
-  });
-
-  it('should show "Good" for 8+ chars with numbers', () => {
+  it('should show "Fair" for 8+ chars missing uppercase', () => {
     render(<AuthForm onLogin={noop} onRegister={noop} />);
     switchToRegister();
     typePassword('abcdefg1');
+    expect(getStrengthLabel()).toBe('Fair');
+  });
+
+  it('should show "Fair" for 8+ chars missing digit', () => {
+    render(<AuthForm onLogin={noop} onRegister={noop} />);
+    switchToRegister();
+    typePassword('Abcdefgh');
+    expect(getStrengthLabel()).toBe('Fair');
+  });
+
+  it('should show "Good" for 8+ chars with lowercase, uppercase, and digit', () => {
+    render(<AuthForm onLogin={noop} onRegister={noop} />);
+    switchToRegister();
+    typePassword('Abcdefg1');
     expect(getStrengthLabel()).toBe('Good');
   });
 
-  it('should show "Strong" for 10+ chars with mixed case, number, and special', () => {
-    render(<AuthForm onLogin={noop} onRegister={noop} />);
-    switchToRegister();
-    typePassword('Abcdefg1!@');
-    expect(getStrengthLabel()).toBe('Strong');
-  });
-
-  it('should NOT be strong if missing special char', () => {
+  it('should show "Good" for 10+ chars meeting minimum', () => {
     render(<AuthForm onLogin={noop} onRegister={noop} />);
     switchToRegister();
     typePassword('Abcdefgh12');
     expect(getStrengthLabel()).toBe('Good');
   });
 
-  it('should NOT be strong if missing uppercase', () => {
+  it('should show "Strong" for 12+ chars with special character', () => {
     render(<AuthForm onLogin={noop} onRegister={noop} />);
     switchToRegister();
-    typePassword('abcdefgh1!');
+    typePassword('Abcdefghij1!');
+    expect(getStrengthLabel()).toBe('Strong');
+  });
+
+  it('should NOT be strong if under 12 chars even with special', () => {
+    render(<AuthForm onLogin={noop} onRegister={noop} />);
+    switchToRegister();
+    typePassword('Abcdefg1!');
+    expect(getStrengthLabel()).toBe('Good');
+  });
+
+  it('should NOT be strong if missing special char even at 12+ chars', () => {
+    render(<AuthForm onLogin={noop} onRegister={noop} />);
+    switchToRegister();
+    typePassword('Abcdefghij12');
     expect(getStrengthLabel()).toBe('Good');
   });
 });

@@ -99,7 +99,7 @@ export const MatchRequestPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 animate-fade-in">
+    <div className="max-w-4xl mx-auto p-6 animate-fade-in">
       <div className="mb-8">
         <div className="w-10 h-10 bg-gradient-to-br from-brand-600 to-purple-500 rounded-xl flex items-center justify-center shadow-soft mb-4"><Stethoscope className="w-5 h-5 text-white" /></div>
         <h1 className="text-2xl font-bold mb-2">Find a Doctor</h1>

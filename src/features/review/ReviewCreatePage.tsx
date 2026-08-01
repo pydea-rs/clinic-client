@@ -17,7 +17,7 @@ export const ReviewCreatePage: React.FC = () => {
 
   if (!doctorId || Number.isNaN(parsedDoctorId)) {
     return (
-      <div className="p-6 max-w-2xl mx-auto">
+      <div className="p-6 max-w-3xl mx-auto">
         <p className="text-red-600">Invalid doctor ID.</p>
         <button onClick={() => navigate(-1)} className="mt-4 px-4 py-2 border rounded-lg hover:bg-gray-50">
           Go Back
@@ -48,7 +48,7 @@ export const ReviewCreatePage: React.FC = () => {
   const stars = [1, 2, 3, 4, 5];
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
+    <div className="p-6 max-w-3xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Write a Review</h1>
       
       <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6">

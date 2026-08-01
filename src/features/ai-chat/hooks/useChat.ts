@@ -512,6 +512,18 @@ export const useChat = (options?: UseChatOptions) => {
     isSendingRef.current = chatState.isSending;
   }, [chatState.isSending]);
 
+  const disconnect = useCallback(() => {
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
+    if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    stopPolling();
+    stopTypewriter();
+    updateConnectionStatus({ connected: false, reconnecting: false });
+  }, [updateConnectionStatus, stopPolling, stopTypewriter]);
+
   const resetChat = useCallback(async () => {
     disconnect();
     seenBotMessageIds.current.clear();
@@ -622,18 +634,6 @@ export const useChat = (options?: UseChatOptions) => {
       isInitializingRef.current = false;
     }
   }, [startConversation, connectSSE, updateConnectionStatus]);
-
-  const disconnect = useCallback(() => {
-    if (eventSourceRef.current) {
-      eventSourceRef.current.close();
-      eventSourceRef.current = null;
-    }
-    if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
-    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    stopPolling();
-    stopTypewriter();
-    updateConnectionStatus({ connected: false, reconnecting: false });
-  }, [updateConnectionStatus, stopPolling, stopTypewriter]);
 
   useEffect(() => {
     mountedRef.current = true;

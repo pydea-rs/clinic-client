@@ -89,7 +89,7 @@ export const ChatListPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="p-6 max-w-4xl mx-auto animate-fade-in">
+      <div className="p-6 max-w-5xl mx-auto animate-fade-in">
         {/* Shimmer header */}
         <div className="flex items-center justify-between mb-8">
           <div className="shimmer h-8 w-40 rounded-lg"></div>
@@ -115,7 +115,7 @@ export const ChatListPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto animate-fade-in min-h-full">
+    <div className="p-6 max-w-5xl mx-auto animate-fade-in min-h-full">
       {/* Gradient header */}
       <div className="flex items-center gap-3 mb-8">
         <div className="w-10 h-10 bg-gradient-to-br from-brand-600 to-brand-400 rounded-xl flex items-center justify-center shadow-glow-blue">

@@ -35,7 +35,7 @@ export const BookingPage: React.FC = () => {
 
   if (!doctorId || Number.isNaN(parsedDoctorId)) {
     return (
-      <div className="p-6 max-w-2xl mx-auto">
+      <div className="p-6 max-w-3xl mx-auto">
         <p className="text-red-600">Invalid doctor ID.</p>
         <button onClick={() => navigate(-1)} className="mt-4 px-4 py-2 border rounded-lg hover:bg-gray-50">
           Go Back
@@ -112,7 +112,7 @@ export const BookingPage: React.FC = () => {
 
   if (!formData.dateTime) {
     return (
-      <div className="p-6 max-w-2xl mx-auto">
+      <div className="p-6 max-w-3xl mx-auto">
         <div className="shimmer h-8 w-48 mb-6" />
         <div className="card p-6 mb-6">
           <div className="shimmer h-5 w-36 mb-4" />
@@ -136,7 +136,7 @@ export const BookingPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
+    <div className="p-6 max-w-3xl mx-auto">
       <div className="mb-8 animate-slide-in-up">
         <div className="flex items-center gap-3 mb-2">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-brand-600 flex items-center justify-center text-white shadow-soft">
