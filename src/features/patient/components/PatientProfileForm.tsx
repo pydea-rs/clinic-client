@@ -28,11 +28,23 @@ export const PatientProfileForm: React.FC<PatientProfileFormProps> = ({
     e.preventDefault();
     setLoading(true);
     try {
+      // Send ONLY the fields the backend DTO accepts. Spreading the full
+      // profile (id, userId, createdAt, ...) is rejected by the server's
+      // `forbidNonWhitelisted` validation with HTTP 400.
+      const payload: Partial<PatientProfile> = {
+        location: formData.location,
+        bio: formData.bio,
+        medicalHistory: formData.medicalHistory,
+        allergies: formData.allergies,
+        medications: formData.medications,
+        surgeries: formData.surgeries,
+        familyHistory: formData.familyHistory,
+      };
       if (initialData?.id) {
-        await patientApi.updateProfile(formData);
+        await patientApi.updateProfile(payload);
         toast.success('Profile updated successfully');
       } else {
-        await patientApi.createProfile(formData);
+        await patientApi.createProfile(payload);
         toast.success('Profile created successfully');
       }
       onSubmitSuccess?.();
