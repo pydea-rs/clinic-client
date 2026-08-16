@@ -1,8 +1,12 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { createTestClient, createRawClient, TestClient } from '../helpers/api-client.js';
 import { createAdminApi } from '@client/api/admin.api';
 import { io, Socket } from 'socket.io-client';
-import { getServerUrl } from '../helpers/server.js';
+import {
+  getServerUrl,
+  bootstrapRateLimitServer,
+  shutdownRateLimitServer,
+} from '../helpers/server.js';
 
 /**
  * Phase 17 — Cross-cutting & Security Tests.
@@ -330,11 +334,27 @@ describe('Cross-cutting & Security', () => {
     });
   });
 
-  // ─── Rate Limiting (last — exhausts IP-based throttle budget) ────
+  // ─── Rate Limiting (isolated prod-env app) ───────────────────────
+  // The shared test server disables throttling (APP_ENV=test) so bulk-login
+  // tests aren't blocked by the 5/min auth limit. To actually exercise rate
+  // limiting we boot a dedicated app with APP_ENV=production forced, which
+  // flips only the ThrottlerGuard on. Set RUN_RATE_LIMIT_TESTS=false to skip
+  // this block (e.g. in constrained CI); it is enabled by default.
+  const runRateLimitTests = process.env.RUN_RATE_LIMIT_TESTS !== 'false';
 
-  describe('Rate Limiting', () => {
+  describe.skipIf(!runRateLimitTests)('Rate Limiting (isolated prod-env app)', () => {
+    let rateLimitUrl = '';
+
+    beforeAll(async () => {
+      rateLimitUrl = await bootstrapRateLimitServer();
+    }, 120_000);
+
+    afterAll(async () => {
+      await shutdownRateLimitServer();
+    }, 30_000);
+
     it('should enforce auth rate limit on login (429 after >5 attempts)', async () => {
-      const tc = createTestClient();
+      const tc = createTestClient(rateLimitUrl);
       await warmUp(tc);
 
       let got429 = false;

@@ -9,13 +9,13 @@ export interface TestClient {
   csrfToken: string | null;
 }
 
-export function createTestClient(): TestClient {
+export function createTestClient(baseUrl?: string): TestClient {
   const jar = new CookieJar();
   const client: TestClient = { axios: null as any, jar, csrfToken: null };
 
   const instance = wrapper(
     axios.create({
-      baseURL: getServerUrl(),
+      baseURL: baseUrl ?? getServerUrl(),
       timeout: 30_000,
       headers: { 'Content-Type': 'application/json' },
       withCredentials: true,

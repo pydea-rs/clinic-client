@@ -90,48 +90,54 @@ function patchService(target: any, mock: any) {
   }
 }
 
-export async function bootstrapTestServer(): Promise<void> {
-  if (app) return;
+interface AppMocks {
+  botpress: MockBotpressService;
+  openAi: MockOpenAiService;
+  calendly: MockCalendlyService;
+  email: MockEmailChannel;
+  webPush: MockWebPushChannel;
+}
 
-  mockBotpress = new MockBotpressService();
-  mockOpenAi = new MockOpenAiService();
-  mockCalendly = new MockCalendlyService();
-  mockEmail = new MockEmailChannel();
-  mockWebPush = new MockWebPushChannel();
+function normalizeUrl(rawUrl: string): string {
+  return rawUrl.replace('[::1]', '127.0.0.1').replace('[::0]', '127.0.0.1');
+}
 
-  app = await NestFactory.create<NestFastifyApplication>(
-    AppModule,
-    new FastifyAdapter(),
-    { rawBody: true, logger: ['error', 'warn'] },
-  );
-
+/**
+ * Apply the full middleware/config stack to a freshly created Nest app.
+ * Shared by the main test server and the isolated rate-limit (prod-env) server
+ * so both are configured identically.
+ */
+async function configureApp(
+  targetApp: NestFastifyApplication,
+  mocks: AppMocks,
+): Promise<void> {
   // Monkey-patch third-party services with mocks (same class refs as DI)
-  patchService(app.get(BotpressService), mockBotpress);
-  patchService(app.get(OpenAiService), mockOpenAi);
-  patchService(app.get(CalendlyService), mockCalendly);
-  patchService(app.get(EmailChannel), mockEmail);
-  patchService(app.get(WebPushChannel), mockWebPush);
+  patchService(targetApp.get(BotpressService), mocks.botpress);
+  patchService(targetApp.get(OpenAiService), mocks.openAi);
+  patchService(targetApp.get(CalendlyService), mocks.calendly);
+  patchService(targetApp.get(EmailChannel), mocks.email);
+  patchService(targetApp.get(WebPushChannel), mocks.webPush);
 
   const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:5173';
-  app.enableCors({
+  targetApp.enableCors({
     origin: corsOrigin.split(',').map((o: string) => o.trim()),
     methods: ['GET', 'HEAD', 'PUT', 'POST', 'DELETE', 'PATCH', 'OPTIONS'],
     credentials: true,
   });
 
-  app.useGlobalFilters(new ExceptionTemplateFilter());
-  app.useGlobalInterceptors(new ResponseTemplateInterceptor());
+  targetApp.useGlobalFilters(new ExceptionTemplateFilter());
+  targetApp.useGlobalInterceptors(new ResponseTemplateInterceptor());
 
-  await app.register(fastifyCompress);
-  await app.register(fastifyHelmet, {
+  await targetApp.register(fastifyCompress);
+  await targetApp.register(fastifyHelmet, {
     contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false,
   });
 
-  const configService = app.get(ConfigService);
+  const configService = targetApp.get(ConfigService);
 
-  await app.register(fastifyCookie);
-  await app.register(fastifySecureSession, {
+  await targetApp.register(fastifyCookie);
+  await targetApp.register(fastifySecureSession, {
     key: createHash('sha256')
       .update(configService.getOrThrow<string>('auth.sessionSecret'))
       .digest(),
@@ -145,7 +151,7 @@ export async function bootstrapTestServer(): Promise<void> {
     },
   });
 
-  const fastifyInstance = app.getHttpAdapter().getInstance();
+  const fastifyInstance = targetApp.getHttpAdapter().getInstance();
   fastifyInstance.addHook('onRequest', (req: any, reply: any, done: () => void) => {
     if (!req.cookies?.['csrf-token']) {
       const token = randomBytes(32).toString('hex');
@@ -159,13 +165,13 @@ export async function bootstrapTestServer(): Promise<void> {
     }
     done();
   });
-  app.useGlobalGuards(new CsrfGuard());
+  targetApp.useGlobalGuards(new CsrfGuard());
 
-  await app.register(fastifyMultipart, {
+  await targetApp.register(fastifyMultipart, {
     limits: { fileSize: 10 * 1024 * 1024 },
   });
 
-  app.useGlobalPipes(
+  targetApp.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
@@ -186,15 +192,95 @@ export async function bootstrapTestServer(): Promise<void> {
       });
     }
   }
-  app.useWebSocketAdapter(new TestIoAdapter(app));
+  targetApp.useWebSocketAdapter(new TestIoAdapter(targetApp));
 
-  app.enableShutdownHooks();
+  targetApp.enableShutdownHooks();
+}
+
+export async function bootstrapTestServer(): Promise<void> {
+  if (app) return;
+
+  mockBotpress = new MockBotpressService();
+  mockOpenAi = new MockOpenAiService();
+  mockCalendly = new MockCalendlyService();
+  mockEmail = new MockEmailChannel();
+  mockWebPush = new MockWebPushChannel();
+
+  app = await NestFactory.create<NestFastifyApplication>(
+    AppModule,
+    new FastifyAdapter(),
+    { rawBody: true, logger: ['error', 'warn'] },
+  );
+
+  await configureApp(app, {
+    botpress: mockBotpress,
+    openAi: mockOpenAi,
+    calendly: mockCalendly,
+    email: mockEmail,
+    webPush: mockWebPush,
+  });
 
   await app.listen(0, '0.0.0.0');
-  const rawUrl = await app.getUrl();
-  serverUrl = rawUrl.replace('[::1]', '127.0.0.1').replace('[::0]', '127.0.0.1');
+  serverUrl = normalizeUrl(await app.getUrl());
 
   console.log(`[Integration] Test server running at ${serverUrl}`);
+}
+
+// ─── Isolated rate-limit server ──────────────────────────────────────────────
+// The shared test server runs with APP_ENV=test, which disables the
+// ThrottlerGuard (so bulk-login tests aren't blocked by the 5/min auth limit).
+// To exercise rate limiting we boot a throwaway second app with APP_ENV forced
+// to 'production' *only* around creation. That flips solely the throttler on:
+// env validation keys off NODE_ENV (left untouched) and its production-specific
+// rules are warnings, not errors — so nothing else hardens and the app boots
+// exactly like the shared one.
+
+let rateLimitApp: NestFastifyApplication | null = null;
+let rateLimitUrl = '';
+
+export async function bootstrapRateLimitServer(): Promise<string> {
+  if (rateLimitApp) return rateLimitUrl;
+
+  const prevAppEnv = process.env.APP_ENV;
+  process.env.APP_ENV = 'production';
+  try {
+    rateLimitApp = await NestFactory.create<NestFastifyApplication>(
+      AppModule,
+      new FastifyAdapter(),
+      { rawBody: true, logger: ['error', 'warn'] },
+    );
+
+    await configureApp(rateLimitApp, {
+      botpress: new MockBotpressService(),
+      openAi: new MockOpenAiService(),
+      calendly: new MockCalendlyService(),
+      email: new MockEmailChannel(),
+      webPush: new MockWebPushChannel(),
+    });
+
+    await rateLimitApp.listen(0, '0.0.0.0');
+    rateLimitUrl = normalizeUrl(await rateLimitApp.getUrl());
+
+    console.log(
+      `[Integration] Rate-limit (prod-env) server running at ${rateLimitUrl}`,
+    );
+  } finally {
+    // The ThrottlerGuard captured APP_ENV at construction (during app init
+    // above), so restoring the var now keeps throttling enforced on this app
+    // while leaving the shared server and everything else untouched.
+    if (prevAppEnv === undefined) delete process.env.APP_ENV;
+    else process.env.APP_ENV = prevAppEnv;
+  }
+
+  return rateLimitUrl;
+}
+
+export async function shutdownRateLimitServer(): Promise<void> {
+  if (rateLimitApp) {
+    await rateLimitApp.close();
+    rateLimitApp = null;
+    rateLimitUrl = '';
+  }
 }
 
 export async function shutdownTestServer(): Promise<void> {
