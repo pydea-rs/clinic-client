@@ -177,6 +177,11 @@ export interface DoctorDocument {
   updatedAt: string;
 }
 
+export interface PendingDoctor extends Omit<DoctorProfile, 'user'> {
+  user: Pick<User, 'id' | 'firstname' | 'lastname' | 'email'>;
+  documents: DoctorDocument[];
+}
+
 // ─── Review ─────────────────────────────────────────────────────────────────
 
 export interface DoctorReview {

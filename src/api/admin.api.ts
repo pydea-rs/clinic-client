@@ -1,5 +1,5 @@
 import type { AxiosInstance } from 'axios';
-import type { User, PlatformStats } from '../lib/types/api';
+import type { User, PlatformStats, PendingDoctor, DoctorDocument } from '../lib/types/api';
 
 export function createAdminApi(client: AxiosInstance) {
   return {
@@ -34,11 +34,11 @@ export function createAdminApi(client: AxiosInstance) {
     },
 
     verifications: {
-      listPending: async (): Promise<Array<{ doctorId: number; userId: string; documents: Array<{ id: number; type: string; fileUrl: string; status: string }> }>> => {
+      listPending: async (): Promise<PendingDoctor[]> => {
         const response = await client.get('/admin/doctors/pending');
         return response.data;
       },
-      getDocuments: async (doctorId: number): Promise<Array<{ id: number; type: string; fileUrl: string; fileName: string; status: string }>> => {
+      getDocuments: async (doctorId: number): Promise<DoctorDocument[]> => {
         const response = await client.get(`/admin/doctors/${doctorId}/documents`);
         return response.data;
       },

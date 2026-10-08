@@ -121,15 +121,18 @@ describe('Admin & Verification', () => {
   // ─── Pending Doctors & Documents ──────────────────────────────────
 
   describe('Pending Doctors', () => {
-    it('should list unverified doctors', async () => {
+    it('should list unverified doctors with their documents', async () => {
       const pending = await adminApi.verifications.listPending();
 
       expect(Array.isArray(pending)).toBe(true);
-      const found = pending.find((d: any) => d.id === doctorProfileId);
+      const found = pending.find((d) => d.user.id === doctorUserId);
       expect(found).toBeDefined();
-      expect(found.verified).toBe(false);
-      expect(found.user).toBeDefined();
-      expect(found.user.email).toBe(doctorEmail);
+      expect(found?.id).toBe(doctorProfileId);
+      expect(found?.verified).toBe(false);
+      expect(found?.user.email).toBe(doctorEmail);
+      expect(found?.documents).toHaveLength(1);
+      expect(found?.documents[0].type).toBe('LICENSE');
+      expect(found?.documents[0].doctorId).toBe(doctorProfileId);
     });
 
     it('should get doctor documents', async () => {
@@ -164,7 +167,7 @@ describe('Admin & Verification', () => {
 
     it('should remove doctor from pending list after approval', async () => {
       const pending = await adminApi.verifications.listPending();
-      const found = pending.find((d: any) => d.id === doctorProfileId);
+      const found = pending.find((d) => d.id === doctorProfileId);
       expect(found).toBeUndefined();
     });
   });

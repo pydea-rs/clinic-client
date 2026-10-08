@@ -2,27 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { adminApi } from '../../api';
 import toast from 'react-hot-toast';
 import { ShieldCheck } from 'lucide-react';
-import { formatDocType, formatStatus } from '../../lib/format';
-
-interface VerificationDocument {
-  id: number;
-  type: string;
-  fileUrl: string;
-  status: string;
-}
-
-interface PendingDoctor {
-  doctorId: number;
-  userId: string;
-  user?: {
-    id: string;
-    firstname?: string;
-    lastname?: string;
-    email?: string;
-    role?: string;
-  };
-  documents?: VerificationDocument[];
-}
+import { formatDocType, formatSpecialty, formatStatus } from '../../lib/format';
+import type { DoctorDocument, PendingDoctor } from '../../lib/types/api';
 
 export const AdminDoctorVerificationPage: React.FC = () => {
   const [pendingDoctors, setPendingDoctors] = useState<PendingDoctor[]>([]);
@@ -30,7 +11,7 @@ export const AdminDoctorVerificationPage: React.FC = () => {
   const [selectedDoctor, setSelectedDoctor] = useState<PendingDoctor | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [verifyingDoctorId, setVerifyingDoctorId] = useState<number | null>(null);
-  const [documentsByDoctor, setDocumentsByDoctor] = useState<Record<number, VerificationDocument[]>>({});
+  const [documentsByDoctor, setDocumentsByDoctor] = useState<Record<number, DoctorDocument[]>>({});
 
   useEffect(() => {
     const loadPending = async () => {
@@ -50,7 +31,7 @@ export const AdminDoctorVerificationPage: React.FC = () => {
     setVerifyingDoctorId(doctorId);
     try {
       await adminApi.verifications.verify(doctorId, approved, approved ? undefined : rejectReason);
-      setPendingDoctors(prev => prev.filter(d => d.doctorId !== doctorId));
+      setPendingDoctors(prev => prev.filter(d => d.id !== doctorId));
       toast.success(approved ? 'Doctor verified successfully' : 'Doctor verification rejected');
       setRejectReason('');
       setSelectedDoctor(null);
@@ -122,82 +103,84 @@ export const AdminDoctorVerificationPage: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          {pendingDoctors.map((doctor, index) => (
-            <div key={doctor.doctorId} className="card p-6 animate-slide-in-up" style={{ animationDelay: `${index * 60}ms` }}>
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-brand-500 to-purple-500 rounded-full flex items-center justify-center">
-                  <span className="text-2xl font-bold text-white">
-                    {doctor.user?.firstname?.[0]}{doctor.user?.lastname?.[0]}
-                  </span>
-                </div>
-                <div>
-                  <h3 className="font-bold text-lg">{doctor.user?.firstname} {doctor.user?.lastname}</h3>
-                  <p className="text-sm text-gray-500">{doctor.user?.email}</p>
-                  <p className="text-sm text-gray-500">
-                    {doctor.user?.role} • ID: {doctor.user?.id}
-                  </p>
-                </div>
-              </div>
-
-              {(documentsByDoctor[doctor.doctorId] || doctor.documents)?.length > 0 && (
-                <div className="mb-4">
-                  <h4 className="font-medium mb-2">Documents:</h4>
-                  <div className="space-y-2">
-                    {(documentsByDoctor[doctor.doctorId] || doctor.documents).map((doc) => (
-                      <div key={doc.id} className="flex items-center justify-between bg-gray-50/80 p-3 rounded-xl">
-                        <div>
-                          <span className="text-sm font-medium capitalize">{formatDocType(doc.type)}</span>
-                          <span className={`ml-2 badge ${
-                            doc.status === 'PENDING' ? 'badge-yellow' :
-                            doc.status === 'APPROVED' ? 'badge-green' :
-                            'badge-red'
-                          }`}>
-                            {formatStatus(doc.status)}
-                          </span>
-                        </div>
-                        <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:text-brand-700 hover:underline">
-                          View
-                        </a>
-                      </div>
-                    ))}
+          {pendingDoctors.map((doctor, index) => {
+            const documents = documentsByDoctor[doctor.id] ?? doctor.documents;
+            return (
+              <div key={doctor.id} className="card p-6 animate-slide-in-up" style={{ animationDelay: `${index * 60}ms` }}>
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-brand-500 to-purple-500 rounded-full flex items-center justify-center">
+                    <span className="text-2xl font-bold text-white">
+                      {doctor.user.firstname[0]}{doctor.user.lastname[0]}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg">{doctor.user.firstname} {doctor.user.lastname}</h3>
+                    <p className="text-sm text-gray-500">{doctor.user.email}</p>
+                    <p className="text-sm text-gray-500">
+                      {formatSpecialty(doctor.specialty)} • ID: {doctor.user.id}
+                    </p>
                   </div>
                 </div>
-              )}
 
-              <div className="flex gap-2 mt-4">
-                <button
-                  onClick={() => loadDoctorDocuments(doctor.doctorId)}
-                  className="flex-1 btn-secondary py-2"
-                >
-                  Refresh Documents
-                </button>
-                <button
-                  onClick={() => handleVerify(doctor.doctorId, true)}
-                  disabled={verifyingDoctorId === doctor.doctorId}
-                  className="flex-1 bg-gradient-to-r from-emerald-600 to-green-500 text-white py-2.5 rounded-xl hover:from-emerald-500 hover:to-green-400 font-medium shadow-sm btn-press disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {verifyingDoctorId === doctor.doctorId ? 'Verifying...' : 'Approve'}
-                </button>
-                <button
-                  onClick={() => setSelectedDoctor(doctor)}
-                  className="flex-1 bg-gradient-to-r from-red-600 to-rose-500 text-white py-2.5 rounded-xl hover:from-red-500 hover:to-rose-400 font-medium shadow-sm btn-press"
-                >
-                  Reject
-                </button>
+                {documents.length > 0 && (
+                  <div className="mb-4">
+                    <h4 className="font-medium mb-2">Documents:</h4>
+                    <div className="space-y-2">
+                      {documents.map((doc) => (
+                        <div key={doc.id} className="flex items-center justify-between bg-gray-50/80 p-3 rounded-xl">
+                          <div>
+                            <span className="text-sm font-medium capitalize">{formatDocType(doc.type)}</span>
+                            <span className={`ml-2 badge ${
+                              doc.status === 'PENDING' ? 'badge-yellow' :
+                              doc.status === 'APPROVED' ? 'badge-green' :
+                              'badge-red'
+                            }`}>
+                              {formatStatus(doc.status)}
+                            </span>
+                          </div>
+                          <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:text-brand-700 hover:underline">
+                            View
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex gap-2 mt-4">
+                  <button
+                    onClick={() => loadDoctorDocuments(doctor.id)}
+                    className="flex-1 btn-secondary py-2"
+                  >
+                    Refresh Documents
+                  </button>
+                  <button
+                    onClick={() => handleVerify(doctor.id, true)}
+                    disabled={verifyingDoctorId === doctor.id}
+                    className="flex-1 bg-gradient-to-r from-emerald-600 to-green-500 text-white py-2.5 rounded-xl hover:from-emerald-500 hover:to-green-400 font-medium shadow-sm btn-press disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {verifyingDoctorId === doctor.id ? 'Verifying...' : 'Approve'}
+                  </button>
+                  <button
+                    onClick={() => setSelectedDoctor(doctor)}
+                    className="flex-1 bg-gradient-to-r from-red-600 to-rose-500 text-white py-2.5 rounded-xl hover:from-red-500 hover:to-rose-400 font-medium shadow-sm btn-press"
+                  >
+                    Reject
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
-      {/* Reject Modal */}
       {selectedDoctor && (
         <RejectModal
           reason={rejectReason}
           onReasonChange={setRejectReason}
           onClose={() => setSelectedDoctor(null)}
-          onReject={() => handleVerify(selectedDoctor.doctorId, false)}
-          loading={verifyingDoctorId === selectedDoctor.doctorId}
+          onReject={() => handleVerify(selectedDoctor.id, false)}
+          loading={verifyingDoctorId === selectedDoctor.id}
         />
       )}
     </div>
