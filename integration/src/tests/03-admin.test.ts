@@ -3,6 +3,7 @@ import { createTestClient, TestClient } from '../helpers/api-client.js';
 import { createAdminApi } from '@client/api/admin.api';
 import { createAuthApi } from '@client/api/auth.api';
 import { createDoctorApi } from '@client/api/doctor.api';
+import { createNotificationApi } from '@client/api/notification.api';
 import { createTestPdf } from '../helpers/test-files.js';
 import { getServerUrl } from '../helpers/server.js';
 
@@ -405,6 +406,55 @@ describe('Admin & Verification', () => {
       });
 
       expect(response.status).toBe(404);
+    });
+
+    it('should require a non-blank reason when rejecting', async () => {
+      const response = await adminTc.axios.patch(`/admin/doctors/${doctorProfileId}/verify`, {
+        approved: false,
+        reason: '   ',
+      });
+
+      expect(response.status).toBe(400);
+      expect((await doctorApi.getMyProfile()).rejectionReason).toBe('Insufficient credentials');
+    });
+
+    it('should leave the rejected doctor out of the pending list', async () => {
+      const pending = await adminApi.verifications.listPending();
+      expect(pending.find((d) => d.id === doctorProfileId)).toBeUndefined();
+    });
+
+    it('should show the doctor the reason and notify them', async () => {
+      expect((await doctorApi.getMyProfile()).rejectionReason).toBe('Insufficient credentials');
+
+      // Sent after the response, so it may need a moment to appear.
+      const doctorNotif = createNotificationApi(doctorTc.axios);
+      const findRejection = async () =>
+        (await doctorNotif.list({ take: 100 })).data.find(
+          (n) => n.type === 'DOCTOR_VERIFIED' && n.data?.approved === false,
+        );
+      let rejection = await findRejection();
+      for (let i = 0; !rejection && i < 30; i++) {
+        await new Promise((r) => setTimeout(r, 100));
+        rejection = await findRejection();
+      }
+
+      expect(rejection?.data?.reason).toBe('Insufficient credentials');
+      expect(rejection?.body).toContain('Insufficient credentials');
+    });
+
+    it('should put the doctor back in the pending list once they re-submit', async () => {
+      const result = await doctorApi.resubmitForReview();
+
+      expect(result.verified).toBe(false);
+      expect(result.rejectionReason).toBeNull();
+      const pending = await adminApi.verifications.listPending();
+      expect(pending.find((d) => d.id === doctorProfileId)).toBeDefined();
+    });
+
+    it('should return 409 when re-submitting a profile already awaiting review', async () => {
+      const response = await doctorTc.axios.post('/doctor/profile/resubmit');
+
+      expect(response.status).toBe(409);
     });
   });
 

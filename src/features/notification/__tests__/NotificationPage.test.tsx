@@ -264,6 +264,28 @@ describe('NotificationPage', () => {
       expect(mockNavigate).toHaveBeenCalledWith('/doctor/workspace');
     });
 
+    it('should navigate to /doctor/profile for a doctor rejection', async () => {
+      await renderAndClick(
+        makeNotification({
+          type: 'DOCTOR_VERIFIED',
+          title: 'Profile Not Verified',
+          data: { approved: false, reason: 'Expired license' },
+        }),
+      );
+      expect(mockNavigate).toHaveBeenCalledWith('/doctor/profile');
+    });
+
+    it('should navigate to /doctor/workspace for DOCTOR_VERIFIED with approved true', async () => {
+      await renderAndClick(
+        makeNotification({
+          type: 'DOCTOR_VERIFIED',
+          title: 'Verified Explicitly',
+          data: { approved: true },
+        }),
+      );
+      expect(mockNavigate).toHaveBeenCalledWith('/doctor/workspace');
+    });
+
     it('should navigate to /doctor/workspace for NEW_REVIEW', async () => {
       await renderAndClick(
         makeNotification({

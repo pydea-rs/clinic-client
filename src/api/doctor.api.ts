@@ -91,6 +91,11 @@ export function createDoctorApi(client: AxiosInstance) {
       const response = await client.get('/doctor/me');
       return response.data;
     },
+
+    resubmitForReview: async (): Promise<DoctorProfile> => {
+      const response = await client.post('/doctor/profile/resubmit');
+      return response.data;
+    },
   };
 }
 

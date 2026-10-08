@@ -22,6 +22,12 @@ const typeConfig: Record<string, { icon: React.ElementType; color: string }> = {
   SYSTEM: { icon: Info, color: 'text-gray-600 bg-gray-100' },
 };
 
+// The server sends rejections as DOCTOR_VERIFIED with `data.approved` false.
+const isDoctorRejection = (notification: Notification) =>
+  notification.type === 'DOCTOR_VERIFIED' && notification.data?.approved === false;
+
+const rejectionConfig = { icon: AlertCircle, color: 'text-red-600 bg-red-100' };
+
 function getNotificationLink(notification: Notification): string | null {
   const data = notification.data as Record<string, string> | undefined;
   const type = notification.type as NotificationType;
@@ -39,7 +45,7 @@ function getNotificationLink(notification: Notification): string | null {
     return data?.conversationId ? `/ai/${data.conversationId}` : '/patient/soaps';
   }
   if (type === 'DOCTOR_VERIFIED') {
-    return '/doctor/workspace';
+    return isDoctorRejection(notification) ? '/doctor/profile' : '/doctor/workspace';
   }
   if (type === 'NEW_REVIEW') {
     return '/doctor/workspace';
@@ -52,7 +58,9 @@ const NotificationItem: React.FC<{
   onRead: (id: number) => void;
   onClick: (notification: Notification) => void;
 }> = ({ notification, onRead, onClick }) => {
-  const config = typeConfig[notification.type] || typeConfig.SYSTEM;
+  const config = isDoctorRejection(notification)
+    ? rejectionConfig
+    : typeConfig[notification.type] || typeConfig.SYSTEM;
   const Icon = config.icon;
   const timeAgo = getTimeAgo(notification.createdAt);
 

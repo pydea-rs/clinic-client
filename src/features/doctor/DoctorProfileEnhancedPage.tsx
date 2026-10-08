@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import { doctorApi } from '../../api';
+import { getErrorMessage } from '../../lib/api/error.utils';
 import { DoctorProfileForm } from './DoctorProfileForm';
 import { DoctorDocumentsPage } from './DoctorDocumentsPage';
 import { formatSpecialty, formatEnum } from '../../lib/format';
@@ -13,6 +15,17 @@ export const DoctorProfileEnhancedPage: React.FC = () => {
   const { data: profile, isLoading } = useQuery({
     queryKey: ['doctor-my-profile'],
     queryFn: () => doctorApi.getMyProfile(),
+  });
+
+  const resubmitMutation = useMutation({
+    mutationFn: () => doctorApi.resubmitForReview(),
+    onSuccess: () => {
+      toast.success('Profile re-submitted for review');
+      queryClient.invalidateQueries({ queryKey: ['doctor-my-profile'] });
+    },
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Failed to re-submit profile'));
+    },
   });
 
   const handleEditSuccess = () => {
@@ -270,12 +283,24 @@ export const DoctorProfileEnhancedPage: React.FC = () => {
               )}
 
               {profile?.rejectionReason && (
-                <div className="p-3 bg-red-50 border border-red-100 rounded-xl">
-                  <p className="text-sm text-red-700">
-                    <span className="font-medium">Reason: </span>
-                    {profile.rejectionReason}
+                <>
+                  <div className="p-3 bg-red-50 border border-red-100 rounded-xl">
+                    <p className="text-sm text-red-700">
+                      <span className="font-medium">Reason: </span>
+                      {profile.rejectionReason}
+                    </p>
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    Update your profile or documents, then re-submit them for review.
                   </p>
-                </div>
+                  <button
+                    onClick={() => resubmitMutation.mutate()}
+                    disabled={resubmitMutation.isPending}
+                    className="btn-primary px-4 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {resubmitMutation.isPending ? 'Re-submitting...' : 'Re-submit for review'}
+                  </button>
+                </>
               )}
 
               {!profile?.verified && !profile?.rejectionReason && (
