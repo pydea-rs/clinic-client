@@ -374,5 +374,36 @@ describe('Nurse Module', () => {
         'CHAT_WITH_PATIENTS',
       ]);
     });
+
+    it('should revoke every permission with an empty list but keep the assignment', async () => {
+      const result = await doctorNurseApi.updatePermissions(assignmentId, []);
+
+      expect(result.permissions).toEqual([]);
+      expect(result.isActive).toBe(true);
+
+      const consultations = await nurseTc.axios.get('/consultation');
+      expect(consultations.status).toBe(200);
+      expect((consultations.data?.contents || consultations.data).data).toEqual([]);
+      expect((await nurseTc.axios.get(`/soap/${soapNoteId}`)).status).toBe(403);
+      expect((await nurseNurseApi.getAssignment(assignmentId)).isActive).toBe(true);
+
+      // Restore permissions for any future tests
+      await doctorNurseApi.updatePermissions(assignmentId, [
+        'VIEW_PATIENTS',
+        'VIEW_SOAPS',
+        'VIEW_CONSULTATION_NOTES',
+        'CHAT_WITH_PATIENTS',
+      ]);
+    });
+
+    it('should return 400 for an unknown permission', async () => {
+      const response = await doctorTc.axios.patch(
+        `/nurse/assignment/${assignmentId}/permissions`,
+        { permissions: ['VIEW_EVERYTHING'] },
+      );
+
+      expect(response.status).toBe(400);
+      expect((await nurseNurseApi.getAssignment(assignmentId)).permissions).toContain('VIEW_SOAPS');
+    });
   });
 });
