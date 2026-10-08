@@ -3,6 +3,7 @@ import { createTestClient, TestClient } from '../helpers/api-client.js';
 import { createAdminApi } from '@client/api/admin.api';
 import { createDoctorApi } from '@client/api/doctor.api';
 import { createSchedulingApi } from '@client/api/scheduling.api';
+import { slotStartToIso } from '@client/lib/scheduling';
 
 /**
  * Phase 6 — Scheduling integration tests.
@@ -281,8 +282,7 @@ describe('Scheduling', () => {
   // ─── Book Appointment ────────────────────────────────────────────
 
   describe('Appointments', () => {
-    it('should book an appointment on a valid slot', async () => {
-      // Find an available Tuesday slot
+    it('should book a listed slot at its exact UTC time, even from a non-UTC client', async () => {
       const start = futureMonday();
       const end = new Date(start);
       end.setUTCDate(end.getUTCDate() + 14);
@@ -299,17 +299,28 @@ describe('Scheduling', () => {
         const d = new Date(s.date + 'T00:00:00Z');
         return d.getUTCDay() === 2;
       });
-      expect(tuesdaySlot).toBeDefined();
+      if (!tuesdaySlot) throw new Error('Expected an available Tuesday slot');
+
+      const originalTz = process.env.TZ;
+      process.env.TZ = 'Asia/Tehran';
+      let dateTime: string;
+      try {
+        dateTime = slotStartToIso(tuesdaySlot);
+      } finally {
+        if (originalTz === undefined) delete process.env.TZ;
+        else process.env.TZ = originalTz;
+      }
 
       const appointment = await patientScheduling.bookAppointment({
         doctorId: doctorProfileId,
-        dateTime: `${tuesdaySlot.date}T${tuesdaySlot.startTime}:00.000Z`,
+        dateTime,
         durationMinutes: 30,
         price: 50,
         method: 'CHAT',
       });
 
       expect(appointment).toBeDefined();
+      expect(new Date(appointment.dateTime).toISOString()).toBe(`${tuesdaySlot.date}T${tuesdaySlot.startTime}:00.000Z`);
       expect(appointment.id).toBeDefined();
       expect(appointment.status).toBe('PENDING');
       expect(appointment.durationMinutes).toBe(30);
@@ -374,7 +385,7 @@ describe('Scheduling', () => {
       expect(tuesdaySlots.length).toBeGreaterThanOrEqual(2);
       const tuesdaySlot = tuesdaySlots[tuesdaySlots.length - 1]; // last available
 
-      const dateTime = `${tuesdaySlot.date}T${tuesdaySlot.startTime}:00.000Z`;
+      const dateTime = slotStartToIso(tuesdaySlot);
 
       // First booking succeeds
       const first = await patientTc.axios.post('/scheduling/book', {

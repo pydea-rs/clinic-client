@@ -124,7 +124,7 @@ export const SlotExplorer: React.FC = () => {
       </div>
 
       <div className="card p-6 animate-slide-in-up" style={{ animationDelay: '100ms' }}>
-        <h2 className="text-xl font-bold mb-4">Available Slots</h2>
+        <h2 className="text-xl font-bold mb-4">Available Slots (UTC)</h2>
 
         {slots.length === 0 ? (
           <div className="text-center py-12">

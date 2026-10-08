@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { schedulingApi, consultationApi, doctorApi } from '../../api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../lib/api/error.utils';
+import { slotStartToIso } from '../../lib/scheduling';
 
 interface BookingLocationState {
   slot?: {
@@ -21,6 +22,7 @@ export const BookingPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const parsedDoctorId = Number(doctorId);
+  const isValidDoctorId = !!doctorId && !Number.isNaN(parsedDoctorId);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     doctorId: parsedDoctorId,
@@ -33,21 +35,10 @@ export const BookingPage: React.FC = () => {
   });
   const [slotDisplay, setSlotDisplay] = useState('');
 
-  if (!doctorId || Number.isNaN(parsedDoctorId)) {
-    return (
-      <div className="p-6 max-w-3xl mx-auto">
-        <p className="text-red-600">Invalid doctor ID.</p>
-        <button onClick={() => navigate(-1)} className="mt-4 px-4 py-2 border rounded-lg hover:bg-gray-50">
-          Go Back
-        </button>
-      </div>
-    );
-  }
-
   const { data: doctor } = useQuery({
     queryKey: ['doctor', doctorId],
     queryFn: () => doctorApi.getDoctorById(parsedDoctorId),
-    enabled: !!doctorId,
+    enabled: isValidDoctorId,
   });
 
   const doctorName = doctor?.user
@@ -55,22 +46,29 @@ export const BookingPage: React.FC = () => {
     : `Doctor #${doctorId}`;
 
   useEffect(() => {
+    if (!isValidDoctorId) return;
     const state = location.state as BookingLocationState | null;
-    if (!state?.slot) {
+    let dateTime: string | undefined;
+    try {
+      dateTime = state?.slot && slotStartToIso(state.slot);
+    } catch {
+      dateTime = undefined;
+    }
+    if (!state?.slot || !dateTime) {
       navigate(`/slots/${doctorId}`);
       return;
     }
     setFormData({
       doctorId: parsedDoctorId,
-      dateTime: new Date(`${state.slot.date}T${state.slot.startTime}`).toISOString(),
+      dateTime,
       durationMinutes: state.duration || 30,
       price: Number(state.price || 0),
       method: 'CHAT',
       consultationId: '',
       notes: '',
     });
-    setSlotDisplay(`${state.slot.date} ${state.slot.startTime} - ${state.slot.endTime}`);
-  }, [location.state, doctorId, navigate]);
+    setSlotDisplay(`${state.slot.date} ${state.slot.startTime} - ${state.slot.endTime} UTC`);
+  }, [location.state, doctorId, parsedDoctorId, isValidDoctorId, navigate]);
 
   const soapId = (location.state as BookingLocationState | null)?.soapId;
 
@@ -84,7 +82,6 @@ export const BookingPage: React.FC = () => {
         notes: formData.notes || undefined,
       });
 
-      // If SOAP context exists, auto-create a consultation linking it
       if (soapId) {
         try {
           const consultation = await consultationApi.create({
@@ -95,7 +92,6 @@ export const BookingPage: React.FC = () => {
           navigate(`/consultation/${consultation.id}`);
           return;
         } catch {
-          // Consultation link failed — still show appointment success
           toast.success('Appointment booked! (Could not auto-link consultation)');
         }
       } else {
@@ -109,6 +105,17 @@ export const BookingPage: React.FC = () => {
       setLoading(false);
     }
   };
+
+  if (!isValidDoctorId) {
+    return (
+      <div className="p-6 max-w-3xl mx-auto">
+        <p className="text-red-600">Invalid doctor ID.</p>
+        <button onClick={() => navigate(-1)} className="mt-4 px-4 py-2 border rounded-lg hover:bg-gray-50">
+          Go Back
+        </button>
+      </div>
+    );
+  }
 
   if (!formData.dateTime) {
     return (
