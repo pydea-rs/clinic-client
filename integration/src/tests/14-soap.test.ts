@@ -11,9 +11,9 @@ import { getPrisma, mockBotpress } from '../helpers/server.js';
  * Phase 15 — SOAP Notes Tests.
  *
  * Tests SOAP note listing, detail retrieval, AI-flow creation,
- * and ownership enforcement.
+ * and access enforcement (owner, linked doctor).
  *
- * Register budget (5/60s): 3 (doctor + patient1 + patient2) = 3 used
+ * Register budget (5/60s): 4 (doctor + otherDoctor + patient1 + patient2) = 4 used
  * Login budget (5/60s): 1 (superadmin) = 1 used
  */
 
@@ -26,6 +26,7 @@ describe('SOAP Notes', () => {
   const superadminPassword = 'SuperAdmin123!';
   const doctorEmail = `soap-doc-${Date.now()}@test.local`;
   const doctorPassword = 'DocPass456!';
+  const otherDoctorEmail = `soap-doc2-${Date.now()}@test.local`;
   const patient1Email = `soap-pat1-${Date.now()}@test.local`;
   const patient1Password = 'PatPass456!';
   const patient2Email = `soap-pat2-${Date.now()}@test.local`;
@@ -33,6 +34,7 @@ describe('SOAP Notes', () => {
 
   let doctorTc: TestClient;
   let doctorProfileId: number;
+  let otherDoctorTc: TestClient;
 
   let patient1Tc: TestClient;
   let patient1UserId: string;
@@ -42,6 +44,7 @@ describe('SOAP Notes', () => {
 
   let consultationId: string;
   let soapNoteId: string;
+  let unlinkedSoapNoteId: string;
 
   beforeAll(async () => {
     // ── Register + verify doctor ──
@@ -73,6 +76,24 @@ describe('SOAP Notes', () => {
     });
     const adminApi = createAdminApi(adminTc.axios);
     await adminApi.verifications.verify(profile.id, true);
+
+    // ── Register a second doctor with no consultation for the SOAP ──
+    otherDoctorTc = createTestClient();
+    await warmUp(otherDoctorTc);
+    await otherDoctorTc.axios.post('/auth/register', {
+      firstname: 'SoapDocTwo',
+      lastname: 'Test',
+      email: otherDoctorEmail,
+      password: doctorPassword,
+      role: 'DOCTOR',
+    });
+    await createDoctorApi(otherDoctorTc.axios).createProfile({
+      startedAt: '2018-01-01T00:00:00.000Z',
+      specialty: 'GENERAL',
+      visitMethods: ['CHAT'],
+      visitTypes: ['CONSULTATION'],
+      bio: 'Unrelated SOAP test doctor',
+    });
 
     // ── Register patient1 ──
     patient1Tc = createTestClient();
@@ -136,6 +157,20 @@ describe('SOAP Notes', () => {
       where: { id: consultationId },
       data: { soapId: soapNote.id },
     });
+
+    const unlinkedConvId = `soap-test-conv-unlinked-${Date.now()}`;
+    await prisma.aiConversation.create({
+      data: { id: unlinkedConvId, userId: patient1UserId },
+    });
+    const unlinkedSoap = await prisma.patientSOAP.create({
+      data: {
+        userId: patient1UserId,
+        conversationId: unlinkedConvId,
+        rawNote: '***SOAP***\nSubjective: Unrelated rash\n***SOAP***',
+        subjective: 'Unrelated rash on forearm.',
+      },
+    });
+    unlinkedSoapNoteId = unlinkedSoap.id;
   });
 
   // ─── Happy Paths ──────────────────────────────────────────────────
@@ -181,6 +216,14 @@ describe('SOAP Notes', () => {
       expect(soap.plan).toContain('ibuprofen');
       expect(soap.rawNote).toContain('***SOAP***');
       expect(soap.createdAt).toBeDefined();
+    });
+
+    it('should let the doctor of a linked consultation get the SOAP by ID', async () => {
+      const soap = await createSoapApi(doctorTc.axios).getById(soapNoteId);
+
+      expect(soap.id).toBe(soapNoteId);
+      expect(soap.userId).toBe(patient1UserId);
+      expect(soap.assessment).toContain('Tension headache');
     });
 
     it('should create SOAP via AI message flow', async () => {
@@ -237,6 +280,18 @@ describe('SOAP Notes', () => {
   describe('Unhappy Paths', () => {
     it('should return 403 when another patient accesses SOAP by ID', async () => {
       const response = await patient2Tc.axios.get(`/soap/${soapNoteId}`);
+
+      expect(response.status).toBe(403);
+    });
+
+    it('should return 403 when a doctor without a linked consultation accesses SOAP by ID', async () => {
+      const response = await otherDoctorTc.axios.get(`/soap/${soapNoteId}`);
+
+      expect(response.status).toBe(403);
+    });
+
+    it("should return 403 when the consultation doctor accesses the patient's unlinked SOAP", async () => {
+      const response = await doctorTc.axios.get(`/soap/${unlinkedSoapNoteId}`);
 
       expect(response.status).toBe(403);
     });

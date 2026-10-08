@@ -352,6 +352,13 @@ describe('Nurse Module', () => {
       expect(soap.subjective).toContain('headache');
     });
 
+    it("should allow nurse with VIEW_SOAPS to get the doctor's linked SOAP by ID", async () => {
+      const soap = await createSoapApi(nurseTc.axios).getById(soapNoteId);
+
+      expect(soap.id).toBe(soapNoteId);
+      expect(soap.subjective).toContain('headache');
+    });
+
     it('should return 403 when nurse without VIEW_SOAPS accesses SOAP by ID', async () => {
       // Remove VIEW_SOAPS permission
       await doctorNurseApi.updatePermissions(assignmentId, [
