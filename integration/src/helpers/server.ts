@@ -16,7 +16,7 @@ import { MockWebPushChannel } from '../mocks/mock-webpush.channel.js';
 
 // Use CJS require for server modules to match how the compiled dist code loads them
 const require = createRequire(path.resolve(__dirname, '../../node_modules/'));
-const serverDist = path.resolve(__dirname, '../../../../server/dist/src');
+const serverDist = path.resolve(__dirname, '../../../../server/dist');
 
 // Pre-load sodium-native into Node's module cache so the gateway's require() finds it
 // (the gateway resolves from server/dist which doesn't have sodium-native in its path)

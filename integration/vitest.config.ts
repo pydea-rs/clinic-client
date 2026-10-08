@@ -7,7 +7,7 @@ export default defineConfig({
   resolve: {
     alias: [
       { find: '@client', replacement: path.resolve(__dirname, '../src') },
-      { find: '@server', replacement: path.resolve(__dirname, '../../server/dist/src') },
+      { find: '@server', replacement: path.resolve(__dirname, '../../server/dist') },
       { find: /^@nestjs\/(.*)$/, replacement: path.resolve(serverNodeModules, '@nestjs/$1') },
       { find: /^@prisma\/(.*)$/, replacement: path.resolve(serverNodeModules, '@prisma/$1') },
       { find: 'reflect-metadata', replacement: path.resolve(serverNodeModules, 'reflect-metadata') },

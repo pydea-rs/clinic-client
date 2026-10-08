@@ -17,7 +17,7 @@
     "strictBindCallApply": true,
     "forceConsistentCasingInFileNames": true,
     "paths": {
-      "@server/*": ["../../server/dist/src/*"],
+      "@server/*": ["../../server/dist/*"],
       "@client/*": ["../src/*"]
     }
   },
