@@ -1,4 +1,5 @@
 import io, { Socket } from 'socket.io-client';
+import { socketTarget } from './socket-url';
 
 export interface SocketConnectionStatus {
   connected: boolean;
@@ -9,7 +10,6 @@ export interface SocketConnectionStatus {
 
 class SocketService {
   private socket: Socket | null = null;
-  private baseUrl: string = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
   private connectionStatus: SocketConnectionStatus = {
     connected: false,
     reconnecting: false,
@@ -30,7 +30,9 @@ class SocketService {
       this.socket = null;
     }
 
-    this.socket = io(`${this.baseUrl}/chat`, {
+    const { url, path } = socketTarget('/chat');
+    this.socket = io(url, {
+      path,
       withCredentials: true,
       reconnection: true,
       reconnectionDelay: 1000,

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { createTestClient, createRawClient, TestClient } from '../helpers/api-client.js';
 import { createAdminApi } from '@client/api/admin.api';
 import { io, Socket } from 'socket.io-client';
+import { socketTarget } from '@client/lib/socket/socket-url';
 import {
   getServerUrl,
   bootstrapRateLimitServer,
@@ -219,8 +220,11 @@ describe('Cross-cutting & Security', () => {
     return cookies.map((c) => `${c.key}=${c.value}`).join('; ');
   }
 
+  // Connects where the client app would, so these tests also cover its socket target.
   async function connectSocket(namespace: '/chat' | '/matching', cookie: string) {
-    const socket: Socket = io(`${getServerUrl()}${namespace}`, {
+    const { url, path } = socketTarget(namespace, getServerUrl());
+    const socket: Socket = io(url, {
+      path,
       transports: ['websocket'],
       extraHeaders: { cookie },
       autoConnect: false,
@@ -242,6 +246,20 @@ describe('Cross-cutting & Security', () => {
 
     return { socket, ...result };
   }
+
+  describe('WebSocket target', () => {
+    it.each(['/chat', '/matching'] as const)(
+      'should connect an active user to %s at the target the client app computes',
+      async (namespace) => {
+        const { socket, connected, error } = await connectSocket(namespace, await cookieHeader(patientTc));
+
+        // The server refuses unknown namespaces, so connecting proves the namespace is right.
+        expect(error).toBeUndefined();
+        expect(connected).toBe(true);
+        socket.close();
+      },
+    );
+  });
 
   describe('Banned/Deactivated Users', () => {
     // The ban target's registration session, copied before the ban: still a validly signed cookie afterwards

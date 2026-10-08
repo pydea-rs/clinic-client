@@ -1,4 +1,5 @@
 import io, { Socket } from 'socket.io-client';
+import { socketTarget } from './socket-url';
 
 type MatchEventCallback = (data: Record<string, unknown>) => void;
 
@@ -9,7 +10,6 @@ export interface MatchSocketStatus {
 
 class MatchingSocketService {
   private socket: Socket | null = null;
-  private baseUrl: string = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
   private listeners: Map<string, Set<MatchEventCallback>> = new Map();
   private statusListeners: Array<(status: MatchSocketStatus) => void> = [];
   private status: MatchSocketStatus = { connected: false, reconnecting: false };
@@ -24,7 +24,9 @@ class MatchingSocketService {
       this.socket.disconnect();
     }
 
-    this.socket = io(`${this.baseUrl}/matching`, {
+    const { url, path } = socketTarget('/matching');
+    this.socket = io(url, {
+      path,
       withCredentials: true,
       reconnection: true,
       reconnectionDelay: 1000,
