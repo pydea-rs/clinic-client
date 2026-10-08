@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { adminApi } from '../../api';
+import { resolveFileUrl } from '../../lib/api/client';
 import toast from 'react-hot-toast';
 import { ShieldCheck } from 'lucide-react';
 import { formatDocType, formatSpecialty, formatStatus } from '../../lib/format';
@@ -138,7 +139,7 @@ export const AdminDoctorVerificationPage: React.FC = () => {
                               {formatStatus(doc.status)}
                             </span>
                           </div>
-                          <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:text-brand-700 hover:underline">
+                          <a href={resolveFileUrl(doc.fileUrl)} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:text-brand-700 hover:underline">
                             View
                           </a>
                         </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '../lib/stores/auth.store';
 import { userApi, UpdateProfilePayload } from '../api';
 import { getErrorMessage } from '../lib/api/error.utils';
+import { resolveFileUrl } from '../lib/api/client';
 import toast from 'react-hot-toast';
 import {
   X,
@@ -226,7 +227,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose }) => 
                   <div className="relative group">
                     <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-brand-100 to-brand-50 dark:from-brand-900/50 dark:to-brand-800/30 flex items-center justify-center overflow-hidden ring-4 ring-brand-200/40 dark:ring-brand-800/40 shadow-lg">
                       {avatarPreview ? (
-                        <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
+                        <img src={resolveFileUrl(avatarPreview)} alt="Avatar" className="w-full h-full object-cover" />
                       ) : (
                         <span className="text-2xl font-bold text-brand-600 dark:text-brand-400">{userInitials}</span>
                       )}

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { apiClient, getApiBaseUrl, setApiBaseUrl, buildApiUrl } from '../client';
+import { apiClient, getApiBaseUrl, setApiBaseUrl, buildApiUrl, resolveFileUrl } from '../client';
 
 vi.mock('../../stores/diagnostics.store', () => ({
   useDiagnosticsStore: {
@@ -78,6 +78,38 @@ describe('API Client', () => {
     it('should not double-slash when path starts with /', () => {
       setApiBaseUrl('http://localhost:8080');
       expect(buildApiUrl('/test')).toBe('http://localhost:8080/test');
+    });
+  });
+
+  describe('resolveFileUrl', () => {
+    const originalBaseUrl = getApiBaseUrl();
+    const uploadPath = () => `/uploads/avatars/${crypto.randomUUID()}.png`;
+
+    afterEach(() => {
+      setApiBaseUrl(originalBaseUrl);
+    });
+
+    it.each(['http://localhost:8080', '/api', 'https://api.clinic.test/'])(
+      'should serve upload paths from the API at %s',
+      (baseUrl) => {
+        setApiBaseUrl(baseUrl);
+        const url = uploadPath();
+
+        expect(resolveFileUrl(url)).toBe(`${baseUrl.replace(/\/$/, '')}${url}`);
+      },
+    );
+
+    it.each([
+      'data:image/png;base64,iVBORw0KGgo=',
+      'blob:http://localhost:5173/8c1f0d8e-0000-4000-8000-000000000000',
+      'https://cdn.example.com/avatar.png',
+      '/assets/logo.png',
+      'uploads/avatars/x.png',
+      '',
+    ])('should leave %j unchanged', (url) => {
+      setApiBaseUrl('https://api.clinic.test');
+
+      expect(resolveFileUrl(url)).toBe(url);
     });
   });
 

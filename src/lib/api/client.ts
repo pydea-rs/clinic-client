@@ -145,3 +145,7 @@ export const buildApiUrl = (path: string): string => {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
   return `${apiBaseUrl}${normalizedPath}`;
 };
+
+// The server returns upload URLs relative to the API, which may live on another origin than the client.
+export const resolveFileUrl = (url: string): string =>
+  url.startsWith('/uploads/') ? buildApiUrl(url) : url;

@@ -4,6 +4,7 @@ import { createAdminApi } from '@client/api/admin.api';
 import { createDoctorApi } from '@client/api/doctor.api';
 import type { AxiosInstance } from 'axios';
 import FormData from 'form-data';
+import { randomBytes, randomUUID } from 'crypto';
 
 async function uploadAvatar(client: AxiosInstance, buffer: Buffer, filename: string, mimetype: string) {
   const form = new FormData();
@@ -20,12 +21,17 @@ async function uploadDocument(client: AxiosInstance, buffer: Buffer, filename: s
   return response.data;
 }
 
+async function fetchFile(client: AxiosInstance, url: string) {
+  return client.get(url, { responseType: 'arraybuffer' });
+}
+
 /**
  * Phase 16 — File Upload Tests.
  *
  * Tests avatar upload (PNG/JPEG), doctor document upload (PDF),
- * avatar replacement, and rejection of oversized / invalid / spoofed /
- * unauthenticated / empty uploads.
+ * avatar replacement, serving uploaded files (public avatars,
+ * doctor documents only for the owning doctor and admins), and rejection
+ * of oversized / invalid / spoofed / unauthenticated / empty uploads.
  *
  * Register budget (5/60s): 2 (doctor + patient) = 2 used
  * Login budget (5/60s): 1 (superadmin) = 1 used
@@ -58,6 +64,7 @@ describe('File Upload', () => {
   let doctorTc: TestClient;
   let patientTc: TestClient;
   let doctorApi: ReturnType<typeof createDoctorApi>;
+  let adminTc: TestClient;
 
   beforeAll(async () => {
     // ── Register + verify doctor ──
@@ -80,7 +87,7 @@ describe('File Upload', () => {
       bio: 'Upload test doctor',
     });
 
-    const adminTc = createTestClient();
+    adminTc = createTestClient();
     await warmUp(adminTc);
     await adminTc.axios.post('/auth/login', {
       email: superadminEmail,
@@ -163,6 +170,60 @@ describe('File Upload', () => {
 
       const user = await patientTc.axios.get('/user');
       expect(user.data.avatar).toBe(url2);
+    });
+  });
+
+  // ─── Serving Uploaded Files ───────────────────────────────────────
+
+  describe('Serving Uploaded Files', () => {
+    it('should serve an uploaded avatar to anyone, byte for byte', async () => {
+      const pngBuffer = Buffer.concat([PNG_MAGIC, randomBytes(512)]);
+      const { avatar } = await uploadAvatar(patientTc.axios, pngBuffer, 'served.png', 'image/png');
+
+      const response = await fetchFile(createTestClient().axios, avatar);
+
+      expect(response.status).toBe(200);
+      expect(response.headers['content-type']).toBe('image/png');
+      expect(response.headers['cross-origin-resource-policy']).toBe('cross-origin');
+      expect(response.headers['x-content-type-options']).toBe('nosniff');
+      expect(Buffer.from(response.data).equals(pngBuffer)).toBe(true);
+    });
+
+    it('should store and serve the avatar by its real type, not the uploaded file name', async () => {
+      const pngBuffer = Buffer.concat([PNG_MAGIC, randomBytes(64)]);
+      const { avatar } = await uploadAvatar(patientTc.axios, pngBuffer, 'avatar.html', 'image/png');
+
+      expect(avatar).toMatch(/\.png$/);
+      const response = await fetchFile(patientTc.axios, avatar);
+      expect(response.status).toBe(200);
+      expect(response.headers['content-type']).toBe('image/png');
+    });
+
+    it('should serve a doctor document to its doctor and to an admin', async () => {
+      const pdfBuffer = Buffer.concat([PDF_MAGIC, randomBytes(256)]);
+      const { fileUrl } = await uploadDocument(doctorTc.axios, pdfBuffer, 'id.pdf', 'application/pdf', 'ID_CARD');
+
+      for (const client of [doctorTc, adminTc]) {
+        const response = await fetchFile(client.axios, fileUrl);
+
+        expect(response.status).toBe(200);
+        expect(response.headers['content-type']).toBe('application/pdf');
+        expect(Buffer.from(response.data).equals(pdfBuffer)).toBe(true);
+      }
+    });
+
+    it('should not serve a doctor document to other users or anonymously', async () => {
+      const pdfBuffer = Buffer.concat([PDF_MAGIC, randomBytes(256)]);
+      const { fileUrl } = await uploadDocument(doctorTc.axios, pdfBuffer, 'license.pdf', 'application/pdf', 'LICENSE');
+
+      expect((await fetchFile(patientTc.axios, fileUrl)).status).toBe(403);
+      expect((await fetchFile(createTestClient().axios, fileUrl)).status).toBe(401);
+    });
+
+    it('should return 404 for an avatar that was never uploaded', async () => {
+      const response = await fetchFile(patientTc.axios, `/uploads/avatars/${randomUUID()}.png`);
+
+      expect(response.status).toBe(404);
     });
   });
 

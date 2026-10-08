@@ -4,6 +4,7 @@ import { userApi, UpdateProfilePayload } from '../../api';
 import toast from 'react-hot-toast';
 import { Loader2, Upload, User } from 'lucide-react';
 import { getErrorMessage } from '../../lib/api/error.utils';
+import { resolveFileUrl } from '../../lib/api/client';
 
 export const PatientProfilePage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -97,7 +98,7 @@ export const PatientProfilePage: React.FC = () => {
         <div className="flex flex-col items-center">
           <div className="w-28 h-28 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden mb-4 ring-4 ring-white shadow-soft-lg">
             {avatarPreview ? (
-              <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
+              <img src={resolveFileUrl(avatarPreview)} alt="Avatar" className="w-full h-full object-cover" />
             ) : (
               <span className="text-gray-400 text-4xl">👤</span>
             )}

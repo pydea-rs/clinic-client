@@ -3,6 +3,7 @@ import { Upload, X } from 'lucide-react';
 import { userApi } from '../../../api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../../lib/api/error.utils';
+import { resolveFileUrl } from '../../../lib/api/client';
 
 interface AvatarUploaderProps {
   currentAvatar?: string;
@@ -66,7 +67,7 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
     <div className="flex flex-col items-center gap-4">
       <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border-4 border-gray-300">
         {preview ? (
-          <img src={preview} alt="Avatar preview" className="w-full h-full object-cover" />
+          <img src={resolveFileUrl(preview)} alt="Avatar preview" className="w-full h-full object-cover" />
         ) : (
           <span className="text-5xl">👤</span>
         )}

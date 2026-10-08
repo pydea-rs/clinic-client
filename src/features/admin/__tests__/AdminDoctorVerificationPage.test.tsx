@@ -1,7 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '../../../test/test-utils';
 import { AdminDoctorVerificationPage } from '../AdminDoctorVerificationPage';
 import type { DoctorDocument, PendingDoctor } from '../../../lib/types/api';
+import { getApiBaseUrl, setApiBaseUrl } from '../../../lib/api/client';
 
 const { mockToast, mockListPending, mockGetDocuments, mockVerify } = vi.hoisted(() => ({
   mockToast: { success: vi.fn(), error: vi.fn() },
@@ -70,9 +71,18 @@ function buildPendingDoctor(overrides: Partial<PendingDoctor> = {}): PendingDoct
 
 const fullName = (d: PendingDoctor) => `${d.user.firstname} ${d.user.lastname}`;
 
+const API_BASE_URL = 'https://api.clinic.test';
+
 describe('AdminDoctorVerificationPage', () => {
+  const originalBaseUrl = getApiBaseUrl();
+
   beforeEach(() => {
     vi.clearAllMocks();
+    setApiBaseUrl(API_BASE_URL);
+  });
+
+  afterEach(() => {
+    setApiBaseUrl(originalBaseUrl);
   });
 
   it('renders pending doctors with the documents returned by the listing', async () => {
@@ -83,7 +93,10 @@ describe('AdminDoctorVerificationPage', () => {
 
     expect(await screen.findByText(fullName(doctor))).toBeInTheDocument();
     expect(screen.getByText(doctor.user.email)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'View' })).toHaveAttribute('href', doctor.documents[0].fileUrl);
+    expect(screen.getByRole('link', { name: 'View' })).toHaveAttribute(
+      'href',
+      `${API_BASE_URL}${doctor.documents[0].fileUrl}`,
+    );
     expect(mockGetDocuments).not.toHaveBeenCalled();
   });
 
@@ -145,7 +158,10 @@ describe('AdminDoctorVerificationPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Refresh Documents' }));
 
-    expect(await screen.findByRole('link', { name: 'View' })).toHaveAttribute('href', fresh.fileUrl);
+    expect(await screen.findByRole('link', { name: 'View' })).toHaveAttribute(
+      'href',
+      `${API_BASE_URL}${fresh.fileUrl}`,
+    );
     expect(mockGetDocuments).toHaveBeenCalledWith(doctor.id);
   });
 

@@ -6,6 +6,7 @@ import { userApi } from '../../api';
 import { Loader2, User, Shield, Stethoscope, CheckCircle, Lock, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../lib/api/error.utils';
+import { resolveFileUrl } from '../../lib/api/client';
 import { formatSpecialty } from '../../lib/format';
 import { NursePermission } from '../../lib/types/api';
 
@@ -86,7 +87,7 @@ export const NurseProfilePage: React.FC = () => {
           <div className="relative group">
             <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-teal-100 to-emerald-50 flex items-center justify-center text-teal-700 text-2xl font-bold shadow-sm ring-2 ring-teal-200/50 overflow-hidden">
               {user?.avatar ? (
-                <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                <img src={resolveFileUrl(user.avatar)} alt="Avatar" className="w-full h-full object-cover" />
               ) : (
                 userInitials
               )}

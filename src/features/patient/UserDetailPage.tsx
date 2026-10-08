@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { userApi } from '../../api';
+import { resolveFileUrl } from '../../lib/api/client';
 import { Loader2, User, Calendar } from 'lucide-react';
 
 export const UserDetailPage: React.FC = () => {
@@ -63,7 +64,7 @@ export const UserDetailPage: React.FC = () => {
           <div className="flex items-center gap-6">
             <div className="w-24 h-24 rounded-full bg-white bg-opacity-20 flex items-center justify-center text-4xl">
               {user.avatar ? (
-                <img src={user.avatar} alt={user.firstname} className="w-full h-full rounded-full object-cover" />
+                <img src={resolveFileUrl(user.avatar)} alt={user.firstname} className="w-full h-full rounded-full object-cover" />
               ) : (
                 '👤'
               )}
