@@ -59,6 +59,7 @@ describe('Scheduling', () => {
   let slotDurationId: number;
   let exceptionId: number;
   let appointmentId: number;
+  let bookedSlot: { date: string; startTime: string };
 
   beforeAll(async () => {
     // Register #1: doctor
@@ -326,6 +327,20 @@ describe('Scheduling', () => {
       expect(appointment.durationMinutes).toBe(30);
       expect(appointment.method).toBe('CHAT');
       appointmentId = appointment.id;
+      bookedSlot = { date: tuesdaySlot.date, startTime: tuesdaySlot.startTime };
+    });
+
+    it('should no longer list the booked slot in a single-day query', async () => {
+      const unauthScheduling = createSchedulingApi(createTestClient().axios);
+      const slots = await unauthScheduling.getDoctorSlots(doctorProfileId, {
+        start: bookedSlot.date,
+        end: bookedSlot.date,
+        duration: 30,
+      });
+
+      expect(slots.length).toBeGreaterThan(0);
+      expect(slots.every((s) => s.date === bookedSlot.date)).toBe(true);
+      expect(slots.map((s) => s.startTime)).not.toContain(bookedSlot.startTime);
     });
 
     it('should list patient appointments', async () => {
