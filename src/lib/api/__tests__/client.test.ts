@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { apiClient, getApiBaseUrl, setApiBaseUrl, buildApiUrl, resolveFileUrl } from '../client';
 
 vi.mock('../../stores/diagnostics.store', () => ({

@@ -2,6 +2,12 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '../../../../test/test-utils';
 import { AuthForm } from '../AuthForm';
 
+const { mockToast } = vi.hoisted(() => ({
+  mockToast: { success: vi.fn(), error: vi.fn() },
+}));
+
+vi.mock('react-hot-toast', () => ({ default: mockToast }));
+
 const getSubmitButton = () =>
   document.querySelector('button[type="submit"]') as HTMLButtonElement;
 
@@ -68,6 +74,22 @@ describe('AuthForm', () => {
   });
 
   describe('Register Mode', () => {
+    it.each([
+      'Your account has been banned. Reason: Spam',
+      'Account is deactivated',
+    ])('should show the server reason when login is refused: %s', async (message) => {
+      mockOnLogin.mockRejectedValue({ status: 403, message, contents: null });
+
+      render(<AuthForm onLogin={mockOnLogin} onRegister={mockOnRegister} />);
+
+      fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'test@test.com' } });
+      fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'password123' } });
+      fireEvent.click(getSubmitButton());
+
+      await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith(message));
+      expect(getSubmitButton()).toBeEnabled();
+    });
+
     it('should switch to register mode', () => {
       render(<AuthForm onLogin={mockOnLogin} onRegister={mockOnRegister} />);
 

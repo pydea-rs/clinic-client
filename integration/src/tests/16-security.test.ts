@@ -15,13 +15,10 @@ import {
  * handling, rate limiting, and input validation.
  *
  * Register budget (5/60s): 5 (patient + doctor + promoteTarget + banTarget + deactivateTarget) = 5 used
- * Login budget (5/60s): 4 (superadmin + ban-login + promote-login + ws-ban-login) = 4 used
+ * Login budget (5/60s): 5 (superadmin + banned-login + banned-wrong-password + deactivated-login + promote-login) = 5 used
  *
- * IMPORTANT: the CookieAuthGuard has a static 60s status cache keyed by
- * user ID. Any guarded request (GET /user, PATCH /admin/...) for a given
- * user populates this cache. To test ban/deactivation detection, the target
- * user must NOT have any prior guarded requests — otherwise the cache would
- * return stale {isBanned: false} and the guard would pass.
+ * Admin ban/deactivate actions clear the server's 60s account-status cache, so
+ * they apply to the target's existing HTTP sessions and WebSockets right away.
  */
 
 async function warmUp(tc: TestClient): Promise<void> {
@@ -217,8 +214,41 @@ describe('Cross-cutting & Security', () => {
 
   // ─── Banned/Deactivated Users ─────────────────────────────────────
 
+  async function cookieHeader(tc: TestClient): Promise<string> {
+    const cookies = await tc.jar.getCookies(getServerUrl());
+    return cookies.map((c) => `${c.key}=${c.value}`).join('; ');
+  }
+
+  async function connectSocket(namespace: '/chat' | '/matching', cookie: string) {
+    const socket: Socket = io(`${getServerUrl()}${namespace}`, {
+      transports: ['websocket'],
+      extraHeaders: { cookie },
+      autoConnect: false,
+      reconnection: false,
+    });
+
+    const result = await new Promise<{ connected: boolean; error?: string }>((resolve) => {
+      const timeout = setTimeout(() => resolve({ connected: false, error: 'timeout' }), 3000);
+      socket.on('connect', () => {
+        clearTimeout(timeout);
+        resolve({ connected: true });
+      });
+      socket.on('connect_error', (err) => {
+        clearTimeout(timeout);
+        resolve({ connected: false, error: err instanceof Error ? err.message : 'Unknown error' });
+      });
+      socket.connect();
+    });
+
+    return { socket, ...result };
+  }
+
   describe('Banned/Deactivated Users', () => {
+    // The ban target's registration session, copied before the ban: still a validly signed cookie afterwards
+    let preBanCookie: string;
+
     it('should block banned user on next guarded request (403)', async () => {
+      preBanCookie = await cookieHeader(banTargetTc);
       await adminApi.users.ban(banTargetUserId, 'Test ban');
 
       // banTargetTc has never made a guarded request, so no cache entry.
@@ -229,10 +259,7 @@ describe('Cross-cutting & Security', () => {
       expect(response.data.message).toContain('banned');
     });
 
-    it('should allow banned user to login but block subsequent requests', async () => {
-      // Login succeeds — the login endpoint has no CookieAuthGuard.
-      // verifyAndLogin reads user from DB (isBanned: true) and sets
-      // it in the session.
+    it('should refuse login for a banned user (403) and start no session', async () => {
       const freshTc = createTestClient();
       await warmUp(freshTc);
       const loginResponse = await freshTc.axios.post('/auth/login', {
@@ -240,68 +267,83 @@ describe('Cross-cutting & Security', () => {
         password: banTargetPassword,
       });
 
-      expect(loginResponse.status).toBe(200);
+      expect(loginResponse.status).toBe(403);
+      expect(loginResponse.data.message).toContain('banned');
+      expect(loginResponse.data.message).toContain('Test ban');
 
-      // Next guarded request: session data now has isBanned: true
-      // (set during login from fresh DB read), so the session-level
-      // check in the guard catches it immediately.
       const response = await freshTc.axios.get('/user');
-      expect(response.status).toBe(403);
-      expect(response.data.message).toContain('banned');
+      expect(response.status).toBe(401);
     });
 
-    it('should block deactivated user on next guarded request (403)', async () => {
+    it('should not reveal the ban to a wrong password (400)', async () => {
+      const freshTc = createTestClient();
+      await warmUp(freshTc);
+      const loginResponse = await freshTc.axios.post('/auth/login', {
+        email: banTargetEmail,
+        password: 'WrongPass456!',
+      });
+
+      expect(loginResponse.status).toBe(400);
+      expect(JSON.stringify(loginResponse.data)).not.toContain('banned');
+    });
+
+    it.each(['/chat', '/matching'] as const)(
+      'should reject a %s WebSocket using a session issued before the ban',
+      async (namespace) => {
+        const { socket, connected, error } = await connectSocket(namespace, preBanCookie);
+        socket.disconnect();
+
+        expect(connected).toBe(false);
+        expect(error).toBe('Unauthorized: Account banned');
+      },
+    );
+
+    it("should disconnect the user's open WebSockets and block HTTP once deactivated", async () => {
+      const cookie = await cookieHeader(deactivateTargetTc);
+      const sockets = await Promise.all([connectSocket('/chat', cookie), connectSocket('/matching', cookie)]);
+      expect(sockets.map((s) => s.connected)).toEqual([true, true]);
+
+      const disconnected = Promise.all(
+        sockets.map(
+          ({ socket }) =>
+            new Promise<boolean>((resolve) => {
+              const timeout = setTimeout(() => resolve(false), 3000);
+              socket.on('disconnect', () => {
+                clearTimeout(timeout);
+                resolve(true);
+              });
+            }),
+        ),
+      );
+
       await adminApi.users.deactivate(deactivateTargetUserId);
 
-      const response = await deactivateTargetTc.axios.get('/user');
+      expect(await disconnected).toEqual([true, true]);
+      sockets.forEach(({ socket }) => socket.disconnect());
 
+      const response = await deactivateTargetTc.axios.get('/user');
       expect(response.status).toBe(403);
       expect(response.data.message).toContain('deactivated');
     });
 
-    it('should reject banned user WebSocket connection', async () => {
-      const serverUrl = getServerUrl();
-
-      // Re-login the banned user so the session cookie reflects
-      // isBanned: true. WS middleware reads from session, not DB.
-      const wsBanTc = createTestClient();
-      await warmUp(wsBanTc);
-      await wsBanTc.axios.post('/auth/login', {
-        email: banTargetEmail,
-        password: banTargetPassword,
+    it('should refuse login for a deactivated user (403)', async () => {
+      const freshTc = createTestClient();
+      await warmUp(freshTc);
+      const loginResponse = await freshTc.axios.post('/auth/login', {
+        email: deactivateTargetEmail,
+        password: deactivateTargetPassword,
       });
 
-      const cookies = await wsBanTc.jar.getCookies(serverUrl);
-      const cookieStr = cookies.map((c) => `${c.key}=${c.value}`).join('; ');
+      expect(loginResponse.status).toBe(403);
+      expect(loginResponse.data.message).toContain('deactivated');
+    });
 
-      const socket: Socket = io(`${serverUrl}/chat`, {
-        transports: ['websocket'],
-        extraHeaders: { cookie: cookieStr },
-        autoConnect: false,
-      });
+    it('should reject a WebSocket for a deactivated user', async () => {
+      const { socket, connected, error } = await connectSocket('/chat', await cookieHeader(deactivateTargetTc));
+      socket.disconnect();
 
-      const result = await new Promise<{ connected: boolean; error?: string }>((resolve) => {
-        const timeout = setTimeout(() => {
-          socket.disconnect();
-          resolve({ connected: false, error: 'timeout' });
-        }, 3000);
-
-        socket.on('connect', () => {
-          clearTimeout(timeout);
-          socket.disconnect();
-          resolve({ connected: true });
-        });
-
-        socket.on('connect_error', (err) => {
-          clearTimeout(timeout);
-          socket.disconnect();
-          resolve({ connected: false, error: err instanceof Error ? err.message : 'Unknown error' });
-        });
-
-        socket.connect();
-      });
-
-      expect(result.connected).toBe(false);
+      expect(connected).toBe(false);
+      expect(error).toBe('Unauthorized: Account deactivated');
     });
   });
 

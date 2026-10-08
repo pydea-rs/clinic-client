@@ -4,17 +4,28 @@ import { createAdminApi } from '@client/api/admin.api';
 import { createAuthApi } from '@client/api/auth.api';
 import { createDoctorApi } from '@client/api/doctor.api';
 import { createTestPdf } from '../helpers/test-files.js';
+import { getServerUrl } from '../helpers/server.js';
 
 /**
  * Phase 4 — Admin & Verification integration tests.
  *
- * Login budget (5/60s): 1 superadmin + 1 ban-check + 1 deactivate-check = 3 used
- * Role/admin changes are checked on the users' existing (registration) sessions.
+ * Login budget (5/60s): 1 superadmin + 1 banned-login + 1 deactivated-login = 3 used
+ * Role/admin and ban/deactivation changes are checked on the users' existing (registration) sessions.
  * Register budget (5/60s): 2 (doctor + victim) = 2 used
  */
 
 async function warmUp(tc: TestClient): Promise<void> {
   await tc.axios.get('/user');
+}
+
+/** A second client holding a copy of tc's session cookies. */
+async function cloneSession(tc: TestClient): Promise<TestClient> {
+  const clone = createTestClient();
+  const url = getServerUrl();
+  for (const cookie of await tc.jar.getCookies(url)) {
+    await clone.jar.setCookie(cookie.toString(), url);
+  }
+  return clone;
 }
 
 describe('Admin & Verification', () => {
@@ -196,18 +207,26 @@ describe('Admin & Verification', () => {
       expect(banned.bannedAt).toBeTruthy();
     });
 
-    it('should reject banned user on authenticated request', async () => {
-      // Login #2: fresh session stores isBanned=true from DB
+    it("should reject the banned user's existing session", async () => {
+      // A copy, because the guard ends the banned session and victimTc is used again after the unban
+      const existingSession = await cloneSession(victimTc);
+
+      const response = await existingSession.axios.get('/user');
+      expect(response.status).toBe(403);
+      expect(response.data.message).toContain('banned');
+    });
+
+    it('should refuse login for the banned user', async () => {
+      // Login #2
       const bannedTc = createTestClient();
       await warmUp(bannedTc);
-      await bannedTc.axios.post('/auth/login', {
+      const response = await bannedTc.axios.post('/auth/login', {
         email: victimEmail,
         password: victimPassword,
       });
 
-      const response = await bannedTc.axios.get('/user');
       expect(response.status).toBe(403);
-      expect(response.data.message).toContain('banned');
+      expect(response.data.message).toContain('Violated ToS');
     });
 
     it('should reject banning already banned user with 400', async () => {
@@ -234,16 +253,23 @@ describe('Admin & Verification', () => {
       expect(deactivated.isActive).toBe(false);
     });
 
-    it('should reject deactivated user on authenticated request', async () => {
-      // Login #3: fresh session stores isActive=false from DB
+    it("should reject the deactivated user's existing session", async () => {
+      const existingSession = await cloneSession(victimTc);
+
+      const response = await existingSession.axios.get('/user');
+      expect(response.status).toBe(403);
+      expect(response.data.message).toContain('deactivated');
+    });
+
+    it('should refuse login for the deactivated user', async () => {
+      // Login #3
       const deactivatedTc = createTestClient();
       await warmUp(deactivatedTc);
-      await deactivatedTc.axios.post('/auth/login', {
+      const response = await deactivatedTc.axios.post('/auth/login', {
         email: victimEmail,
         password: victimPassword,
       });
 
-      const response = await deactivatedTc.axios.get('/user');
       expect(response.status).toBe(403);
       expect(response.data.message).toContain('deactivated');
     });
