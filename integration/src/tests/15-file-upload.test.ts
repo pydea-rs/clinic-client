@@ -28,8 +28,8 @@ async function fetchFile(client: AxiosInstance, url: string) {
 /**
  * Phase 16 — File Upload Tests.
  *
- * Tests avatar upload (PNG/JPEG), doctor document upload (PDF),
- * avatar replacement, serving uploaded files (public avatars,
+ * Tests avatar upload (PNG/JPEG/WebP; images only), doctor document upload (PDF),
+ * avatar replacement (the replaced file is deleted), serving uploaded files (public avatars,
  * doctor documents only for the owning doctor and admins), and rejection
  * of oversized / invalid / spoofed / unauthenticated / empty uploads.
  *
@@ -42,6 +42,8 @@ const PNG_MAGIC = Buffer.from([
 ]);
 const JPEG_MAGIC = Buffer.from([0xff, 0xd8, 0xff, 0xe0]);
 const PDF_MAGIC = Buffer.from([0x25, 0x50, 0x44, 0x46]); // %PDF
+const webpFile = () =>
+  Buffer.concat([Buffer.from('RIFF'), randomBytes(4), Buffer.from('WEBP'), randomBytes(128)]);
 
 function makeFile(magic: Buffer, totalSize: number): Buffer {
   const buf = Buffer.alloc(totalSize);
@@ -170,6 +172,34 @@ describe('File Upload', () => {
 
       const user = await patientTc.axios.get('/user');
       expect(user.data.avatar).toBe(url2);
+      expect((await fetchFile(createTestClient().axios, url1)).status).toBe(404);
+      expect((await fetchFile(createTestClient().axios, url2)).status).toBe(200);
+    });
+
+    it('should upload avatar as WebP', async () => {
+      const webp = webpFile();
+      const result = await uploadAvatar(patientTc.axios, webp, `${randomUUID()}.webp`, 'image/webp');
+
+      expect(result.avatar).toMatch(/^\/uploads\/avatars\/[0-9a-f-]{36}\.webp$/);
+      const served = await fetchFile(createTestClient().axios, result.avatar);
+      expect(served.headers['content-type']).toBe('image/webp');
+      expect(Buffer.from(served.data).equals(webp)).toBe(true);
+    });
+
+    it('should delete the uploaded avatar when the profile replaces it with an external URL', async () => {
+      const { avatar: uploaded } = await uploadAvatar(
+        patientTc.axios,
+        Buffer.concat([PNG_MAGIC, randomBytes(64)]),
+        'mine.png',
+        'image/png',
+      );
+      const external = `https://cdn.example.com/${randomUUID()}.png`;
+
+      const response = await patientTc.axios.patch('/user/profile', { avatar: external });
+
+      expect(response.status).toBe(200);
+      expect((await patientTc.axios.get('/user')).data.avatar).toBe(external);
+      expect((await fetchFile(createTestClient().axios, uploaded)).status).toBe(404);
     });
   });
 
@@ -259,6 +289,29 @@ describe('File Upload', () => {
       });
 
       expect(response.status).toBe(400);
+    });
+
+    it('should reject a PDF avatar and keep the current avatar', async () => {
+      const current = Buffer.concat([PNG_MAGIC, randomBytes(64)]);
+      const { avatar } = await uploadAvatar(patientTc.axios, current, 'current.png', 'image/png');
+
+      const form = new FormData();
+      form.append('file', Buffer.concat([PDF_MAGIC, randomBytes(128)]), {
+        filename: 'cv.pdf',
+        contentType: 'application/pdf',
+      });
+      const response = await patientTc.axios.post('/user/avatar', form, {
+        headers: form.getHeaders(),
+      });
+
+      expect(response.status).toBe(400);
+      expect(response.data.message).toBe(
+        "Invalid file type 'application/pdf'. Allowed types: image/jpeg, image/png, image/webp.",
+      );
+      expect((await patientTc.axios.get('/user')).data.avatar).toBe(avatar);
+      const served = await fetchFile(createTestClient().axios, avatar);
+      expect(served.status).toBe(200);
+      expect(Buffer.from(served.data).equals(current)).toBe(true);
     });
 
     it('should reject file with spoofed extension (magic byte mismatch)', async () => {
