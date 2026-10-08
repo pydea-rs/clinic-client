@@ -3,6 +3,7 @@ import { createTestClient, TestClient } from '../helpers/api-client.js';
 import { createAdminApi } from '@client/api/admin.api';
 import { createConsultationApi } from '@client/api/consultation.api';
 import { createDoctorApi } from '@client/api/doctor.api';
+import { createNotificationApi } from '@client/api/notification.api';
 import { createPatientApi } from '@client/api/patient.api';
 import { createPaymentApi } from '@client/api/payment.api';
 
@@ -19,6 +20,25 @@ async function warmUp(tc: TestClient): Promise<void> {
   await tc.axios.get('/user');
 }
 
+/** The notification is sent after the response, so it may need a moment to appear. */
+async function paymentConfirmedNotifications(
+  notifApi: ReturnType<typeof createNotificationApi>,
+  consultationId: string,
+  timeoutMs = 3000,
+) {
+  const find = async () =>
+    (await notifApi.list({ take: 100 })).data.filter(
+      (n) => n.type === 'PAYMENT_CONFIRMED' && n.data?.consultationId === consultationId,
+    );
+  const start = Date.now();
+  let found = await find();
+  while (found.length === 0 && Date.now() - start < timeoutMs) {
+    await new Promise((r) => setTimeout(r, 100));
+    found = await find();
+  }
+  return found;
+}
+
 describe('Payment', () => {
   const superadminEmail = 'admin@ai-clinic.com';
   const superadminPassword = 'SuperAdmin123!';
@@ -29,11 +49,13 @@ describe('Payment', () => {
 
   let doctorTc: TestClient;
   let doctorConsultation: ReturnType<typeof createConsultationApi>;
+  let doctorNotif: ReturnType<typeof createNotificationApi>;
   let doctorProfileId: number;
 
   let patientTc: TestClient;
   let patientPayment: ReturnType<typeof createPaymentApi>;
   let patientConsultation: ReturnType<typeof createConsultationApi>;
+  let patientNotif: ReturnType<typeof createNotificationApi>;
 
   let consultationId: string;
   let consultationId2: string;
@@ -52,6 +74,7 @@ describe('Payment', () => {
     });
     const doctorApi = createDoctorApi(doctorTc.axios);
     doctorConsultation = createConsultationApi(doctorTc.axios);
+    doctorNotif = createNotificationApi(doctorTc.axios);
 
     const profile = await doctorApi.createProfile({
       startedAt: '2015-06-01T00:00:00.000Z',
@@ -84,6 +107,7 @@ describe('Payment', () => {
     await createPatientApi(patientTc.axios).createProfile({ allergies: ['None'] });
     patientPayment = createPaymentApi(patientTc.axios);
     patientConsultation = createConsultationApi(patientTc.axios);
+    patientNotif = createNotificationApi(patientTc.axios);
 
     // Create consultation #1 and advance to PENDING_PAYMENT
     const c1 = await patientConsultation.create({ doctorId: doctorProfileId });
@@ -158,6 +182,39 @@ describe('Payment', () => {
       const consultation = await patientConsultation.getConsultationById(consultationId);
       expect(consultation.status).toBe('PAYMENT_CONFIRMED');
     });
+
+    it('should notify the doctor and the patient once each', async () => {
+      const [doctorNotes, patientNotes] = await Promise.all([
+        paymentConfirmedNotifications(doctorNotif, consultationId),
+        paymentConfirmedNotifications(patientNotif, consultationId),
+      ]);
+
+      expect(doctorNotes).toHaveLength(1);
+      expect(doctorNotes[0].channel).toBe('BOTH');
+      expect(patientNotes).toHaveLength(1);
+      expect(patientNotes[0].channel).toBe('PUSH');
+    });
+  });
+
+  describe('Confirm Payment via consultation', () => {
+    it('should notify the doctor and the patient', async () => {
+      const { id } = await patientConsultation.create({ doctorId: doctorProfileId });
+      await doctorConsultation.decide(id, {
+        doctorDecision: 'ONLINE',
+        visitMethod: 'CHAT',
+      });
+      await patientConsultation.advancePayment(id);
+
+      const confirmed = await patientConsultation.confirmPayment(id);
+
+      expect(confirmed.status).toBe('PAYMENT_CONFIRMED');
+      const [doctorNotes, patientNotes] = await Promise.all([
+        paymentConfirmedNotifications(doctorNotif, id),
+        paymentConfirmedNotifications(patientNotif, id),
+      ]);
+      expect(doctorNotes).toHaveLength(1);
+      expect(patientNotes).toHaveLength(1);
+    });
   });
 
   describe('Filter Payments', () => {
@@ -186,6 +243,15 @@ describe('Payment', () => {
     it('should reject confirming already-confirmed payment', async () => {
       const response = await patientTc.axios.post(`/payment/${paymentId}/confirm`);
       expect(response.status).toBe(409);
+    });
+
+    it('should not notify again for a rejected re-confirm', async () => {
+      const response = await patientTc.axios.patch(`/consultation/${consultationId}/confirm-payment`);
+      expect(response.status).toBe(400);
+      await new Promise((r) => setTimeout(r, 300));
+
+      expect(await paymentConfirmedNotifications(doctorNotif, consultationId, 0)).toHaveLength(1);
+      expect(await paymentConfirmedNotifications(patientNotif, consultationId, 0)).toHaveLength(1);
     });
 
     it('should reject access to other user payment with 403', async () => {

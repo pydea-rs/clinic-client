@@ -26,7 +26,7 @@ function getNotificationLink(notification: Notification): string | null {
   const data = notification.data as Record<string, string> | undefined;
   const type = notification.type as NotificationType;
 
-  if (type === 'CONSULTATION_REQUEST' || type === 'DOCTOR_DECISION') {
+  if (type === 'CONSULTATION_REQUEST' || type === 'DOCTOR_DECISION' || type === 'PAYMENT_CONFIRMED') {
     return data?.consultationId ? `/consultation/${data.consultationId}` : null;
   }
   if (type === 'NEW_CHAT_MESSAGE') {

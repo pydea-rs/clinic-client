@@ -284,11 +284,23 @@ describe('NotificationPage', () => {
       expect(mockNavigate).not.toHaveBeenCalled();
     });
 
-    it('should not navigate for PAYMENT_CONFIRMED (no link mapped)', async () => {
+    it('should navigate to /consultation/:id for PAYMENT_CONFIRMED', async () => {
       await renderAndClick(
         makeNotification({
           type: 'PAYMENT_CONFIRMED',
           title: 'Payment OK',
+          data: { consultationId: 'c-789' },
+        }),
+      );
+      expect(mockNavigate).toHaveBeenCalledWith('/consultation/c-789');
+    });
+
+    it('should not navigate when PAYMENT_CONFIRMED has no consultationId', async () => {
+      await renderAndClick(
+        makeNotification({
+          type: 'PAYMENT_CONFIRMED',
+          title: 'Payment No ID',
+          data: {},
         }),
       );
       expect(mockNavigate).not.toHaveBeenCalled();
