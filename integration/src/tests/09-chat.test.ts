@@ -2,7 +2,9 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { createTestClient, TestClient } from '../helpers/api-client.js';
 import { createAdminApi } from '@client/api/admin.api';
 import { createChatApi } from '@client/api/chat.api';
+import { createConsultationApi } from '@client/api/consultation.api';
 import { createDoctorApi } from '@client/api/doctor.api';
+import { createNurseApi } from '@client/api/nurse.api';
 import { createPatientApi } from '@client/api/patient.api';
 import {
   createChatSocket,
@@ -17,7 +19,8 @@ import { Socket } from 'socket.io-client';
  *
  * Tests both REST endpoints and Socket.IO /chat namespace real-time events.
  *
- * Register budget (5/60s): 3 (doctor + patient + extra-patient) = 3 used
+ * Register budget (5/60s): 3 (doctor + patient + extra-patient) = 3 used, plus 5 in
+ * "Who may start a chat" (the shared test server doesn't throttle)
  * Login budget (5/60s): 1 (superadmin) = 1 used
  */
 
@@ -459,6 +462,125 @@ describe('Chat', () => {
       const error = await errorPromise;
       expect(error).toBeDefined();
       expect(error.message).toContain('5000');
+    });
+  });
+
+  // ─── Who may start a chat (SPEC-01) ────────────────────────────
+
+  describe('Who may start a chat', () => {
+    const tag = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+    type Member = { tc: TestClient; id: string };
+    let adminApi: ReturnType<typeof createAdminApi>;
+    let doctorA: Member & { profileId: number };
+    let doctorB: Member & { profileId: number };
+    let nurseOfA: Member;
+    let nurseOfB: Member;
+    let patientOfA: Member;
+
+    async function register(role: 'PATIENT' | 'DOCTOR', prefix: string): Promise<Member> {
+      const tc = createTestClient();
+      await warmUp(tc);
+      await tc.axios.post('/auth/register', {
+        firstname: prefix,
+        lastname: 'Rules',
+        email: `${prefix}-${tag()}@test.local`,
+        password: 'RulesPass456!',
+        role,
+      });
+      return { tc, id: (await tc.axios.get('/user')).data?.id };
+    }
+
+    async function registerDoctor(prefix: string) {
+      const doctor = await register('DOCTOR', prefix);
+      const profile = await createDoctorApi(doctor.tc.axios).createProfile({
+        startedAt: '2015-06-01T00:00:00.000Z',
+        specialty: 'GENERAL',
+        visitMethods: ['CHAT'],
+        visitTypes: ['CONSULTATION'],
+        bio: 'Chat rules doctor',
+      });
+      await adminApi.verifications.verify(profile.id, true);
+      return { ...doctor, profileId: profile.id as number };
+    }
+
+    // Assigning a user as a nurse upgrades their role to NURSE.
+    async function registerNurseOf(doctor: Member, prefix: string) {
+      const nurse = await register('PATIENT', prefix);
+      await createNurseApi(doctor.tc.axios).assign(nurse.id, ['VIEW_PATIENTS']);
+      return nurse;
+    }
+
+    const startChat = (from: Member, to: Member) =>
+      from.tc.axios.post('/chat', { participantId: to.id });
+
+    beforeAll(async () => {
+      const adminTc = createTestClient();
+      await warmUp(adminTc);
+      await adminTc.axios.post('/auth/login', {
+        email: superadminEmail,
+        password: superadminPassword,
+      });
+      adminApi = createAdminApi(adminTc.axios);
+
+      doctorA = await registerDoctor('RulesDocA');
+      doctorB = await registerDoctor('RulesDocB');
+      nurseOfA = await registerNurseOf(doctorA, 'RulesNurseA');
+      nurseOfB = await registerNurseOf(doctorB, 'RulesNurseB');
+
+      patientOfA = await register('PATIENT', 'RulesPat');
+      await createConsultationApi(patientOfA.tc.axios).create({ doctorId: doctorA.profileId });
+    });
+
+    it('should let a doctor start a chat with their own patient', async () => {
+      const response = await startChat(doctorA, patientOfA);
+
+      expect(response.status).toBe(201);
+      expect(response.data.participants.map((p: any) => p.id).sort()).toEqual(
+        [doctorA.id, patientOfA.id].sort(),
+      );
+    });
+
+    it('should reject a doctor starting a chat with an unrelated patient (403)', async () => {
+      const response = await startChat(doctorA, { tc: patientTc, id: extraPatientUserId });
+
+      expect(response.status).toBe(403);
+    });
+
+    it('should reject doctor↔doctor chats (403)', async () => {
+      expect((await startChat(doctorA, doctorB)).status).toBe(403);
+      expect((await startChat(doctorB, doctorA)).status).toBe(403);
+    });
+
+    it('should reject a nurse starting a chat with a doctor they are not assigned to (403)', async () => {
+      expect((await startChat(nurseOfB, doctorA)).status).toBe(403);
+    });
+
+    it('should reject nurse↔nurse chats (403)', async () => {
+      expect((await startChat(nurseOfA, nurseOfB)).status).toBe(403);
+    });
+
+    it('should let a nurse start a chat with their own doctor', async () => {
+      const response = await startChat(nurseOfA, doctorA);
+
+      expect(response.status).toBe(201);
+      expect(response.data.id).toBeDefined();
+    });
+
+    it('should let a doctor contact another doctor\'s nurse, who can then open the chat and reply', async () => {
+      const started = await startChat(doctorA, nurseOfB);
+      expect(started.status).toBe(201);
+
+      const opened = await startChat(nurseOfB, doctorA);
+      expect(opened.status).toBe(201);
+      expect(opened.data.id).toBe(started.data.id);
+
+      const content = `Interested, ${tag()}`;
+      const reply = await nurseOfB.tc.axios.post(`/chat/${started.data.id}/message`, { content });
+      expect(reply.status).toBe(201);
+
+      const history = await createChatApi(doctorA.tc.axios).getMessages(started.data.id);
+      expect(history.messages.map((m: any) => m.content)).toContain(content);
     });
   });
 });
