@@ -8,8 +8,8 @@ import { createTestPdf } from '../helpers/test-files.js';
 /**
  * Phase 4 — Admin & Verification integration tests.
  *
- * Login budget (5/60s): 1 superadmin + 1 ban-check + 1 deactivate-check
- *                      + 1 promoted-admin + 1 spare = 4 used
+ * Login budget (5/60s): 1 superadmin + 1 ban-check + 1 deactivate-check = 3 used
+ * Role/admin changes are checked on the users' existing (registration) sessions.
  * Register budget (5/60s): 2 (doctor + victim) = 2 used
  */
 
@@ -289,6 +289,13 @@ describe('Admin & Verification', () => {
       expect(promoted.isAdmin).toBe(true);
     });
 
+    it("should grant admin access to the promoted user's existing session", async () => {
+      const response = await victimTc.axios.get('/admin/users');
+
+      expect(response.status).toBe(200);
+      expect((await victimTc.axios.get('/user')).data.isAdmin).toBe(true);
+    });
+
     it('should reject promoting already-admin user', async () => {
       const response = await adminTc.axios.patch(`/admin/users/${victimUserId}/promote`);
       expect(response.status).toBe(400);
@@ -299,6 +306,13 @@ describe('Admin & Verification', () => {
 
       expect(demoted.isAdmin).toBe(false);
     });
+
+    it("should revoke admin access from the demoted user's existing session immediately", async () => {
+      const response = await victimTc.axios.get('/admin/users');
+
+      expect(response.status).toBe(403);
+      expect((await victimTc.axios.get('/user')).data.isAdmin).toBe(false);
+    });
   });
 
   // ─── Superadmin-only Actions ──────────────────────────────────────
@@ -307,16 +321,8 @@ describe('Admin & Verification', () => {
     let promotedAdminTc: TestClient;
 
     beforeAll(async () => {
-      // Promote doctor to admin
       await adminApi.adminActions.promote(doctorUserId);
-
-      // Login #4: as the promoted admin (new session reflects isAdmin=true)
-      promotedAdminTc = createTestClient();
-      await warmUp(promotedAdminTc);
-      await promotedAdminTc.axios.post('/auth/login', {
-        email: doctorEmail,
-        password: doctorPassword,
-      });
+      promotedAdminTc = doctorTc;
     });
 
     it('should allow promoted admin to list users', async () => {

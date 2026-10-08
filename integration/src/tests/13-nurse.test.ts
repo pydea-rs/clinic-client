@@ -168,11 +168,7 @@ describe('Nurse Module', () => {
       expect(result.nurse.id).toBe(nurseUserId);
       assignmentId = result.id;
 
-      // Re-login nurse so the session reflects the upgraded NURSE role
-      await nurseTc.axios.post('/auth/login', {
-        email: nurseEmail,
-        password: nursePassword,
-      });
+      // The existing session picks up the upgraded NURSE role without re-login
       const userResp = await nurseTc.axios.get('/user');
       expect(userResp.data.role).toBe('NURSE');
     });
