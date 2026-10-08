@@ -14,28 +14,10 @@ import { MockCalendlyService } from '../mocks/mock-calendly.service.js';
 import { MockEmailChannel } from '../mocks/mock-email.channel.js';
 import { MockWebPushChannel } from '../mocks/mock-webpush.channel.js';
 
-// Use CJS require for server modules to match how the compiled dist code loads them
-const require = createRequire(path.resolve(__dirname, '../../node_modules/'));
 const serverDist = path.resolve(__dirname, '../../../../server/dist');
-
-// Pre-load sodium-native into Node's module cache so the gateway's require() finds it
-// (the gateway resolves from server/dist which doesn't have sodium-native in its path)
-try {
-  const Module = require('module');
-  const sodiumPath = require.resolve('sodium-native');
-  if (!Module._cache[sodiumPath]) {
-    require('sodium-native');
-  }
-  const originalResolveFilename = Module._resolveFilename;
-  Module._resolveFilename = function (request: string, parent: any, ...args: any[]) {
-    if (request === 'sodium-native') {
-      return sodiumPath;
-    }
-    return originalResolveFilename.call(this, request, parent, ...args);
-  };
-} catch {
-  // sodium-native not available, WebSocket auth tests will fail
-}
+// Resolve packages from the server's dist, exactly as the compiled code does. A second copy
+// of @nestjs/common or the Fastify plugins would break instanceof checks (e.g. StreamableFile).
+const require = createRequire(path.join(serverDist, 'main.js'));
 
 const { FastifyAdapter } = require('@nestjs/platform-fastify');
 const fastifyCookie = require('@fastify/cookie');
