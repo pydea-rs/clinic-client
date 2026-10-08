@@ -295,7 +295,7 @@ describe('Cross-cutting & Security', () => {
         socket.on('connect_error', (err) => {
           clearTimeout(timeout);
           socket.disconnect();
-          resolve({ connected: false, error: err.message });
+          resolve({ connected: false, error: err instanceof Error ? err.message : 'Unknown error' });
         });
 
         socket.connect();
