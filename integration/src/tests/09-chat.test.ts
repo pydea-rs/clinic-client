@@ -4,6 +4,7 @@ import { createAdminApi } from '@client/api/admin.api';
 import { createChatApi } from '@client/api/chat.api';
 import { createConsultationApi } from '@client/api/consultation.api';
 import { createDoctorApi } from '@client/api/doctor.api';
+import { createNotificationApi } from '@client/api/notification.api';
 import { createNurseApi } from '@client/api/nurse.api';
 import { createPatientApi } from '@client/api/patient.api';
 import {
@@ -262,6 +263,25 @@ describe('Chat', () => {
 
       const received = await patientReceive;
       expect(received.message.content).toBe('Doctor reply via WS');
+    });
+
+    it('should deliver a message sent over HTTP to the other participant\'s socket', async () => {
+      const content = `Hello via HTTP ${Date.now()}`;
+      // The doctor's socket may still get the echo of its own previous message.
+      const doctorReceive = waitForEvent<any>(
+        doctorSocket,
+        'chat:message',
+        10_000,
+        (event) => event.message?.content === content,
+      );
+
+      const response = await patientTc.axios.post(`/chat/${chatId}/message`, { content });
+      expect(response.status).toBe(201);
+
+      const received = await doctorReceive;
+      expect(received.message.content).toBe(content);
+      expect(received.message.id).toBe(response.data.id);
+      expect(received.message.senderId).toBe(patientUserId);
     });
   });
 
@@ -581,6 +601,28 @@ describe('Chat', () => {
 
       const history = await createChatApi(doctorA.tc.axios).getMessages(started.data.id);
       expect(history.messages.map((m: any) => m.content)).toContain(content);
+    });
+
+    it('should notify an offline participant of a message sent over HTTP', async () => {
+      const chat = await startChat(nurseOfA, doctorA);
+      const response = await nurseOfA.tc.axios.post(`/chat/${chat.data.id}/message`, {
+        content: `Shift update ${tag()}`,
+      });
+      expect(response.status).toBe(201);
+
+      // Sent fire-and-forget after the response; doctorA has no open socket.
+      const notifications = createNotificationApi(doctorA.tc.axios);
+      let match: any;
+      for (let attempt = 0; attempt < 50 && !match; attempt++) {
+        const { data } = await notifications.list({ take: 50 });
+        match = data.find(
+          (n: any) => n.type === 'NEW_CHAT_MESSAGE' && n.data?.chatId === chat.data.id,
+        );
+        if (!match) await new Promise((r) => setTimeout(r, 100));
+      }
+
+      expect(match).toBeDefined();
+      expect(match.data.senderId).toBe(nurseOfA.id);
     });
   });
 });

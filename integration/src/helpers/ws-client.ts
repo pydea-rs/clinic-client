@@ -56,6 +56,7 @@ export function waitForEvent<T = any>(
   socket: Socket,
   eventName: string,
   timeoutMs = 10_000,
+  match: (data: T) => boolean = () => true,
 ): Promise<T> {
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
@@ -64,6 +65,7 @@ export function waitForEvent<T = any>(
     }, timeoutMs);
 
     function handler(data: T) {
+      if (!match(data)) return;
       clearTimeout(timeout);
       socket.off(eventName, handler);
       resolve(data);
