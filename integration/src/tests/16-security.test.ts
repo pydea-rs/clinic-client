@@ -344,6 +344,34 @@ describe('Cross-cutting & Security', () => {
       expect(response.data.message).toContain('deactivated');
     });
 
+    it.each([
+      ['banned', (id: string) => adminApi.users.ban(id, 'AI abuse')],
+      ['deactivated', (id: string) => adminApi.users.deactivate(id)],
+    ])('should treat a session issued before the user was %s as a guest on the AI chat', async (_case, block) => {
+      const tc = createTestClient();
+      await warmUp(tc);
+      const registration = await tc.axios.post('/auth/register', {
+        firstname: 'AiBlock',
+        lastname: 'Test',
+        email: `sec-ai-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@test.local`,
+        password: 'AiBlockPass456!',
+        role: 'PATIENT',
+      });
+      const userId = registration.data?.id;
+      const startAiChat = () => tc.axios.post('/ai-agents/start', {});
+
+      const before = await startAiChat();
+      expect(before.status).toBe(200);
+      expect(before.data.userId).toBe(userId);
+
+      await block(userId);
+      const after = await startAiChat();
+
+      expect(after.status).toBe(200);
+      expect(after.data.guest).toBe(true);
+      expect(after.data.userId).toBeUndefined();
+    });
+
     it('should refuse login for a deactivated user (403)', async () => {
       const freshTc = createTestClient();
       await warmUp(freshTc);
