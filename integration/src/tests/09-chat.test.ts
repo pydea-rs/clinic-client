@@ -603,6 +603,35 @@ describe('Chat', () => {
       expect(history.messages.map((m: any) => m.content)).toContain(content);
     });
 
+    it('should deliver a new chat\'s first message to a participant who was already online', async () => {
+      const nurseSocket = await createChatSocket(nurseOfA.tc.jar);
+      const outsiderSocket = await createChatSocket(doctorA.tc.jar);
+      await Promise.all([connectSocket(nurseSocket), connectSocket(outsiderSocket)]);
+      const outsiderGot: unknown[] = [];
+      outsiderSocket.on('chat:message', (event) => outsiderGot.push(event));
+
+      try {
+        const started = await startChat(doctorB, nurseOfA);
+        expect(started.status).toBe(201);
+
+        const content = `Are you available? ${tag()}`;
+        const received = waitForEvent<any>(
+          nurseSocket,
+          'chat:message',
+          10_000,
+          (event) => event.message?.content === content,
+        );
+        const sent = await doctorB.tc.axios.post(`/chat/${started.data.id}/message`, { content });
+        expect(sent.status).toBe(201);
+
+        expect((await received).message.chatId).toBe(started.data.id);
+        await new Promise((r) => setTimeout(r, 300));
+        expect(outsiderGot).toEqual([]);
+      } finally {
+        await Promise.all([disconnectSocket(nurseSocket), disconnectSocket(outsiderSocket)]);
+      }
+    });
+
     it('should notify an offline participant of a message sent over HTTP', async () => {
       const chat = await startChat(nurseOfA, doctorA);
       const response = await nurseOfA.tc.axios.post(`/chat/${chat.data.id}/message`, {
