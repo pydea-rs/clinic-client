@@ -511,15 +511,18 @@ describe('Chat', () => {
       return { tc, id: (await tc.axios.get('/user')).data?.id };
     }
 
-    async function registerDoctor(prefix: string) {
-      const doctor = await register('DOCTOR', prefix);
-      const profile = await createDoctorApi(doctor.tc.axios).createProfile({
+    const createProfile = (doctor: Member) =>
+      createDoctorApi(doctor.tc.axios).createProfile({
         startedAt: '2015-06-01T00:00:00.000Z',
         specialty: 'GENERAL',
         visitMethods: ['CHAT'],
         visitTypes: ['CONSULTATION'],
         bio: 'Chat rules doctor',
       });
+
+    async function registerDoctor(prefix: string) {
+      const doctor = await register('DOCTOR', prefix);
+      const profile = await createProfile(doctor);
       await adminApi.verifications.verify(profile.id, true);
       return { ...doctor, profileId: profile.id as number };
     }
@@ -574,6 +577,19 @@ describe('Chat', () => {
 
     it('should reject a nurse starting a chat with a doctor they are not assigned to (403)', async () => {
       expect((await startChat(nurseOfB, doctorA)).status).toBe(403);
+    });
+
+    it.each([
+      ['an unverified profile', true],
+      ['no profile', false],
+    ])('should reject a doctor with %s starting a chat with a nurse (403)', async (_case, withProfile) => {
+      const doctor = await register('DOCTOR', 'RulesDocUnverified');
+      if (withProfile) await createProfile(doctor);
+
+      const response = await startChat(doctor, nurseOfA);
+
+      expect(response.status).toBe(403);
+      expect(response.data.message).toBe('Only verified doctors can start chats with nurses');
     });
 
     it('should reject nurse↔nurse chats (403)', async () => {
