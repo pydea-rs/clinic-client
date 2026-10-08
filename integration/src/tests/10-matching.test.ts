@@ -334,11 +334,15 @@ describe('Matching', () => {
   });
 
   // ─── REST Create + Cancel ─────────────────────────────────
+  // The client app creates and cancels matches over REST, so this path must
+  // reach the doctor exactly like the WebSocket path does.
 
   describe('REST: Create & Cancel via HTTP', () => {
     let restMatchId: string;
 
-    it('should create match request via REST', async () => {
+    it('should create match request via REST and offer it to a doctor', async () => {
+      const offerPromise = waitForEvent<any>(firstDocSocket, 'match:request', 10_000);
+
       const response = await patientTc.axios.post('/matching/request', {
         specialty: 'CARDIOLOGY',
       });
@@ -346,19 +350,37 @@ describe('Matching', () => {
       expect(response.status).toBe(201);
       const body = response.data;
       expect(body.matchRequest).toBeDefined();
-      expect(body.matchRequest.status).toBe('SEARCHING');
+      expect(body.matchRequest.status).toBe('MATCHED');
+      expect(body.matchRequest.matchedDoctorId).toBe(firstDocProfileId);
       expect(body.matchRequest.patientId).toBe(patientUserId);
       expect(body.doctors).toBeDefined();
       expect(body.doctors.length).toBeGreaterThanOrEqual(2);
 
       restMatchId = body.matchRequest.id;
+
+      const offer = await offerPromise;
+      expect(offer.matchRequestId).toBe(restMatchId);
+      expect(offer.doctorId).toBe(firstDocProfileId);
     });
 
-    it('should cancel via REST PATCH endpoint', async () => {
+    it('REST: getPending lists the REST-created match for the offered doctor', async () => {
+      const pending = await firstDocMatching.getPending();
+
+      const found = pending.find((m: any) => m.id === restMatchId);
+      expect(found).toBeDefined();
+      expect(found?.status).toBe('MATCHED');
+    });
+
+    it('should cancel via REST PATCH endpoint and withdraw the offer from the doctor', async () => {
+      const docCancelledPromise = waitForEvent<any>(firstDocSocket, 'match:cancelled', 10_000);
+
       const result = await patientMatching.cancel(restMatchId);
 
       expect(result.status).toBe('CANCELLED');
       expect(result.resolvedAt).toBeDefined();
+
+      const docCancelled = await docCancelledPromise;
+      expect(docCancelled.matchRequestId).toBe(restMatchId);
     });
   });
 
