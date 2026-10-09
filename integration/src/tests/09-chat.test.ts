@@ -7,6 +7,7 @@ import { createDoctorApi } from '@client/api/doctor.api';
 import { createNotificationApi } from '@client/api/notification.api';
 import { createNurseApi } from '@client/api/nurse.api';
 import { createPatientApi } from '@client/api/patient.api';
+import type { NursePermission } from '@client/lib/types/api';
 import {
   createChatSocket,
   connectSocket,
@@ -528,11 +529,21 @@ describe('Chat', () => {
     }
 
     // Accepting the doctor's invitation upgrades the user's role to NURSE.
-    async function registerNurseOf(doctor: Member, prefix: string) {
+    async function registerNurseOf(
+      doctor: Member,
+      prefix: string,
+      permissions: NursePermission[] = ['VIEW_PATIENTS'],
+    ) {
       const nurse = await register('PATIENT', prefix);
-      const invitation = await createNurseApi(doctor.tc.axios).assign(nurse.id, ['VIEW_PATIENTS']);
+      const invitation = await createNurseApi(doctor.tc.axios).assign(nurse.id, permissions);
       await createNurseApi(nurse.tc.axios).acceptInvitation(invitation.id);
-      return nurse;
+      return { ...nurse, assignmentId: invitation.id };
+    }
+
+    async function registerPatientOf(doctor: { profileId: number }, prefix: string) {
+      const patient = await register('PATIENT', prefix);
+      await createConsultationApi(patient.tc.axios).create({ doctorId: doctor.profileId });
+      return patient;
     }
 
     const startChat = (from: Member, to: Member) =>
@@ -669,6 +680,75 @@ describe('Chat', () => {
 
       expect(match).toBeDefined();
       expect(match.data.senderId).toBe(nurseOfA.id);
+    });
+
+    describe('patients and nurses', () => {
+      let chattyNurseOfA: Member & { assignmentId: number };
+      let patientOfB: Member;
+
+      beforeAll(async () => {
+        chattyNurseOfA = await registerNurseOf(doctorA, 'RulesChattyNurse', ['VIEW_PATIENTS', 'CHAT_WITH_PATIENTS']);
+        patientOfB = await registerPatientOf(doctorB, 'RulesPatB');
+      });
+
+      it("should let a nurse with CHAT_WITH_PATIENTS start a chat with their doctor's patient", async () => {
+        expect((await startChat(chattyNurseOfA, patientOfA)).status).toBe(201);
+      });
+
+      it("should let a patient start a chat with a nurse of their doctor", async () => {
+        const patient = await registerPatientOf(doctorA, 'RulesPatA2');
+
+        expect((await startChat(patient, chattyNurseOfA)).status).toBe(201);
+      });
+
+      it("should reject a nurse and another doctor's patient, either way (403)", async () => {
+        expect((await startChat(chattyNurseOfA, patientOfB)).status).toBe(403);
+        expect((await startChat(patientOfB, chattyNurseOfA)).status).toBe(403);
+      });
+
+      it('should let a nurse removed by the doctor reopen existing chats but not start new ones', async () => {
+        const withDoctor = await startChat(chattyNurseOfA, doctorA);
+        expect(withDoctor.status).toBe(201);
+        const withPatient = await startChat(chattyNurseOfA, patientOfA);
+        const newPatient = await registerPatientOf(doctorA, 'RulesPatA3');
+
+        await createNurseApi(doctorA.tc.axios).remove(chattyNurseOfA.assignmentId);
+
+        expect((await startChat(chattyNurseOfA, doctorA)).data.id).toBe(withDoctor.data.id);
+        expect((await startChat(chattyNurseOfA, patientOfA)).data.id).toBe(withPatient.data.id);
+        expect((await startChat(chattyNurseOfA, newPatient)).status).toBe(403);
+      });
+
+      it('should reject a nurse whose assignment was removed before any chat with the doctor (403)', async () => {
+        const nurse = await registerNurseOf(doctorA, 'RulesRemovedNurse');
+        await createNurseApi(doctorA.tc.axios).remove(nurse.assignmentId);
+
+        const response = await startChat(nurse, doctorA);
+
+        expect(response.status).toBe(403);
+        expect(response.data.message).toBe('You can only start chats with doctors you are assigned to');
+      });
+    });
+
+    it("should neither save nor broadcast an HTTP send to someone else's chat", async () => {
+      const chat = await startChat(doctorA, patientOfA);
+      const patientSocket = await createChatSocket(patientOfA.tc.jar);
+      await connectSocket(patientSocket);
+      const got: unknown[] = [];
+      patientSocket.on('chat:message', (event) => got.push(event));
+
+      try {
+        const content = `Intruding ${tag()}`;
+        const response = await doctorB.tc.axios.post(`/chat/${chat.data.id}/message`, { content });
+
+        expect(response.status).toBe(403);
+        await new Promise((r) => setTimeout(r, 300));
+        expect(got).toEqual([]);
+        const history = await createChatApi(doctorA.tc.axios).getMessages(chat.data.id);
+        expect(history.messages.map((m: any) => m.content)).not.toContain(content);
+      } finally {
+        await disconnectSocket(patientSocket);
+      }
     });
   });
 });

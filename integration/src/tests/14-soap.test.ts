@@ -4,6 +4,7 @@ import { createAdminApi } from '@client/api/admin.api';
 import { createAiAgentsApi } from '@client/api/ai-agents.api';
 import { createConsultationApi } from '@client/api/consultation.api';
 import { createDoctorApi } from '@client/api/doctor.api';
+import { createNurseApi } from '@client/api/nurse.api';
 import { createSoapApi } from '@client/api/soap.api';
 import { getPrisma, mockBotpress } from '../helpers/server.js';
 
@@ -13,7 +14,7 @@ import { getPrisma, mockBotpress } from '../helpers/server.js';
  * Tests SOAP note listing, detail retrieval, AI-flow creation,
  * and access enforcement (owner, linked doctor).
  *
- * Register budget (5/60s): 4 (doctor + otherDoctor + patient1 + patient2) = 4 used
+ * Register budget (5/60s): 5 (doctor + otherDoctor + patient1 + patient2 + nurse) = 5 used
  * Login budget (5/60s): 1 (superadmin) = 1 used
  */
 
@@ -35,6 +36,8 @@ describe('SOAP Notes', () => {
   let doctorTc: TestClient;
   let doctorProfileId: number;
   let otherDoctorTc: TestClient;
+  let otherDoctorProfileId: number;
+  let adminApi: ReturnType<typeof createAdminApi>;
 
   let patient1Tc: TestClient;
   let patient1UserId: string;
@@ -74,7 +77,7 @@ describe('SOAP Notes', () => {
       email: superadminEmail,
       password: superadminPassword,
     });
-    const adminApi = createAdminApi(adminTc.axios);
+    adminApi = createAdminApi(adminTc.axios);
     await adminApi.verifications.verify(profile.id, true);
 
     // ── Register a second doctor with no consultation for the SOAP ──
@@ -87,13 +90,13 @@ describe('SOAP Notes', () => {
       password: doctorPassword,
       role: 'DOCTOR',
     });
-    await createDoctorApi(otherDoctorTc.axios).createProfile({
+    otherDoctorProfileId = (await createDoctorApi(otherDoctorTc.axios).createProfile({
       startedAt: '2018-01-01T00:00:00.000Z',
       specialty: 'GENERAL',
       visitMethods: ['CHAT'],
       visitTypes: ['CONSULTATION'],
       bio: 'Unrelated SOAP test doctor',
-    });
+    })).id;
 
     // ── Register patient1 ──
     patient1Tc = createTestClient();
@@ -316,6 +319,59 @@ describe('SOAP Notes', () => {
       const unauthTc = createTestClient();
       const response = await unauthTc.axios.get('/soap');
       expect(response.status).toBe(401);
+    });
+  });
+
+  // Runs last: it links the SOAP to the second doctor, whom the tests above treat as unrelated.
+  describe('SOAP linked to two doctors', () => {
+    let nurseTc: TestClient;
+    let secondConsultationId: string;
+
+    beforeAll(async () => {
+      await adminApi.verifications.verify(otherDoctorProfileId, true);
+
+      const second = await createConsultationApi(patient1Tc.axios).create({ doctorId: otherDoctorProfileId });
+      secondConsultationId = second.id;
+      await getPrisma().consultation.update({
+        where: { id: secondConsultationId },
+        data: { soapId: soapNoteId },
+      });
+
+      nurseTc = createTestClient();
+      await warmUp(nurseTc);
+      await nurseTc.axios.post('/auth/register', {
+        firstname: 'SoapNurse',
+        lastname: 'Test',
+        email: `soap-nurse-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@test.local`,
+        password: patient2Password,
+        role: 'PATIENT',
+      });
+      const nurseId = (await nurseTc.axios.get('/user')).data?.id;
+      const invitation = await createNurseApi(otherDoctorTc.axios).assign(nurseId, ['VIEW_SOAPS']);
+      await createNurseApi(nurseTc.axios).acceptInvitation(invitation.id);
+    });
+
+    it('should let both linked doctors get the SOAP by ID', async () => {
+      expect((await doctorTc.axios.get(`/soap/${soapNoteId}`)).status).toBe(200);
+      expect((await otherDoctorTc.axios.get(`/soap/${soapNoteId}`)).status).toBe(200);
+    });
+
+    it("should let a VIEW_SOAPS nurse of the second linked doctor get it, not only the first doctor's nurses", async () => {
+      const response = await nurseTc.axios.get(`/soap/${soapNoteId}`);
+
+      expect(response.status).toBe(200);
+      expect(response.data.id).toBe(soapNoteId);
+    });
+
+    it('should keep access for a doctor whose linked consultation was cancelled', async () => {
+      const cancelled = await createConsultationApi(patient1Tc.axios).cancel(secondConsultationId);
+      expect(cancelled.status).toBe('CANCELLED');
+
+      expect((await otherDoctorTc.axios.get(`/soap/${soapNoteId}`)).status).toBe(200);
+    });
+
+    it("should still refuse the nurse the patient's unlinked SOAP (403)", async () => {
+      expect((await nurseTc.axios.get(`/soap/${unlinkedSoapNoteId}`)).status).toBe(403);
     });
   });
 });

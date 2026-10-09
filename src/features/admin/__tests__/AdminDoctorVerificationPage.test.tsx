@@ -165,6 +165,26 @@ describe('AdminDoctorVerificationPage', () => {
     expect(mockGetDocuments).toHaveBeenCalledWith(doctor.id);
   });
 
+  it('keeps the listed documents and shows an error when refreshing them fails', async () => {
+    const doctor = buildPendingDoctor();
+    mockListPending.mockResolvedValue([doctor]);
+    mockGetDocuments.mockRejectedValue({ status: 500, message: 'Internal server error' });
+
+    render(<AdminDoctorVerificationPage />);
+    await screen.findByText(fullName(doctor));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh Documents' }));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Failed to load doctor documents'));
+    expect(mockToast.success).not.toHaveBeenCalled();
+    expect(mockGetDocuments).toHaveBeenCalledWith(doctor.id);
+    expect(screen.getByText(fullName(doctor))).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'View' })).toHaveAttribute(
+      'href',
+      `${API_BASE_URL}${doctor.documents[0].fileUrl}`,
+    );
+  });
+
   it('keeps the doctor listed and shows an error when verification fails', async () => {
     const doctor = buildPendingDoctor();
     mockListPending.mockResolvedValue([doctor]);

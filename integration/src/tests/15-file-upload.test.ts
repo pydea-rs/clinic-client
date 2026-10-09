@@ -5,6 +5,8 @@ import { createDoctorApi } from '@client/api/doctor.api';
 import type { AxiosInstance } from 'axios';
 import FormData from 'form-data';
 import { randomBytes, randomUUID } from 'crypto';
+import { request } from 'http';
+import { getServerUrl } from '../helpers/server.js';
 
 async function uploadAvatar(client: AxiosInstance, buffer: Buffer, filename: string, mimetype: string) {
   const form = new FormData();
@@ -19,6 +21,20 @@ async function uploadDocument(client: AxiosInstance, buffer: Buffer, filename: s
   form.append('type', docType);
   const response = await client.post('/doctor/documents', form, { headers: form.getHeaders() });
   return response.data;
+}
+
+/** GET with the path sent exactly as given; axios and URL would resolve `..` segments first. */
+function rawGet(rawPath: string, cookie = ''): Promise<{ status: number; body: Buffer }> {
+  const { hostname, port } = new URL(getServerUrl());
+  return new Promise((resolve, reject) => {
+    const req = request({ hostname, port, path: rawPath, headers: cookie ? { cookie } : {} }, (res) => {
+      const chunks: Buffer[] = [];
+      res.on('data', (c) => chunks.push(c));
+      res.on('end', () => resolve({ status: res.statusCode ?? 0, body: Buffer.concat(chunks) }));
+    });
+    req.on('error', reject);
+    req.end();
+  });
 }
 
 async function fetchFile(client: AxiosInstance, url: string) {
@@ -67,6 +83,7 @@ describe('File Upload', () => {
   let patientTc: TestClient;
   let doctorApi: ReturnType<typeof createDoctorApi>;
   let adminTc: TestClient;
+  let adminApi: ReturnType<typeof createAdminApi>;
 
   beforeAll(async () => {
     // ── Register + verify doctor ──
@@ -95,7 +112,7 @@ describe('File Upload', () => {
       email: superadminEmail,
       password: superadminPassword,
     });
-    const adminApi = createAdminApi(adminTc.axios);
+    adminApi = createAdminApi(adminTc.axios);
     await adminApi.verifications.verify(profile.id, true);
 
     // ── Register patient ──
@@ -353,6 +370,62 @@ describe('File Upload', () => {
       });
 
       expect(response.status).toBe(400);
+    });
+  });
+
+  // ─── Path traversal through the real HTTP stack ───────────────────
+
+  describe('Path Traversal', () => {
+    let documentName: string;
+    let documentBytes: Buffer;
+
+    beforeAll(async () => {
+      documentBytes = Buffer.concat([PDF_MAGIC, randomBytes(256)]);
+      const { fileUrl } = await uploadDocument(doctorTc.axios, documentBytes, 'secret.pdf', 'application/pdf', 'LICENSE');
+      documentName = fileUrl.split('/').pop();
+    });
+
+    it.each([
+      (doc: string) => `/uploads/avatars/../doctor-documents/${doc}`,
+      (doc: string) => `/uploads/avatars/..%2Fdoctor-documents%2F${doc}`,
+      (doc: string) => `/uploads/avatars/%2e%2e%2fdoctor-documents%2f${doc}`,
+      (doc: string) => `/uploads/avatars/..%5Cdoctor-documents%5C${doc}`,
+      (doc: string) => `/uploads/avatars/%252e%252e%252fdoctor-documents%252f${doc}`,
+    ])('should not serve a private document through the public avatar route (#%#)', async (url) => {
+      const response = await rawGet(url(documentName));
+
+      expect(response.status).not.toBe(200);
+      expect(response.body.includes(documentBytes)).toBe(false);
+    });
+
+    it.each([
+      '/uploads/doctor-documents/..%2F..%2Fpackage.json',
+      '/uploads/doctor-documents/..%2F..%2F.env',
+      '/uploads/avatars/..%2F..%2F..%2Fpackage.json',
+      '/uploads/avatars/%2e%2e/%2e%2e/package.json',
+    ])('should not let even an admin read files outside the upload folders: %s', async (url) => {
+      const response = await rawGet(url, await adminTc.jar.getCookieString(getServerUrl()));
+
+      expect([400, 401, 403, 404]).toContain(response.status);
+      expect(response.body.toString()).not.toMatch(/"dependencies"|DATABASE_URL|SESSION_SECRET/);
+    });
+  });
+
+  // ─── Runs last: bans the doctor ───────────────────────────────────
+
+  describe('Banned Owner', () => {
+    it('should refuse a banned doctor their own document', async () => {
+      const bytes = Buffer.concat([PDF_MAGIC, randomBytes(128)]);
+      const { fileUrl } = await uploadDocument(doctorTc.axios, bytes, 'mine.pdf', 'application/pdf', 'LICENSE');
+      expect((await fetchFile(doctorTc.axios, fileUrl)).status).toBe(200);
+      const doctorId = (await doctorTc.axios.get('/user')).data.id;
+
+      await adminApi.users.ban(doctorId, 'Integration test ban');
+      const response = await fetchFile(doctorTc.axios, fileUrl);
+
+      expect(response.status).toBe(403);
+      expect(Buffer.from(response.data).includes(bytes)).toBe(false);
+      expect((await fetchFile(adminTc.axios, fileUrl)).status).toBe(200);
     });
   });
 });

@@ -375,6 +375,49 @@ describe('Scheduling', () => {
 
       expect(cancelled.status).toBe('CANCELLED');
     });
+
+    it("should list a cancelled booking's slot again", async () => {
+      const slots = await createSchedulingApi(createTestClient().axios).getDoctorSlots(doctorProfileId, {
+        start: bookedSlot.date,
+        end: bookedSlot.date,
+        duration: 30,
+      });
+
+      expect(slots.map((s) => s.startTime)).toContain(bookedSlot.startTime);
+    });
+
+    it("should not hide a day's slots because of a booking at the same time on the next day", async () => {
+      // Two weeks after futureMonday: no exceptions; Tuesday's hours (10-16) lie within Monday's (10-18).
+      const monday = futureMonday();
+      monday.setUTCDate(monday.getUTCDate() + 14);
+      const tuesday = new Date(monday);
+      tuesday.setUTCDate(tuesday.getUTCDate() + 1);
+      const day = (d: Date) => d.toISOString().split('T')[0];
+      const time = `${String(10 + Math.floor(Math.random() * 6)).padStart(2, '0')}:${Math.random() < 0.5 ? '00' : '30'}`;
+      const slotsOn = (date: string) =>
+        createSchedulingApi(createTestClient().axios).getDoctorSlots(doctorProfileId, {
+          start: date,
+          end: date,
+          duration: 30,
+        });
+
+      const booking = await patientScheduling.bookAppointment({
+        doctorId: doctorProfileId,
+        dateTime: `${day(tuesday)}T${time}:00.000Z`,
+        durationMinutes: 30,
+        price: 50,
+        method: 'CHAT',
+      });
+
+      try {
+        const mondaySlots = await slotsOn(day(monday));
+        expect(mondaySlots.every((s) => s.date === day(monday))).toBe(true);
+        expect(mondaySlots.map((s) => s.startTime)).toContain(time);
+        expect((await slotsOn(day(tuesday))).map((s) => s.startTime)).not.toContain(time);
+      } finally {
+        await patientScheduling.cancelAppointment(booking.id);
+      }
+    });
   });
 
   // ─── Unhappy Paths ───────────────────────────────────────────────

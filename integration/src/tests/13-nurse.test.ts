@@ -532,6 +532,7 @@ describe('Nurse Module', () => {
       expect(consultations.status).toBe(200);
       expect((consultations.data?.contents || consultations.data).data).toEqual([]);
       expect((await nurseTc.axios.get(`/soap/${soapNoteId}`)).status).toBe(403);
+      expect((await nurseTc.axios.post('/chat', { participantId: patientUserId })).status).toBe(403);
       expect((await nurseNurseApi.getAssignment(assignmentId)).isActive).toBe(true);
 
       // Restore permissions for any future tests
@@ -541,6 +542,8 @@ describe('Nurse Module', () => {
         'VIEW_CONSULTATION_NOTES',
         'CHAT_WITH_PATIENTS',
       ]);
+      // The same chat is allowed once CHAT_WITH_PATIENTS is back, so the 403 came from the empty list.
+      expect((await nurseTc.axios.post('/chat', { participantId: patientUserId })).status).toBe(201);
     });
 
     it('should return 400 for an unknown permission', async () => {

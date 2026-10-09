@@ -12,7 +12,7 @@ import { getServerUrl } from '../helpers/server.js';
  *
  * Login budget (5/60s): 1 superadmin + 1 banned-login + 1 deactivated-login = 3 used
  * Role/admin and ban/deactivation changes are checked on the users' existing (registration) sessions.
- * Register budget (5/60s): 2 (doctor + victim) = 2 used
+ * Register budget (5/60s): 3 (doctor + victim + a patient for the re-submit check) = 3 used
  */
 
 async function warmUp(tc: TestClient): Promise<void> {
@@ -194,6 +194,20 @@ describe('Admin & Verification', () => {
 
       expect(updated.firstname).toBe('VictimUpdated');
       expect(updated.email).toBe(victimEmail);
+    });
+
+    it("should apply a role change to the user's existing session on their next request", async () => {
+      expect((await victimTc.axios.get('/nurse/dashboard')).status).toBe(403);
+
+      await adminApi.users.update(victimUserId, { role: 'NURSE' });
+
+      expect((await victimTc.axios.get('/user')).data.role).toBe('NURSE');
+      expect((await victimTc.axios.get('/nurse/dashboard')).status).toBe(200);
+
+      await adminApi.users.update(victimUserId, { role: 'PATIENT' });
+
+      expect((await victimTc.axios.get('/user')).data.role).toBe('PATIENT');
+      expect((await victimTc.axios.get('/nurse/dashboard')).status).toBe(403);
     });
   });
 
@@ -455,6 +469,42 @@ describe('Admin & Verification', () => {
       const response = await doctorTc.axios.post('/doctor/profile/resubmit');
 
       expect(response.status).toBe(409);
+    });
+
+    it('should count the doctor as pending while awaiting review, not once rejected', async () => {
+      const pending = async () => (await adminApi.stats()).pendingVerifications;
+      const awaiting = await pending();
+
+      await adminApi.verifications.verify(doctorProfileId, false, `Blurry scan ${Date.now()}`);
+      expect(await pending()).toBe(awaiting - 1);
+
+      await doctorApi.resubmitForReview();
+      expect(await pending()).toBe(awaiting);
+    });
+
+    it('should return 409 when re-submitting an already verified profile', async () => {
+      await adminApi.verifications.verify(doctorProfileId, true);
+
+      const response = await doctorTc.axios.post('/doctor/profile/resubmit');
+
+      expect(response.status).toBe(409);
+      expect((await doctorApi.getMyProfile()).verified).toBe(true);
+    });
+
+    it('should return 403 when a non-doctor re-submits', async () => {
+      const patientTc = createTestClient();
+      await warmUp(patientTc);
+      await patientTc.axios.post('/auth/register', {
+        firstname: 'AdminPat',
+        lastname: 'Test',
+        email: `admin-pat-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@test.local`,
+        password: victimPassword,
+        role: 'PATIENT',
+      });
+
+      const response = await patientTc.axios.post('/doctor/profile/resubmit');
+
+      expect(response.status).toBe(403);
     });
   });
 

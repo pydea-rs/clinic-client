@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { createTestClient, TestClient } from '../helpers/api-client.js';
+import { getPrisma } from '../helpers/server.js';
 import { createAdminApi } from '@client/api/admin.api';
 import { createConsultationApi } from '@client/api/consultation.api';
 import { createDoctorApi } from '@client/api/doctor.api';
@@ -381,6 +382,35 @@ describe('Matching', () => {
 
       const docCancelled = await docCancelledPromise;
       expect(docCancelled.matchRequestId).toBe(restMatchId);
+    });
+
+    it('should keep a REST request SEARCHING, offered to nobody, when no doctor is eligible', async () => {
+      const prisma = getPrisma();
+      const verified = await prisma.doctorProfile.findMany({ where: { verified: true }, select: { id: true } });
+      const ids = verified.map((d: { id: number }) => d.id);
+      const offers: unknown[] = [];
+      const onOffer = (event: unknown) => offers.push(event);
+      firstDocSocket.on('match:request', onOffer);
+      secondDocSocket.on('match:request', onOffer);
+
+      try {
+        await prisma.doctorProfile.updateMany({ where: { id: { in: ids } }, data: { verified: false } });
+
+        const response = await patientTc.axios.post('/matching/request', { specialty: 'CARDIOLOGY' });
+
+        expect(response.status).toBe(201);
+        expect(response.data.doctors).toEqual([]);
+        expect(response.data.matchRequest).toMatchObject({ status: 'SEARCHING', matchedDoctorId: null });
+        await new Promise((r) => setTimeout(r, 300));
+        expect(offers).toEqual([]);
+
+        const cancelled = await patientMatching.cancel(response.data.matchRequest.id);
+        expect(cancelled.status).toBe('CANCELLED');
+      } finally {
+        firstDocSocket.off('match:request', onOffer);
+        secondDocSocket.off('match:request', onOffer);
+        await prisma.doctorProfile.updateMany({ where: { id: { in: ids } }, data: { verified: true } });
+      }
     });
   });
 

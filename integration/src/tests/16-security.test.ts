@@ -3,11 +3,17 @@ import { createTestClient, createRawClient, TestClient } from '../helpers/api-cl
 import { createAdminApi } from '@client/api/admin.api';
 import { io, Socket } from 'socket.io-client';
 import { socketTarget } from '@client/lib/socket/socket-url';
+import axios from 'axios';
+import Fastify from 'fastify';
+import fastifyCookie from '@fastify/cookie';
+import fastifySecureSession from '@fastify/secure-session';
+import { createHash, randomUUID } from 'crypto';
 import {
   getServerUrl,
   bootstrapRateLimitServer,
   shutdownRateLimitServer,
 } from '../helpers/server.js';
+import { startPrefixProxy } from '../helpers/prefix-proxy.js';
 
 /**
  * Phase 17 — Cross-cutting & Security Tests.
@@ -15,8 +21,8 @@ import {
  * Tests CSRF enforcement, role-based access, banned/deactivated user
  * handling, rate limiting, and input validation.
  *
- * Register budget (5/60s): 5 (patient + doctor + promoteTarget + banTarget + deactivateTarget) = 5 used
- * Login budget (5/60s): 5 (superadmin + banned-login + banned-wrong-password + deactivated-login + promote-login) = 5 used
+ * The shared test server runs without rate limiting (APP_ENV=test), so registrations and
+ * logins here aren't budgeted; the rate-limit test boots its own app.
  *
  * Admin ban/deactivate actions clear the server's 60s account-status cache, so
  * they apply to the target's existing HTTP sessions and WebSockets right away.
@@ -221,8 +227,8 @@ describe('Cross-cutting & Security', () => {
   }
 
   // Connects where the client app would, so these tests also cover its socket target.
-  async function connectSocket(namespace: '/chat' | '/matching', cookie: string) {
-    const { url, path } = socketTarget(namespace, getServerUrl());
+  async function connectSocket(namespace: '/chat' | '/matching', cookie: string, base = getServerUrl()) {
+    const { url, path } = socketTarget(namespace, base);
     const socket: Socket = io(url, {
       path,
       transports: ['websocket'],
@@ -257,6 +263,103 @@ describe('Cross-cutting & Security', () => {
         expect(error).toBeUndefined();
         expect(connected).toBe(true);
         socket.close();
+      },
+    );
+
+    describe('behind a reverse proxy that serves the API under /api (like the Docker nginx)', () => {
+      let proxy: Awaited<ReturnType<typeof startPrefixProxy>>;
+
+      beforeAll(async () => {
+        proxy = await startPrefixProxy(getServerUrl(), '/api');
+      });
+
+      afterAll(async () => {
+        await proxy.close();
+      });
+
+      it('should reach the API with the prefix stripped', async () => {
+        const response = await axios.get(`${proxy.url}/api/user`, {
+          headers: { cookie: await cookieHeader(patientTc) },
+          validateStatus: () => true,
+        });
+
+        expect(response.status).toBe(200);
+        expect(response.data.contents.id).toBe((await patientTc.axios.get('/user')).data.id);
+      });
+
+      it.each(['/chat', '/matching'] as const)(
+        'should connect %s through the proxy at the target the client app computes',
+        async (namespace) => {
+          const { socket, connected, error } = await connectSocket(
+            namespace,
+            await cookieHeader(patientTc),
+            `${proxy.url}/api`,
+          );
+          socket.close();
+
+          expect(error).toBeUndefined();
+          expect(connected).toBe(true);
+        },
+      );
+    });
+  });
+
+  describe('Forged session cookies', () => {
+    const cookieName = process.env.SESSION_COOKIE_NAME || 'sid';
+    const sessionValue = (cookie: string) =>
+      cookie.split('; ').find((c) => c.startsWith(`${cookieName}=`))!.slice(cookieName.length + 1);
+    const withSession = (cookie: string, value: string) =>
+      cookie
+        .split('; ')
+        .map((c) => (c.startsWith(`${cookieName}=`) ? `${cookieName}=${value}` : c))
+        .join('; ');
+
+    /** A well-formed session cookie for `user`, encrypted with a key the server doesn't have. */
+    async function foreignKeySession(user: unknown): Promise<string> {
+      const app = Fastify();
+      await app.register(fastifyCookie);
+      await app.register(fastifySecureSession, {
+        key: createHash('sha256').update(`not-the-server-secret-${randomUUID()}`).digest(),
+        cookieName,
+        cookie: { path: '/' },
+      });
+      app.get('/', (request: any, reply) => {
+        request.session.set('user', user);
+        reply.send('ok');
+      });
+      const response = await app.inject({ url: '/' });
+      await app.close();
+      const setCookie = [response.headers['set-cookie']].flat()[0]!;
+      return setCookie.split(';')[0].slice(cookieName.length + 1);
+    }
+
+    it.each(['/chat', '/matching'] as const)('should refuse a tampered session cookie on %s', async (namespace) => {
+      const cookie = await cookieHeader(patientTc);
+      const value = sessionValue(cookie);
+      const i = Math.floor(Math.random() * value.length);
+      const tampered = value.slice(0, i) + (value[i] === 'A' ? 'B' : 'A') + value.slice(i + 1);
+
+      const { socket, connected, error } = await connectSocket(namespace, withSession(cookie, tampered));
+      socket.close();
+
+      expect(connected).toBe(false);
+      expect(error).toBe('Unauthorized: No valid session');
+    });
+
+    it.each(['/chat', '/matching'] as const)(
+      'should refuse a session cookie encrypted with another key on %s, even for a real user',
+      async (namespace) => {
+        const cookie = await cookieHeader(patientTc);
+        const user = (await patientTc.axios.get('/user')).data;
+
+        const { socket, connected, error } = await connectSocket(
+          namespace,
+          withSession(cookie, await foreignKeySession(user)),
+        );
+        socket.close();
+
+        expect(connected).toBe(false);
+        expect(error).toBe('Unauthorized: No valid session');
       },
     );
   });
@@ -315,6 +418,56 @@ describe('Cross-cutting & Security', () => {
         expect(error).toBe('Unauthorized: Account banned');
       },
     );
+
+    it("should disconnect the user's open WebSockets once banned", async () => {
+      const tc = createTestClient();
+      await warmUp(tc);
+      const registration = await tc.axios.post('/auth/register', {
+        firstname: 'LiveBan',
+        lastname: 'Test',
+        email: `sec-liveban-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@test.local`,
+        password: banTargetPassword,
+        role: 'PATIENT',
+      });
+      const cookie = await cookieHeader(tc);
+      const sockets = await Promise.all([connectSocket('/chat', cookie), connectSocket('/matching', cookie)]);
+      expect(sockets.map((s) => s.connected)).toEqual([true, true]);
+      const disconnected = Promise.all(
+        sockets.map(
+          ({ socket }) =>
+            new Promise<boolean>((resolve) => {
+              const timeout = setTimeout(() => resolve(false), 3000);
+              socket.on('disconnect', () => {
+                clearTimeout(timeout);
+                resolve(true);
+              });
+            }),
+        ),
+      );
+
+      await adminApi.users.ban(registration.data.id, 'Live ban');
+
+      expect(await disconnected).toEqual([true, true]);
+      sockets.forEach(({ socket }) => socket.disconnect());
+      expect((await tc.axios.get('/user')).status).toBe(403);
+    });
+
+    it('should let an unbanned user log in, use the API and connect WebSockets again', async () => {
+      await adminApi.users.unban(banTargetUserId);
+      const freshTc = createTestClient();
+      await warmUp(freshTc);
+
+      const login = await freshTc.axios.post('/auth/login', {
+        email: banTargetEmail,
+        password: banTargetPassword,
+      });
+
+      expect(login.status).toBe(200);
+      expect((await freshTc.axios.get('/user')).data.id).toBe(banTargetUserId);
+      const { socket, connected } = await connectSocket('/chat', await cookieHeader(freshTc));
+      socket.close();
+      expect(connected).toBe(true);
+    });
 
     it("should disconnect the user's open WebSockets and block HTTP once deactivated", async () => {
       const cookie = await cookieHeader(deactivateTargetTc);
