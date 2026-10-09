@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Mail } from 'lucide-react';
 import { nurseApi } from '../../api';
 import { useAuthStore } from '../../lib/stores/auth.store';
-import { NURSE_INVITATIONS_QUERY_KEY } from './NurseInvitationsPage';
+import { NURSE_INVITATIONS_QUERY_KEY } from './nurse-invitations';
 
 // Doctors and admins can't be invited, so they never fetch invitations.
 const INVITABLE_ROLES = ['PATIENT', 'NONE', 'NURSE'];

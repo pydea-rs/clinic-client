@@ -8,8 +8,7 @@ import { useAuthStore } from '../../lib/stores/auth.store';
 import { getErrorMessage } from '../../lib/api/error.utils';
 import { formatEnum } from '../../lib/format';
 import type { NurseAssignment } from '../../lib/types/api';
-
-export const NURSE_INVITATIONS_QUERY_KEY = ['nurse-invitations'];
+import { NURSE_INVITATIONS_QUERY_KEY } from './nurse-invitations';
 
 const doctorName = (invitation: NurseAssignment) => {
   const user = invitation.doctor?.user;

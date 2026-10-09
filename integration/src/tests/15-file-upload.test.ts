@@ -6,7 +6,7 @@ import type { AxiosInstance } from 'axios';
 import FormData from 'form-data';
 import { randomBytes, randomUUID } from 'crypto';
 import { request } from 'http';
-import { getServerUrl } from '../helpers/server.js';
+import { getPrisma, getServerUrl } from '../helpers/server.js';
 
 async function uploadAvatar(client: AxiosInstance, buffer: Buffer, filename: string, mimetype: string) {
   const form = new FormData();
@@ -217,6 +217,33 @@ describe('File Upload', () => {
       expect(response.status).toBe(200);
       expect((await patientTc.axios.get('/user')).data.avatar).toBe(external);
       expect((await fetchFile(createTestClient().axios, uploaded)).status).toBe(404);
+    });
+
+    it("should refuse to set another account's uploaded avatar as the profile avatar", async () => {
+      const { avatar: doctorAvatar } = await uploadAvatar(doctorTc.axios, makeFile(PNG_MAGIC, 256), 'doc.png', 'image/png');
+      const before = (await patientTc.axios.get('/user')).data.avatar;
+
+      const response = await patientTc.axios.patch('/user/profile', { avatar: doctorAvatar });
+
+      expect(response.status).toBe(400);
+      expect((await patientTc.axios.get('/user')).data.avatar).toBe(before);
+      expect((await fetchFile(createTestClient().axios, doctorAvatar)).status).toBe(200);
+    });
+
+    it("should keep a replaced avatar's file while another account still uses it", async () => {
+      const prisma = getPrisma();
+      const { avatar: shared } = await uploadAvatar(doctorTc.axios, makeFile(PNG_MAGIC, 300), 'shared.png', 'image/png');
+      const patient = await prisma.user.findUniqueOrThrow({ where: { email: patientEmail }, select: { avatar: true } });
+      await prisma.user.update({ where: { email: patientEmail }, data: { avatar: shared } });
+
+      try {
+        const { avatar: next } = await uploadAvatar(doctorTc.axios, makeFile(PNG_MAGIC, 400), 'next.png', 'image/png');
+
+        expect(next).not.toBe(shared);
+        expect((await fetchFile(createTestClient().axios, shared)).status).toBe(200);
+      } finally {
+        await prisma.user.update({ where: { email: patientEmail }, data: { avatar: patient.avatar } });
+      }
     });
   });
 
