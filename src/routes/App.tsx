@@ -52,6 +52,7 @@ const NurseAppointmentsPage = React.lazy(() => import('../features/nurse/NurseAp
 const NurseChatPage = React.lazy(() => import('../features/nurse/NurseChatPage').then(m => ({ default: m.NurseChatPage })));
 const NurseConsultationsPage = React.lazy(() => import('../features/nurse/NurseConsultationsPage').then(m => ({ default: m.NurseConsultationsPage })));
 const NurseSOAPNotesPage = React.lazy(() => import('../features/nurse/NurseSOAPNotesPage').then(m => ({ default: m.NurseSOAPNotesPage })));
+const NurseInvitationsPage = React.lazy(() => import('../features/nurse/NurseInvitationsPage').then(m => ({ default: m.NurseInvitationsPage })));
 const NurseSchedulePage = React.lazy(() => import('../features/nurse/NurseSchedulePage').then(m => ({ default: m.NurseSchedulePage })));
 
 // Placeholder components for unsupported modules
@@ -191,6 +192,7 @@ function App() {
 
           {/* Notification routes */}
           <Route path="/notifications" element={<AuthGuard><Shell><LazyPage><NotificationPage /></LazyPage></Shell></AuthGuard>} />
+          <Route path="/invitations" element={<AuthGuard><Shell><LazyPage><NurseInvitationsPage /></LazyPage></Shell></AuthGuard>} />
 
           {/* Unsupported modules placeholders */}
           <Route path="/calls" element={<AuthGuard><Shell><PlaceholderPage title="Calls & WebRTC" phase="Phase 19 pending" /></Shell></AuthGuard>} />

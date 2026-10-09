@@ -30,6 +30,7 @@ import { NotificationBell } from '../features/notification/NotificationBell';
 import { ThemeCustomizer } from './ThemeCustomizer';
 import { ProfileModal } from './ProfileModal';
 import { useNurseAssignments } from '../features/nurse/useNurseAssignments';
+import { NurseInvitationsBanner } from '../features/nurse/NurseInvitationsBanner';
 
 interface ShellProps {
   children: React.ReactNode;
@@ -402,6 +403,7 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
         {/* Main Content */}
         <main className="flex-1 overflow-auto bg-gray-50/50 dark:bg-slate-900">
           <div className="page-enter min-h-full flex flex-col">
+            <NurseInvitationsBanner />
             {children}
           </div>
         </main>

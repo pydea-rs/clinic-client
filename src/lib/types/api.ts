@@ -350,6 +350,8 @@ export type NotificationType =
   | 'NEW_REVIEW'
   | 'DOCTOR_VERIFIED'
   | 'SOAP_READY'
+  | 'NURSE_INVITATION'
+  | 'NURSE_INVITATION_ANSWERED'
   | 'SYSTEM';
 
 export interface MatchRequest {
@@ -405,12 +407,17 @@ export type NursePermission =
   | 'VIEW_SOAPS'
   | 'MANAGE_SCHEDULE';
 
+export type NurseAssignmentStatus = 'PENDING' | 'ACCEPTED' | 'DECLINED';
+
+/** Also a nurse invitation: PENDING until the invitee answers; in effect only while isActive. */
 export interface NurseAssignment {
   id: number;
   doctorId: number;
   nurseId: string;
   permissions: NursePermission[];
   isActive: boolean;
+  status: NurseAssignmentStatus;
+  respondedAt?: string | null;
   createdAt: string;
   updatedAt: string;
   nurse?: Pick<User, 'id' | 'firstname' | 'lastname' | 'email' | 'avatar'>;

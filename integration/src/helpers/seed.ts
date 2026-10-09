@@ -149,9 +149,9 @@ export async function setupNurse(
   // Admin changes role to NURSE
   await admin.adminApi.users.update(testUser.user.id, { role: 'NURSE' });
 
-  // Doctor assigns nurse
+  // Doctor invites the nurse, who accepts
   const doctorNurseApi = createNurseApi(doctor.client.axios);
-  await doctorNurseApi.assign(testUser.user.id, [
+  const invitation = await doctorNurseApi.assign(testUser.user.id, [
     'VIEW_PATIENTS',
     'VIEW_APPOINTMENTS',
     'VIEW_SOAPS',
@@ -159,6 +159,7 @@ export async function setupNurse(
     'CHAT_WITH_PATIENTS',
     'VIEW_CONSULTATION_NOTES',
   ]);
+  await nurseApi.acceptInvitation(invitation.id);
 
   // Re-login to get updated role
   const email = testUser.user.email;

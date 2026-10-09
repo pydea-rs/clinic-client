@@ -4,7 +4,7 @@ import { notificationApi } from '../../api';
 import { useNavigate } from 'react-router-dom';
 import {
   Loader2, Bell, BellRing, CheckCheck, MessageSquare, Calendar, FileText,
-  Star, Shield, UserCheck, CreditCard, AlertCircle, Info,
+  Star, Shield, UserCheck, CreditCard, AlertCircle, Info, UserPlus, Users,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Notification, NotificationType } from '../../lib/types/api';
@@ -19,6 +19,8 @@ const typeConfig: Record<string, { icon: React.ElementType; color: string }> = {
   NEW_REVIEW: { icon: Star, color: 'text-yellow-600 bg-yellow-100' },
   DOCTOR_VERIFIED: { icon: Shield, color: 'text-emerald-600 bg-emerald-100' },
   SOAP_READY: { icon: FileText, color: 'text-purple-600 bg-purple-100' },
+  NURSE_INVITATION: { icon: UserPlus, color: 'text-indigo-600 bg-indigo-100' },
+  NURSE_INVITATION_ANSWERED: { icon: Users, color: 'text-indigo-600 bg-indigo-100' },
   SYSTEM: { icon: Info, color: 'text-gray-600 bg-gray-100' },
 };
 
@@ -49,6 +51,12 @@ function getNotificationLink(notification: Notification): string | null {
   }
   if (type === 'NEW_REVIEW') {
     return '/doctor/workspace';
+  }
+  if (type === 'NURSE_INVITATION') {
+    return '/invitations';
+  }
+  if (type === 'NURSE_INVITATION_ANSWERED') {
+    return '/doctor/nurses';
   }
   return null;
 }

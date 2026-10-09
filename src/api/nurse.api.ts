@@ -17,6 +17,7 @@ export function createNurseApi(client: AxiosInstance) {
       return response.data;
     },
 
+    /** Sends an invitation; nothing changes for the invitee until they accept it. */
     assign: async (nurseId: string, permissions?: NursePermission[]): Promise<NurseAssignment> => {
       const response = await client.post('/nurse/assign', { nurseId, permissions });
       return response.data;
@@ -39,6 +40,21 @@ export function createNurseApi(client: AxiosInstance) {
 
     getAssignment: async (assignmentId: number): Promise<NurseAssignment> => {
       const response = await client.get(`/nurse/assignment/${assignmentId}`);
+      return response.data;
+    },
+
+    getInvitations: async (): Promise<NurseAssignment[]> => {
+      const response = await client.get('/nurse/invitations');
+      return response.data;
+    },
+
+    acceptInvitation: async (assignmentId: number): Promise<NurseAssignment> => {
+      const response = await client.post(`/nurse/invitations/${assignmentId}/accept`);
+      return response.data;
+    },
+
+    declineInvitation: async (assignmentId: number): Promise<NurseAssignment> => {
+      const response = await client.post(`/nurse/invitations/${assignmentId}/decline`);
       return response.data;
     },
   };

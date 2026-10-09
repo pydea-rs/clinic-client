@@ -527,10 +527,11 @@ describe('Chat', () => {
       return { ...doctor, profileId: profile.id as number };
     }
 
-    // Assigning a user as a nurse upgrades their role to NURSE.
+    // Accepting the doctor's invitation upgrades the user's role to NURSE.
     async function registerNurseOf(doctor: Member, prefix: string) {
       const nurse = await register('PATIENT', prefix);
-      await createNurseApi(doctor.tc.axios).assign(nurse.id, ['VIEW_PATIENTS']);
+      const invitation = await createNurseApi(doctor.tc.axios).assign(nurse.id, ['VIEW_PATIENTS']);
+      await createNurseApi(nurse.tc.axios).acceptInvitation(invitation.id);
       return nurse;
     }
 

@@ -1,26 +1,38 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, vi } from 'vitest';
 import { createTestClient, TestClient } from '../helpers/api-client.js';
 import { createAdminApi } from '@client/api/admin.api';
 import { createChatApi } from '@client/api/chat.api';
 import { createConsultationApi } from '@client/api/consultation.api';
 import { createDoctorApi } from '@client/api/doctor.api';
 import { createNurseApi } from '@client/api/nurse.api';
+import { createNotificationApi } from '@client/api/notification.api';
 import { createSoapApi } from '@client/api/soap.api';
 import { getPrisma } from '../helpers/server.js';
 
 /**
  * Phase 14 — Nurse Module Tests.
  *
- * Tests nurse assignment CRUD, dashboard, permission updates,
- * reactivation, and permission enforcement for delegated access
- * (chat, SOAP, consultations).
+ * Tests the nurse invitation flow (invite → accept/decline, cancel, re-invite),
+ * dashboard, permission updates, and permission enforcement for delegated
+ * access (chat, SOAP, consultations).
  *
- * Register budget (5/60s): 3 (doctor + nurseUser + patient) = 3 used
+ * Register budget (5/60s): 5 (doctor + nurseUser + patient + decliner + second doctor) = 5 used
  * Login budget (5/60s): 1 (superadmin) = 1 used
  */
 
 async function warmUp(tc: TestClient): Promise<void> {
   await tc.axios.get('/user');
+}
+
+// Notifications are sent after the response, so they may arrive a moment later.
+async function expectNotification(tc: TestClient, expected: Record<string, unknown>): Promise<void> {
+  await vi.waitFor(
+    async () => {
+      const { data } = await createNotificationApi(tc.axios).list();
+      expect(data).toContainEqual(expect.objectContaining(expected));
+    },
+    { timeout: 5_000, interval: 100 },
+  );
 }
 
 describe('Nurse Module', () => {
@@ -45,6 +57,7 @@ describe('Nurse Module', () => {
   let patientTc: TestClient;
   let patientUserId: string;
 
+  let adminApi: ReturnType<typeof createAdminApi>;
   let assignmentId: number;
   let consultationId: string;
   let soapNoteId: string;
@@ -79,10 +92,10 @@ describe('Nurse Module', () => {
       email: superadminEmail,
       password: superadminPassword,
     });
-    const adminApi = createAdminApi(adminTc.axios);
+    adminApi = createAdminApi(adminTc.axios);
     await adminApi.verifications.verify(profile.id, true);
 
-    // ── Register nurse user (starts as PATIENT, gets upgraded on assign) ──
+    // ── Register nurse user (starts as PATIENT, becomes a NURSE on accepting) ──
     nurseTc = createTestClient();
     await warmUp(nurseTc);
     await nurseTc.axios.post('/auth/register', {
@@ -149,7 +162,7 @@ describe('Nurse Module', () => {
   // ─── Happy Paths ──────────────────────────────────────────────────
 
   describe('Happy Paths', () => {
-    it('should assign nurse with specific permissions', async () => {
+    it('should invite a patient as a nurse without changing anything for them yet', async () => {
       const result = await doctorNurseApi.assign(nurseUserId, [
         'VIEW_PATIENTS',
         'VIEW_SOAPS',
@@ -157,20 +170,49 @@ describe('Nurse Module', () => {
         'VIEW_CONSULTATION_NOTES',
       ]);
 
-      expect(result).toBeDefined();
       expect(result.id).toBeDefined();
-      expect(result.isActive).toBe(true);
-      expect(result.permissions).toContain('VIEW_PATIENTS');
-      expect(result.permissions).toContain('VIEW_SOAPS');
-      expect(result.permissions).toContain('CHAT_WITH_PATIENTS');
-      expect(result.permissions).toContain('VIEW_CONSULTATION_NOTES');
-      expect(result.nurse).toBeDefined();
+      expect(result.status).toBe('PENDING');
+      expect(result.isActive).toBe(false);
+      expect(result.permissions).toEqual(
+        expect.arrayContaining(['VIEW_PATIENTS', 'VIEW_SOAPS', 'CHAT_WITH_PATIENTS', 'VIEW_CONSULTATION_NOTES']),
+      );
       expect(result.nurse.id).toBe(nurseUserId);
       assignmentId = result.id;
 
-      // The existing session picks up the upgraded NURSE role without re-login
-      const userResp = await nurseTc.axios.get('/user');
-      expect(userResp.data.role).toBe('NURSE');
+      expect((await nurseTc.axios.get('/user')).data.role).toBe('PATIENT');
+      expect((await nurseTc.axios.get('/nurse/dashboard')).status).toBe(403);
+
+      const invitations = await nurseNurseApi.getInvitations();
+      expect(invitations.map((i) => i.id)).toEqual([assignmentId]);
+      expect(invitations[0].doctor?.user?.id).toBe(doctorUserId);
+
+      await expectNotification(nurseTc, { type: 'NURSE_INVITATION', data: { assignmentId } });
+    });
+
+    it("should show the pending invitation in the doctor's list", async () => {
+      const found = (await doctorNurseApi.getAssignments()).find((a) => a.id === assignmentId);
+
+      expect(found).toMatchObject({ status: 'PENDING', isActive: false });
+    });
+
+    it('should accept the invitation: the patient becomes a NURSE without re-login', async () => {
+      const result = await nurseNurseApi.acceptInvitation(assignmentId);
+
+      expect(result).toMatchObject({ id: assignmentId, status: 'ACCEPTED', isActive: true });
+      expect(result.respondedAt).toBeTruthy();
+      expect((await nurseTc.axios.get('/user')).data.role).toBe('NURSE');
+      expect(await nurseNurseApi.getInvitations()).toEqual([]);
+
+      await expectNotification(doctorTc, {
+        type: 'NURSE_INVITATION_ANSWERED',
+        data: { assignmentId, accepted: true },
+      });
+    });
+
+    it('should refuse to accept the same invitation twice (409)', async () => {
+      const response = await nurseTc.axios.post(`/nurse/invitations/${assignmentId}/accept`);
+
+      expect(response.status).toBe(409);
     });
 
     it('should list assignments from doctor view', async () => {
@@ -239,7 +281,7 @@ describe('Nurse Module', () => {
       expect(result.isActive).toBe(false);
     });
 
-    it('should reassign the same nurse (reactivation)', async () => {
+    it('should re-invite a removed nurse, who must accept again', async () => {
       const result = await doctorNurseApi.assign(nurseUserId, [
         'VIEW_PATIENTS',
         'VIEW_SOAPS',
@@ -247,11 +289,116 @@ describe('Nurse Module', () => {
         'CHAT_WITH_PATIENTS',
       ]);
 
-      expect(result).toBeDefined();
-      expect(result.id).toBe(assignmentId); // same record reactivated
-      expect(result.isActive).toBe(true);
-      expect(result.permissions).toContain('VIEW_SOAPS');
-      expect(result.permissions).toContain('CHAT_WITH_PATIENTS');
+      expect(result.id).toBe(assignmentId); // same record reused
+      expect(result).toMatchObject({ status: 'PENDING', isActive: false });
+      expect((await nurseNurseApi.getDashboard()).assignments).toEqual([]);
+
+      const accepted = await nurseNurseApi.acceptInvitation(assignmentId);
+      expect(accepted).toMatchObject({ status: 'ACCEPTED', isActive: true });
+      expect(accepted.permissions).toEqual(
+        expect.arrayContaining(['VIEW_SOAPS', 'CHAT_WITH_PATIENTS']),
+      );
+    });
+  });
+
+  // ─── Invitations ──────────────────────────────────────────────────
+
+  describe('Invitations', () => {
+    let declinerTc: TestClient;
+    let declinerId: string;
+    let invitationId: number;
+
+    beforeAll(async () => {
+      declinerTc = createTestClient();
+      await warmUp(declinerTc);
+      await declinerTc.axios.post('/auth/register', {
+        firstname: 'Decliner',
+        lastname: 'Test',
+        email: `nurse-decl-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@test.local`,
+        password: patientPassword,
+        role: 'PATIENT',
+      });
+      declinerId = (await declinerTc.axios.get('/user')).data?.id;
+    });
+
+    it('should let the invitee decline: nothing changes and the doctor is told', async () => {
+      invitationId = (await doctorNurseApi.assign(declinerId, ['VIEW_PATIENTS'])).id;
+
+      const declined = await createNurseApi(declinerTc.axios).declineInvitation(invitationId);
+
+      expect(declined).toMatchObject({ id: invitationId, status: 'DECLINED', isActive: false });
+      expect((await declinerTc.axios.get('/user')).data.role).toBe('PATIENT');
+      expect((await doctorNurseApi.getAssignments()).map((a) => a.id)).not.toContain(invitationId);
+      await expectNotification(doctorTc, {
+        type: 'NURSE_INVITATION_ANSWERED',
+        data: { assignmentId: invitationId, accepted: false },
+      });
+    });
+
+    it('should not let anyone else answer an invitation (404)', async () => {
+      const reinvited = await doctorNurseApi.assign(declinerId, ['VIEW_PATIENTS']);
+      expect(reinvited).toMatchObject({ id: invitationId, status: 'PENDING' });
+
+      for (const action of ['accept', 'decline']) {
+        const response = await patientTc.axios.post(`/nurse/invitations/${invitationId}/${action}`);
+        expect(response.status).toBe(404);
+      }
+    });
+
+    it('should refuse a second invitation while one is pending (409)', async () => {
+      const response = await doctorTc.axios.post('/nurse/assign', { nurseId: declinerId });
+
+      expect(response.status).toBe(409);
+    });
+
+    it('should let the doctor cancel a pending invitation, which then cannot be accepted', async () => {
+      await doctorNurseApi.remove(invitationId);
+
+      expect(await createNurseApi(declinerTc.axios).getInvitations()).toEqual([]);
+      const response = await declinerTc.axios.post(`/nurse/invitations/${invitationId}/accept`);
+      expect(response.status).toBe(404);
+      expect((await declinerTc.axios.get('/user')).data.role).toBe('PATIENT');
+    });
+
+    it('should not let a doctor use the invitee routes (403)', async () => {
+      expect((await doctorTc.axios.get('/nurse/invitations')).status).toBe(403);
+    });
+
+    it('should require a verified doctor; a pending invitation grants an existing nurse nothing', async () => {
+      const secondTc = createTestClient();
+      await warmUp(secondTc);
+      await secondTc.axios.post('/auth/register', {
+        firstname: 'SecondDoc',
+        lastname: 'Test',
+        email: `nurse-doc2-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@test.local`,
+        password: doctorPassword,
+        role: 'DOCTOR',
+      });
+      const secondDoctorId = (await secondTc.axios.get('/user')).data?.id;
+      const profile = await createDoctorApi(secondTc.axios).createProfile({
+        startedAt: '2018-01-01T00:00:00.000Z',
+        specialty: 'GENERAL',
+        visitMethods: ['CHAT'],
+        visitTypes: ['CONSULTATION'],
+        bio: 'Second nurse test doctor',
+      });
+
+      const unverified = await secondTc.axios.post('/nurse/assign', { nurseId: nurseUserId });
+      expect(unverified.status).toBe(403);
+      expect(unverified.data.message).toBe('Only verified doctors can invite nurses.');
+
+      await adminApi.verifications.verify(profile.id, true);
+      const invitation = await createNurseApi(secondTc.axios).assign(nurseUserId, ['VIEW_PATIENTS']);
+      const doctorsBefore = (await nurseNurseApi.getDashboard()).stats.assignedDoctors;
+
+      expect((await nurseTc.axios.post('/chat', { participantId: secondDoctorId })).status).toBe(403);
+      expect((await nurseNurseApi.getAssignments()).map((a) => a.id)).not.toContain(invitation.id);
+
+      await nurseNurseApi.acceptInvitation(invitation.id);
+
+      expect((await nurseNurseApi.getDashboard()).stats.assignedDoctors).toBe(doctorsBefore + 1);
+      expect((await nurseTc.axios.post('/chat', { participantId: secondDoctorId })).status).toBe(201);
+      expect((await nurseTc.axios.get('/user')).data.role).toBe('NURSE');
     });
   });
 
@@ -287,14 +434,14 @@ describe('Nurse Module', () => {
 
       expect(response.status).toBe(400);
 
-      // Reactivate for subsequent tests
-      const reassigned = await doctorNurseApi.assign(nurseUserId, [
+      // Re-invite and accept for subsequent tests
+      const reinvited = await doctorNurseApi.assign(nurseUserId, [
         'VIEW_PATIENTS',
         'VIEW_SOAPS',
         'VIEW_CONSULTATION_NOTES',
         'CHAT_WITH_PATIENTS',
       ]);
-      assignmentId = reassigned.id;
+      assignmentId = (await nurseNurseApi.acceptInvitation(reinvited.id)).id;
     });
 
     it('should return 403 when nurse tries to modify own permissions', async () => {

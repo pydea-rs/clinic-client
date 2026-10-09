@@ -5,7 +5,7 @@ import { NurseAssignment, NursePermission } from '../../lib/types/api';
 import { formatEnum } from '../../lib/format';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../lib/api/error.utils';
-import { UserPlus, Users, Shield, Loader2, X, Search, CheckCircle, ToggleLeft, ToggleRight, AlertTriangle } from 'lucide-react';
+import { UserPlus, Users, Shield, Loader2, X, Search, CheckCircle, ToggleLeft, ToggleRight } from 'lucide-react';
 
 const ALL_PERMISSIONS: NursePermission[] = [
   'VIEW_PATIENTS',
@@ -39,7 +39,6 @@ export const DoctorNurseManagementPage: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<SearchResult | null>(null);
   const [selectedPermissions, setSelectedPermissions] = useState<NursePermission[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showConfirm, setShowConfirm] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
@@ -68,23 +67,21 @@ export const DoctorNurseManagementPage: React.FC = () => {
   const assignMutation = useMutation({
     mutationFn: () => nurseApi.assign(selectedUser!.id, selectedPermissions.length > 0 ? selectedPermissions : undefined),
     onSuccess: () => {
-      toast.success('Nurse assigned successfully');
+      toast.success('Invitation sent');
       setSelectedUser(null);
       setUserSearch('');
       setSelectedPermissions([]);
-      setShowConfirm(false);
       queryClient.invalidateQueries({ queryKey: ['nurse-assignments'] });
     },
     onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, 'Failed to assign nurse'));
-      setShowConfirm(false);
+      toast.error(getErrorMessage(error, 'Failed to send invitation'));
     },
   });
 
   const removeMutation = useMutation({
-    mutationFn: (assignmentId: number) => nurseApi.remove(assignmentId),
-    onSuccess: () => {
-      toast.success('Nurse removed successfully');
+    mutationFn: (assignment: NurseAssignment) => nurseApi.remove(assignment.id),
+    onSuccess: (_result, assignment) => {
+      toast.success(assignment.status === 'PENDING' ? 'Invitation cancelled' : 'Nurse removed successfully');
       queryClient.invalidateQueries({ queryKey: ['nurse-assignments'] });
     },
     onError: (error: unknown) => {
@@ -126,10 +123,6 @@ export const DoctorNurseManagementPage: React.FC = () => {
       toast.error('Please select a user');
       return;
     }
-    if (selectedUser.role !== 'NURSE') {
-      setShowConfirm(true);
-      return;
-    }
     assignMutation.mutate();
   };
 
@@ -164,15 +157,15 @@ export const DoctorNurseManagementPage: React.FC = () => {
         </div>
         <div>
           <h1 className="text-2xl font-bold gradient-text">Nurse Management</h1>
-          <p className="text-sm text-gray-500">Assign nurses and manage their permissions</p>
+          <p className="text-sm text-gray-500">Invite nurses and manage their permissions</p>
         </div>
       </div>
 
-      {/* Assign Section */}
+      {/* Invite Section */}
       <div className="card p-6 mb-8 animate-slide-in-up">
         <div className="flex items-center gap-2 mb-5">
           <UserPlus className="w-5 h-5 text-brand-600" />
-          <h2 className="text-lg font-bold text-gray-900">Assign a Nurse</h2>
+          <h2 className="text-lg font-bold text-gray-900">Invite a Nurse</h2>
         </div>
 
         <form onSubmit={handleAssign} className="space-y-5">
@@ -288,62 +281,27 @@ export const DoctorNurseManagementPage: React.FC = () => {
             {assignMutation.isPending ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Assigning...
+                Sending...
               </>
             ) : (
               <>
                 <UserPlus className="w-4 h-4" />
-                Assign Nurse
+                Send Invitation
               </>
             )}
           </button>
+          <p className="text-xs text-gray-500 text-center">
+            Nothing changes for them until they accept. A patient who accepts becomes a nurse.
+          </p>
         </form>
       </div>
-
-      {/* Role Upgrade Confirmation Dialog */}
-      {showConfirm && selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full mx-4 p-6 animate-slide-in-up">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
-                <AlertTriangle className="w-5 h-5 text-amber-600" />
-              </div>
-              <h3 className="text-lg font-bold text-gray-900">Role Change Required</h3>
-            </div>
-            <p className="text-sm text-gray-600 mb-4">
-              This will change <strong>{selectedUser.firstname} {selectedUser.lastname}</strong>'s
-              role from <span className="badge badge-gray text-xs">{selectedUser.role || 'NONE'}</span> to{' '}
-              <span className="badge badge-teal text-xs">NURSE</span> and assign them to you.
-            </p>
-            <p className="text-sm text-gray-500 mb-6">
-              This action cannot be automatically reversed. Continue?
-            </p>
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => setShowConfirm(false)}
-                className="btn-secondary px-4 py-2 text-sm"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => assignMutation.mutate()}
-                disabled={assignMutation.isPending}
-                className="btn-primary px-4 py-2 text-sm flex items-center gap-2"
-              >
-                {assignMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                Confirm & Assign
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Current Nurses */}
       <div className="animate-slide-in-up" style={{ animationDelay: '50ms' }}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
             <Users className="w-5 h-5 text-gray-400" />
-            Assigned Nurses
+            Your Nurses
           </h2>
           {(assignments || []).length > 0 && (
             <span className="badge badge-blue">{(assignments || []).length} total</span>
@@ -374,10 +332,10 @@ export const DoctorNurseManagementPage: React.FC = () => {
               <Users className="w-8 h-8 text-indigo-400" />
             </div>
             <p className="text-gray-700 font-medium mb-1">
-              {searchQuery ? 'No nurses match your search' : 'No nurses assigned yet'}
+              {searchQuery ? 'No nurses match your search' : 'No nurses yet'}
             </p>
             <p className="text-sm text-gray-500">
-              {searchQuery ? 'Try a different search term.' : 'Use the form above to assign a nurse.'}
+              {searchQuery ? 'Try a different search term.' : 'Use the form above to invite a nurse.'}
             </p>
           </div>
         ) : (
@@ -390,6 +348,7 @@ export const DoctorNurseManagementPage: React.FC = () => {
               const initials = assignment.nurse
                 ? `${assignment.nurse.firstname[0] || ''}${assignment.nurse.lastname[0] || ''}`.toUpperCase()
                 : 'N';
+              const isInvited = assignment.status === 'PENDING';
 
               return (
                 <div
@@ -411,26 +370,32 @@ export const DoctorNurseManagementPage: React.FC = () => {
 
                     {/* Actions */}
                     <div className="flex items-center gap-2">
-                      <span className={`badge ${assignment.isActive ? 'badge-green' : 'badge-gray'}`}>
-                        {assignment.isActive ? 'Active' : 'Inactive'}
+                      <span className={`badge ${isInvited ? 'badge-yellow' : assignment.isActive ? 'badge-green' : 'badge-gray'}`}>
+                        {isInvited ? 'Invited' : assignment.isActive ? 'Active' : 'Inactive'}
                       </span>
-                      <button
-                        onClick={() => revokeAllPermissions(assignment)}
-                        disabled={updatePermissionsMutation.isPending || (assignment.permissions || []).length === 0}
-                        className="px-2 py-1 text-xs text-amber-600 hover:bg-amber-50 rounded-lg transition-all duration-200 disabled:opacity-30 font-medium"
-                        title="Revoke all permissions"
-                      >
-                        Revoke All
-                      </button>
+                      {!isInvited && (
+                        <button
+                          onClick={() => revokeAllPermissions(assignment)}
+                          disabled={updatePermissionsMutation.isPending || (assignment.permissions || []).length === 0}
+                          className="px-2 py-1 text-xs text-amber-600 hover:bg-amber-50 rounded-lg transition-all duration-200 disabled:opacity-30 font-medium"
+                          title="Revoke all permissions"
+                        >
+                          Revoke All
+                        </button>
+                      )}
                       <button
                         onClick={() => {
-                          if (window.confirm(`Remove ${nurseName} from your team?`)) {
-                            removeMutation.mutate(assignment.id);
+                          const question = isInvited
+                            ? `Cancel the invitation to ${nurseName}?`
+                            : `Remove ${nurseName} from your team?`;
+                          if (window.confirm(question)) {
+                            removeMutation.mutate(assignment);
                           }
                         }}
                         disabled={removeMutation.isPending}
                         className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 disabled:opacity-50 hover:scale-105"
-                        title="Remove nurse"
+                        title={isInvited ? 'Cancel invitation' : 'Remove nurse'}
+                        aria-label={isInvited ? 'Cancel invitation' : 'Remove nurse'}
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -439,7 +404,9 @@ export const DoctorNurseManagementPage: React.FC = () => {
 
                   {/* Permissions */}
                   <div>
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Permissions</p>
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+                      {isInvited ? 'Permissions offered' : 'Permissions'}
+                    </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {ALL_PERMISSIONS.map((permission) => {
                         const hasPermission = (assignment.permissions || []).includes(permission);
@@ -447,7 +414,8 @@ export const DoctorNurseManagementPage: React.FC = () => {
                           <button
                             key={permission}
                             onClick={() => toggleExistingPermission(assignment, permission)}
-                            disabled={updatePermissionsMutation.isPending}
+                            // The server only accepts changes once the invitation is accepted.
+                            disabled={isInvited || updatePermissionsMutation.isPending}
                             className={`flex items-center gap-2 p-2 rounded-lg text-left transition-all duration-200 ${
                               hasPermission
                                 ? 'bg-brand-50/70 text-brand-800'

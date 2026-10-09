@@ -296,6 +296,20 @@ describe('NotificationPage', () => {
       expect(mockNavigate).toHaveBeenCalledWith('/doctor/workspace');
     });
 
+    it.each([
+      ['NURSE_INVITATION', '/invitations'],
+      ['NURSE_INVITATION_ANSWERED', '/doctor/nurses'],
+    ] as const)('should navigate %s to %s', async (type, link) => {
+      await renderAndClick(
+        makeNotification({
+          type,
+          title: `Invitation ${Math.random().toString(36).slice(2, 8)}`,
+          data: { assignmentId: Math.floor(Math.random() * 1000) + 1 },
+        }),
+      );
+      expect(mockNavigate).toHaveBeenCalledWith(link);
+    });
+
     it('should not navigate for SYSTEM notification (no link)', async () => {
       await renderAndClick(
         makeNotification({
