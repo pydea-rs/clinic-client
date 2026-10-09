@@ -1,35 +1,30 @@
 import { io, Socket } from 'socket.io-client';
 import { CookieJar } from 'tough-cookie';
+import { socketTarget } from '@client/lib/socket/socket-url';
 import { getServerUrl } from './server.js';
 
-export async function createChatSocket(jar: CookieJar): Promise<Socket> {
+// Connects the way the client app does, so a base URL with a path prefix works too.
+async function createSocket(jar: CookieJar, namespace: string): Promise<Socket> {
   const baseUrl = getServerUrl();
   const cookieString = await jar.getCookieString(baseUrl);
+  const { url, path } = socketTarget(namespace, baseUrl);
 
-  const socket = io(`${baseUrl}/chat`, {
+  return io(url, {
+    path,
     transports: ['websocket'],
     extraHeaders: {
       cookie: cookieString,
     },
     autoConnect: false,
   });
-
-  return socket;
 }
 
-export async function createMatchingSocket(jar: CookieJar): Promise<Socket> {
-  const baseUrl = getServerUrl();
-  const cookieString = await jar.getCookieString(baseUrl);
+export function createChatSocket(jar: CookieJar): Promise<Socket> {
+  return createSocket(jar, '/chat');
+}
 
-  const socket = io(`${baseUrl}/matching`, {
-    transports: ['websocket'],
-    extraHeaders: {
-      cookie: cookieString,
-    },
-    autoConnect: false,
-  });
-
-  return socket;
+export function createMatchingSocket(jar: CookieJar): Promise<Socket> {
+  return createSocket(jar, '/matching');
 }
 
 export function connectSocket(socket: Socket): Promise<void> {

@@ -12,7 +12,7 @@ This is a QA/test client designed to validate all backend features without requi
 
 ### Prerequisites
 
-- Node.js 18+ and npm
+- Node.js 18+ and npm (the Docker build uses pnpm, at the version pinned in `package.json`)
 - Backend server running on `http://localhost:8080`
 
 ### Installation
@@ -60,11 +60,17 @@ npm run test:coverage  # Run with coverage
 
 ## Environment Variables
 
-Create a `.env` file in the `client/` directory:
+Create a `.env` file in the `client/` directory (see `.env.example`):
 
 ```bash
 VITE_API_BASE_URL=http://localhost:8080
+# Optional: where the WebSocket server is, if not at VITE_API_BASE_URL
+# VITE_WS_URL=http://localhost:8080
 ```
+
+Both are read at build time. A path prefix works for either (e.g. `/api`): sockets then connect with the
+socket.io path `/api/socket.io`. The Docker build takes both as build args (`VITE_API_BASE_URL` defaults to `/api`,
+which `nginx.conf` proxies to the server).
 
 ## Project Status
 
@@ -284,7 +290,7 @@ grep -r "from.*stores/" src/
 
 1. Verify backend is running
 2. Check `/debug` WebSocket panel
-3. Verify `VITE_API_BASE_URL` is correct
+3. Verify `VITE_API_BASE_URL` (or `VITE_WS_URL`, if set) is correct
 
 ### State Not Updating
 

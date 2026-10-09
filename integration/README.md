@@ -92,7 +92,7 @@ The global setup automatically:
 - Role-based authorization guards (CookieAuthGuard, RolesGuard, AdminGuard, SuperAdminGuard)
 - Rate limiting (ThrottlerGuard)
 - Input validation (ValidationPipe with `forbidNonWhitelisted`)
-- WebSocket authentication (sodium-native session decryption)
+- WebSocket authentication (the session cookie, decoded with `@fastify/secure-session`)
 - File upload handling (`@fastify/multipart`)
 - Response compression, Helmet headers
 
