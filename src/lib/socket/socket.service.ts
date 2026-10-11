@@ -18,6 +18,9 @@ class SocketService {
   private statusListeners: Array<(status: SocketConnectionStatus) => void> = [];
   private onlineUsers: Set<string> = new Set();
   private pendingListeners: Array<{ event: string; callback: (...args: unknown[]) => void }> = [];
+  // Chats a page has open. The server only notifies about chats a socket hasn't joined, and
+  // emits are dropped while disconnected, so they're (re)joined on every connect.
+  private openChats = new Set<string>();
 
   connect(): Socket {
     if (this.socket?.connected) {
@@ -43,6 +46,9 @@ class SocketService {
 
     this.socket.on('connect', () => {
       this.updateStatus({ connected: true, reconnecting: false, reconnectAttempts: 0 });
+      for (const chatId of this.openChats) {
+        this.socket?.emit('chat:join', { chatId });
+      }
     });
 
     this.socket.on('disconnect', () => {
@@ -102,6 +108,7 @@ class SocketService {
       this.socket = null;
       this.onlineUsers.clear();
       this.pendingListeners = [];
+      this.openChats.clear();
       this.updateStatus({ connected: false, reconnecting: false, reconnectAttempts: 0 });
     }
   }
@@ -165,10 +172,12 @@ class SocketService {
 
   // Chat-specific methods
   joinRoom(chatId: string): void {
+    this.openChats.add(chatId);
     this.emit('chat:join', { chatId });
   }
 
   leaveRoom(chatId: string): void {
+    this.openChats.delete(chatId);
     this.emit('chat:leave', { chatId });
   }
 

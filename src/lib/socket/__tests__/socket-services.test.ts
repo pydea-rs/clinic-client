@@ -60,4 +60,72 @@ describe('socket services', () => {
       expect.objectContaining({ path: '/socket.io' }),
     );
   });
+
+  describe('open chats', () => {
+    type MockSocket = { connected: boolean; on: ReturnType<typeof vi.fn>; emit: ReturnType<typeof vi.fn> };
+    const chatId = () => crypto.randomUUID();
+
+    /** Connects and returns the mock socket plus a way to fire its 'connect' event. */
+    const connectChat = () => {
+      socketService.connect();
+      const { results } = mockIo.mock;
+      const socket = results[results.length - 1].value as MockSocket;
+      const fireConnect = () => {
+        socket.connected = true;
+        for (const [event, handler] of socket.on.mock.calls) if (event === 'connect') handler();
+      };
+      return { socket, fireConnect };
+    };
+    const joinsOf = (socket: MockSocket) =>
+      socket.emit.mock.calls.filter(([event]) => event === 'chat:join').map(([, payload]) => payload.chatId);
+
+    it('should join a chat opened before the socket connected once it connects', () => {
+      const { socket, fireConnect } = connectChat();
+      const id = chatId();
+
+      socketService.joinRoom(id);
+      expect(socket.emit).not.toHaveBeenCalled();
+
+      fireConnect();
+      expect(joinsOf(socket)).toEqual([id]);
+    });
+
+    it('should join at once when already connected', () => {
+      const { socket, fireConnect } = connectChat();
+      fireConnect();
+      const id = chatId();
+
+      socketService.joinRoom(id);
+
+      expect(joinsOf(socket)).toEqual([id]);
+    });
+
+    it('should rejoin the chats still open after a reconnect, but not closed ones', () => {
+      const { socket, fireConnect } = connectChat();
+      fireConnect();
+      const [open, closed] = [chatId(), chatId()];
+      socketService.joinRoom(open);
+      socketService.joinRoom(closed);
+      socketService.leaveRoom(closed);
+      socket.emit.mockClear();
+
+      socket.connected = false;
+      fireConnect();
+
+      expect(joinsOf(socket)).toEqual([open]);
+      expect(socket.emit).not.toHaveBeenCalledWith('chat:leave', expect.anything());
+    });
+
+    it('should forget open chats on disconnect (logout)', () => {
+      const first = connectChat();
+      first.fireConnect();
+      socketService.joinRoom(chatId());
+
+      socketService.disconnect();
+      const second = connectChat();
+      second.fireConnect();
+
+      expect(joinsOf(second.socket)).toEqual([]);
+    });
+  });
 });

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { createTestClient, TestClient } from '../helpers/api-client.js';
 import { createAdminApi } from '@client/api/admin.api';
 import { createChatApi } from '@client/api/chat.api';
@@ -727,6 +727,115 @@ describe('Chat', () => {
 
         expect(response.status).toBe(403);
         expect(response.data.message).toBe('You can only start chats with doctors you are assigned to');
+      });
+    });
+
+    // A participant is notified unless one of their sockets has the chat open (chat:join … chat:leave).
+    describe('notifications for chats not open', () => {
+      let patient: Member;
+      let chat: string;
+      let socket: Socket;
+
+      const chatNotifications = async () => {
+        const { data } = await createNotificationApi(patient.tc.axios).list({ take: 100 });
+        return data.filter((n: any) => n.type === 'NEW_CHAT_MESSAGE' && n.data?.chatId === chat);
+      };
+      const unread = async () => (await chatNotifications()).filter((n: any) => !n.isRead);
+      const send = async (content = `Note ${tag()}`) => {
+        const received = waitForEvent<any>(socket, 'chat:message', 10_000, (e) => e.message?.content === content);
+        expect((await doctorA.tc.axios.post(`/chat/${chat}/message`, { content })).status).toBe(201);
+        await received;
+      };
+      // Notifying runs after the send's response; give it time before asserting that nothing came.
+      const settle = () => new Promise((r) => setTimeout(r, 400));
+      const doctorName = 'RulesDocA Rules';
+
+      beforeAll(async () => {
+        patient = await registerPatientOf(doctorA, 'RulesNotified');
+        chat = (await startChat(doctorA, patient)).data.id;
+        socket = await createChatSocket(patient.tc.jar);
+        await connectSocket(socket);
+      });
+
+      afterAll(async () => {
+        if (socket?.connected) await disconnectSocket(socket);
+      });
+
+      it("should notify an online participant who hasn't opened the chat, while still delivering it live", async () => {
+        await send();
+
+        await vi.waitFor(async () => expect(await unread()).toHaveLength(1), { timeout: 5_000, interval: 100 });
+        const [notification] = await unread();
+        expect(notification).toMatchObject({
+          title: 'New Message',
+          body: `${doctorName} sent you a message.`,
+          data: { chatId: chat, senderId: doctorA.id, count: 1 },
+        });
+      });
+
+      it('should mark the notification read on opening the chat, and not notify while it is open', async () => {
+        socket.emit('chat:join', { chatId: chat });
+        await vi.waitFor(async () => expect(await unread()).toHaveLength(0), { timeout: 5_000, interval: 100 });
+
+        await send();
+        await send();
+        await settle();
+
+        expect(await unread()).toHaveLength(0);
+        expect(await chatNotifications()).toHaveLength(1);
+      });
+
+      it('should notify again after the chat is closed, with one notification counting the messages', async () => {
+        socket.emit('chat:leave', { chatId: chat });
+        await settle();
+        const burst = 2 + Math.floor(Math.random() * 3);
+
+        // The chat: room is left too, so these don't arrive live; send over HTTP without waiting for them.
+        for (let i = 0; i < burst; i++) {
+          expect((await doctorA.tc.axios.post(`/chat/${chat}/message`, { content: `Later ${i} ${tag()}` })).status).toBe(201);
+        }
+
+        await vi.waitFor(
+          async () => expect((await unread()).map((n: any) => n.data.count)).toEqual([burst]),
+          { timeout: 5_000, interval: 100 },
+        );
+        const [notification] = await unread();
+        expect(notification).toMatchObject({ title: 'New Messages', body: `${doctorName} sent you ${burst} messages.` });
+        expect(await chatNotifications()).toHaveLength(2);
+      });
+
+      it('should start a new notification after the grouped one is read', async () => {
+        const [grouped] = await unread();
+        await createNotificationApi(patient.tc.axios).markAsRead(grouped.id);
+
+        expect((await doctorA.tc.axios.post(`/chat/${chat}/message`, { content: `Again ${tag()}` })).status).toBe(201);
+
+        await vi.waitFor(async () => expect(await unread()).toHaveLength(1), { timeout: 5_000, interval: 100 });
+        const [fresh] = await unread();
+        expect(fresh.id).not.toBe(grouped.id);
+        expect(fresh.data?.count).toBe(1);
+      });
+
+      it('should not notify a participant who has the chat open in another tab', async () => {
+        const otherTab = await createChatSocket(patient.tc.jar);
+        await connectSocket(otherTab);
+        try {
+          otherTab.emit('chat:join', { chatId: chat });
+          await vi.waitFor(async () => expect(await unread()).toHaveLength(0), { timeout: 5_000, interval: 100 });
+
+          expect((await doctorA.tc.axios.post(`/chat/${chat}/message`, { content: `Seen ${tag()}` })).status).toBe(201);
+          await settle();
+
+          expect(await unread()).toHaveLength(0);
+        } finally {
+          await disconnectSocket(otherTab);
+        }
+      });
+
+      it('should notify again once the tab that had the chat open disconnects', async () => {
+        expect((await doctorA.tc.axios.post(`/chat/${chat}/message`, { content: `Gone ${tag()}` })).status).toBe(201);
+
+        await vi.waitFor(async () => expect(await unread()).toHaveLength(1), { timeout: 5_000, interval: 100 });
       });
     });
 
