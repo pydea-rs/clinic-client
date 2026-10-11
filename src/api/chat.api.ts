@@ -1,5 +1,5 @@
 import type { AxiosInstance } from 'axios';
-import type { Chat, Message } from '../lib/types/api';
+import type { Chat, Message, MessageType } from '../lib/types/api';
 
 export function createChatApi(client: AxiosInstance) {
   return {
@@ -34,7 +34,7 @@ export function createChatApi(client: AxiosInstance) {
 
     sendMessage: async (chatId: string, payload: {
       content: string;
-      type?: 'TEXT' | 'IMAGE' | 'FILE' | 'AUDIO' | 'VIDEO' | 'SYSTEM';
+      type?: Exclude<MessageType, 'SYSTEM'>; // SYSTEM messages come from the server only
       fileUrl?: string;
       repliedToId?: string;
     }): Promise<Message> => {

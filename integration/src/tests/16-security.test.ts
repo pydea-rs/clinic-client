@@ -335,9 +335,12 @@ describe('Cross-cutting & Security', () => {
 
     it.each(['/chat', '/matching'] as const)('should refuse a tampered session cookie on %s', async (namespace) => {
       const cookie = await cookieHeader(patientTc);
-      const value = sessionValue(cookie);
-      const i = Math.floor(Math.random() * value.length);
-      const tampered = value.slice(0, i) + (value[i] === 'A' ? 'B' : 'A') + value.slice(i + 1);
+      // Flip a byte of the ciphertext itself: editing its base64 text can hit padding or
+      // ignored low bits and leave the cookie valid.
+      const [ciphertext, nonce] = decodeURIComponent(sessionValue(cookie)).split(';');
+      const bytes = Buffer.from(ciphertext, 'base64');
+      bytes[Math.floor(Math.random() * bytes.length)] ^= 1 + Math.floor(Math.random() * 255);
+      const tampered = encodeURIComponent(`${bytes.toString('base64')};${nonce}`);
 
       const { socket, connected, error } = await connectSocket(namespace, withSession(cookie, tampered));
       socket.close();
@@ -367,6 +370,8 @@ describe('Cross-cutting & Security', () => {
   describe('Banned/Deactivated Users', () => {
     // The ban target's registration session, copied before the ban: still a validly signed cookie afterwards
     let preBanCookie: string;
+    // Likewise for the deactivation target (the server clears its copy on the first refused request).
+    let preDeactivationCookie: string;
 
     it('should block banned user on next guarded request (403)', async () => {
       preBanCookie = await cookieHeader(banTargetTc);
@@ -471,6 +476,7 @@ describe('Cross-cutting & Security', () => {
 
     it("should disconnect the user's open WebSockets and block HTTP once deactivated", async () => {
       const cookie = await cookieHeader(deactivateTargetTc);
+      preDeactivationCookie = cookie;
       const sockets = await Promise.all([connectSocket('/chat', cookie), connectSocket('/matching', cookie)]);
       expect(sockets.map((s) => s.connected)).toEqual([true, true]);
 
@@ -495,6 +501,14 @@ describe('Cross-cutting & Security', () => {
       const response = await deactivateTargetTc.axios.get('/user');
       expect(response.status).toBe(403);
       expect(response.data.message).toContain('deactivated');
+    });
+
+    it("should clear a deactivated user's session, leaving them logged out", async () => {
+      const cookieName = process.env.SESSION_COOKIE_NAME || 'sid';
+
+      // The previous test's 403 already cleared it; a deactivated user can't reach /auth/logout.
+      expect(await cookieHeader(deactivateTargetTc)).not.toContain(`${cookieName}=`);
+      expect((await deactivateTargetTc.axios.get('/user')).status).toBe(401);
     });
 
     it.each([
@@ -538,7 +552,7 @@ describe('Cross-cutting & Security', () => {
     });
 
     it('should reject a WebSocket for a deactivated user', async () => {
-      const { socket, connected, error } = await connectSocket('/chat', await cookieHeader(deactivateTargetTc));
+      const { socket, connected, error } = await connectSocket('/chat', preDeactivationCookie);
       socket.disconnect();
 
       expect(connected).toBe(false);

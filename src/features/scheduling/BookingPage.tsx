@@ -11,6 +11,7 @@ interface BookingLocationState {
     date: string;
     startTime: string;
     endTime: string;
+    durationMinutes?: number;
   };
   duration?: number;
   price?: number;
@@ -61,7 +62,7 @@ export const BookingPage: React.FC = () => {
     setFormData({
       doctorId: parsedDoctorId,
       dateTime,
-      durationMinutes: state.duration || 30,
+      durationMinutes: state.slot.durationMinutes || state.duration || 30,
       price: Number(state.price || 0),
       method: 'CHAT',
       consultationId: '',

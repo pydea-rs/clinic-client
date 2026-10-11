@@ -121,6 +121,21 @@ describe('NurseInvitationsPage', () => {
     expect(mockToast.success).toHaveBeenCalledWith(`You joined ${doctorName(invitation)}'s team`);
   });
 
+  it('should not report a failed accept when only reloading the user fails afterwards', async () => {
+    const invitation = buildInvitation();
+    mockAccept.mockResolvedValue({ ...invitation, status: 'ACCEPTED', isActive: true });
+    mockMe.mockRejectedValue(new Error('Network Error'));
+    const card = await renderPage([invitation]);
+
+    fireEvent.click(card!.getByRole('button', { name: 'Accept' }));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Reload the page to see your nurse dashboard'));
+    expect(mockToast.success).toHaveBeenCalledWith(`You joined ${doctorName(invitation)}'s team`);
+    expect(mockToast.error).not.toHaveBeenCalledWith(expect.stringContaining('Failed to accept'));
+    expect(mockToast.error).toHaveBeenCalledTimes(1);
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
   it('should do nothing when the patient does not confirm', async () => {
     confirmSpy.mockReturnValue(false);
     const card = await renderPage([buildInvitation()]);

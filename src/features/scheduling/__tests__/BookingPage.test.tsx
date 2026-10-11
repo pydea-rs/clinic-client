@@ -82,6 +82,17 @@ describe('BookingPage', () => {
     },
   );
 
+  it("books the selected slot's own length, even if a different duration was passed along", async () => {
+    const minutes = [45, 60, 90][Math.floor(Math.random() * 3)];
+    mockBook.mockResolvedValue({ id: crypto.randomUUID() });
+
+    renderBooking(doctorId, { slot: { ...randomSlot(), durationMinutes: minutes }, duration: 30, price: 50 });
+    fireEvent.click(await screen.findByRole('button', { name: 'Confirm Booking' }));
+
+    await screen.findByText('Appointments list');
+    expect(mockBook).toHaveBeenCalledWith(expect.objectContaining({ durationMinutes: minutes }));
+  });
+
   it('labels the selected slot as UTC', async () => {
     const slot = randomSlot();
 

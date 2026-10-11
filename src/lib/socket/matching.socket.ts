@@ -3,6 +3,8 @@ import { socketTarget } from './socket-url';
 
 type MatchEventCallback = (data: Record<string, unknown>) => void;
 
+const ANSWER_TIMEOUT_MS = 10_000;
+
 export interface MatchSocketStatus {
   connected: boolean;
   reconnecting: boolean;
@@ -116,12 +118,50 @@ class MatchingSocketService {
     this.emit('match:request', payload);
   }
 
-  acceptMatch(matchRequestId: string): void {
-    this.emit('match:accept', { matchRequestId });
+  /** Resolves once the server confirms (match:accepted); rejects on its error, a timeout, or no connection. */
+  acceptMatch(matchRequestId: string, timeoutMs = ANSWER_TIMEOUT_MS): Promise<Record<string, unknown>> {
+    return this.answerOffer('match:accept', 'match:accepted', matchRequestId, timeoutMs);
   }
 
-  rejectMatch(matchRequestId: string): void {
-    this.emit('match:reject', { matchRequestId });
+  /** Resolves once the server confirms (match:rejected); rejects on its error, a timeout, or no connection. */
+  rejectMatch(matchRequestId: string, timeoutMs = ANSWER_TIMEOUT_MS): Promise<Record<string, unknown>> {
+    return this.answerOffer('match:reject', 'match:rejected', matchRequestId, timeoutMs);
+  }
+
+  // match:error and WsException's `exception` carry no request id: answer one offer at a time.
+  private answerOffer(
+    event: string,
+    confirmation: string,
+    matchRequestId: string,
+    timeoutMs: number,
+  ): Promise<Record<string, unknown>> {
+    return new Promise((resolve, reject) => {
+      const socket = this.socket;
+      if (!socket?.connected) {
+        reject(new Error('Not connected to the matching service. Try again in a moment.'));
+        return;
+      }
+      const settle = (outcome: () => void) => {
+        clearTimeout(timer);
+        socket.off(confirmation, onConfirmed);
+        socket.off('match:error', onError);
+        socket.off('exception', onError);
+        outcome();
+      };
+      const onConfirmed = (data: Record<string, unknown>) => {
+        if (data?.matchRequestId === matchRequestId) settle(() => resolve(data));
+      };
+      const onError = (data: Record<string, unknown>) =>
+        settle(() => reject(new Error(typeof data?.message === 'string' ? data.message : 'The server refused the request.')));
+      const timer = setTimeout(
+        () => settle(() => reject(new Error('The server did not answer. Try again.'))),
+        timeoutMs,
+      );
+      socket.on(confirmation, onConfirmed);
+      socket.on('match:error', onError);
+      socket.on('exception', onError);
+      socket.emit(event, { matchRequestId });
+    });
   }
 
   cancelMatch(matchRequestId: string): void {

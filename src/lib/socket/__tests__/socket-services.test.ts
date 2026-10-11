@@ -128,4 +128,83 @@ describe('socket services', () => {
       expect(joinsOf(second.socket)).toEqual([]);
     });
   });
+
+  describe('matching offer answers', () => {
+    type Handler = (data: Record<string, unknown>) => void;
+    type MockSocket = { connected: boolean; on: ReturnType<typeof vi.fn>; off: ReturnType<typeof vi.fn>; emit: ReturnType<typeof vi.fn> };
+
+    /** Connects the matching socket; `fire` calls the handlers currently registered for an event. */
+    const connectMatching = (connected = true) => {
+      matchingSocket.connect();
+      const { results } = mockIo.mock;
+      const socket = results[results.length - 1].value as MockSocket;
+      socket.connected = connected;
+      const handlers = new Map<string, Set<Handler>>();
+      socket.on.mockImplementation((event: string, handler: Handler) => {
+        handlers.set(event, (handlers.get(event) ?? new Set()).add(handler));
+      });
+      socket.off.mockImplementation((event: string, handler: Handler) => handlers.get(event)?.delete(handler));
+      const fire = (event: string, data: Record<string, unknown>) =>
+        [...(handlers.get(event) ?? [])].forEach((handler) => handler(data));
+      const listening = (event: string) => handlers.get(event)?.size ?? 0;
+      return { socket, fire, listening };
+    };
+    const requestId = () => crypto.randomUUID();
+
+    it.each([
+      ['acceptMatch', 'match:accept', 'match:accepted'],
+      ['rejectMatch', 'match:reject', 'match:rejected'],
+    ] as const)('%s should resolve only on the confirmation for that request, then stop listening', async (method, event, confirmation) => {
+      const { socket, fire, listening } = connectMatching();
+      const id = requestId();
+      let settled = false;
+
+      const answer = matchingSocket[method](id).then((data) => {
+        settled = true;
+        return data;
+      });
+      expect(socket.emit).toHaveBeenCalledWith(event, { matchRequestId: id });
+
+      fire(confirmation, { matchRequestId: requestId() });
+      await Promise.resolve();
+      expect(settled).toBe(false);
+
+      fire(confirmation, { matchRequestId: id, consultationId: 'c-1' });
+      await expect(answer).resolves.toEqual({ matchRequestId: id, consultationId: 'c-1' });
+      expect([confirmation, 'match:error', 'exception'].map(listening)).toEqual([0, 0, 0]);
+    });
+
+    it.each(['match:error', 'exception'])('should reject with the server message on %s', async (errorEvent) => {
+      const { fire, listening } = connectMatching();
+      const message = `Match request is no longer available ${requestId().slice(0, 4)}`;
+
+      const answer = matchingSocket.acceptMatch(requestId());
+      fire(errorEvent, { message });
+
+      await expect(answer).rejects.toThrow(message);
+      expect(listening('match:accepted')).toBe(0);
+    });
+
+    it('should reject without sending anything when not connected', async () => {
+      const { socket } = connectMatching(false);
+
+      await expect(matchingSocket.acceptMatch(requestId())).rejects.toThrow('Not connected');
+      expect(socket.emit).not.toHaveBeenCalled();
+    });
+
+    it('should reject when the server never answers', async () => {
+      vi.useFakeTimers();
+      try {
+        const { listening } = connectMatching();
+        const answer = matchingSocket.rejectMatch(requestId(), 5_000);
+        const outcome = expect(answer).rejects.toThrow('did not answer');
+
+        await vi.advanceTimersByTimeAsync(5_000);
+        await outcome;
+        expect(listening('match:rejected')).toBe(0);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+  });
 });

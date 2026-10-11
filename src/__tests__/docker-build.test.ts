@@ -22,8 +22,10 @@ function dockerIgnored(file: string, patterns: string[]): boolean {
     const glob = pattern
       .replace(/^\/|\/$/g, '')
       .replace(/[.+^${}()|[\]\\]/g, '\\$&')
+      .replace(/\*\*\//g, '\0')
       .replace(/\*/g, '[^/]*')
-      .replace(/\?/g, '[^/]');
+      .replace(/\?/g, '[^/]')
+      .replace(/\0/g, '(?:.*/)?');
     return new RegExp(`^${glob}(/.*)?$`).test(file);
   });
 }
@@ -34,6 +36,7 @@ function nginxLocation(conf: string, location: string): string[] | null {
   if (start === -1) return null;
   const body = conf.slice(conf.indexOf('{', start) + 1, conf.indexOf('}', start));
   return body
+    .replace(/#.*$/gm, '')
     .split(';')
     .map((directive) => directive.trim().replace(/\s+/g, ' '))
     .filter(Boolean);
@@ -53,6 +56,14 @@ describe('client Dockerfile', () => {
 
     expect(copiedSources.filter((source) => dockerIgnored(source, ignore))).toEqual([]);
   });
+
+  it.each(['node_modules', 'integration/node_modules', 'integration', '.git'])(
+    'should keep %s out of the build context (the image builds from src only)',
+    (file) => {
+      const ignore = readFileSync(path.join(clientRoot, '.dockerignore'), 'utf8').split('\n').map((l) => l.trim());
+      expect(dockerIgnored(file, ignore.filter((line) => line && !line.startsWith('#')))).toBe(true);
+    },
+  );
 
   it('should give every pnpm install the build-script approvals', () => {
     const installs = dockerfileLines
@@ -96,8 +107,25 @@ describe('client nginx.conf', () => {
     expect(nginxLocation(conf, `${base}/`)).not.toBeNull();
   });
 
+  it('should let /api/ carry uploads as large as the server accepts (10 MB)', () => {
+    const size = api?.find((directive) => directive.startsWith('client_max_body_size '))?.split(' ')[1] ?? '1m';
+    const units: Record<string, number> = { k: 1024, m: 1024 ** 2, g: 1024 ** 3 };
+    const match = /^(\d+)([kmg]?)$/i.exec(size);
+    const bytes = match ? Number(match[1]) * (units[match[2].toLowerCase()] ?? 1) : 0;
+
+    expect(bytes).toBeGreaterThan(10 * 1024 ** 2);
+  });
+
   it('should fall back to index.html for client-side routes', () => {
     expect(nginxLocation(conf, '/')).toContain('try_files $uri $uri/ /index.html');
+  });
+});
+
+describe('nginxLocation', () => {
+  it('should ignore comments, even ones containing semicolons', () => {
+    const conf = 'location /x/ {\n  # a; b\n  proxy_pass http://y/;\n  gzip on;\n}';
+
+    expect(nginxLocation(conf, '/x/')).toEqual(['proxy_pass http://y/', 'gzip on']);
   });
 });
 
@@ -107,6 +135,9 @@ describe('dockerIgnored', () => {
     ['src', ['node_modules', 'dist'], false],
     ['dist/assets/a.js', ['dist'], true],
     ['tsconfig.app.json', ['*.json'], true],
+    ['integration/node_modules/vitest', ['**/node_modules'], true],
+    ['node_modules', ['**/node_modules'], true],
+    ['src/node_modules_notes.md', ['**/node_modules'], false],
   ])('dockerIgnored(%s, %j) is %s', (file, patterns, expected) => {
     expect(dockerIgnored(file, patterns)).toBe(expected);
   });

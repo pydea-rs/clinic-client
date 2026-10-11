@@ -50,8 +50,10 @@ export const SlotExplorer: React.FC = () => {
 
   const handleBook = () => {
     if (selectedSlot) {
-      const selectedDurationPrice = durations.find((d) => d.minutes === selectedDuration)?.price;
-      navigate(`/booking/${doctorId}`, { state: { slot: selectedSlot, duration: selectedDuration, price: Number(selectedDurationPrice || 0), soapId } });
+      // The slot's own length and price: what the patient picked, not the current filter.
+      const minutes = selectedSlot.durationMinutes;
+      const price = durations.find((d) => d.minutes === minutes)?.price;
+      navigate(`/booking/${doctorId}`, { state: { slot: selectedSlot, duration: minutes, price: Number(price || 0), soapId } });
     }
   };
 
@@ -101,7 +103,10 @@ export const SlotExplorer: React.FC = () => {
             <input
               type="date"
               value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
+              onChange={(e) => {
+                setSelectedDate(e.target.value);
+                setSelectedSlot(null); // a slot of another day would otherwise still be booked
+              }}
               className="w-full px-4 py-2.5 input-focus"
               min={new Date().toISOString().split('T')[0]}
             />
@@ -110,7 +115,10 @@ export const SlotExplorer: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">Duration</label>
             <select
               value={selectedDuration}
-              onChange={(e) => setSelectedDuration(Number(e.target.value))}
+              onChange={(e) => {
+                setSelectedDuration(Number(e.target.value));
+                setSelectedSlot(null);
+              }}
               className="w-full px-4 py-2.5 input-focus"
             >
               {durations.map((d) => (
@@ -160,9 +168,11 @@ export const SlotExplorer: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Selected Slot</p>
-                <p className="text-lg font-semibold text-brand-700">{selectedSlot.startTime} - {selectedSlot.endTime}</p>
+                <p className="text-lg font-semibold text-brand-700">
+                  {selectedSlot.date} {selectedSlot.startTime} - {selectedSlot.endTime} UTC
+                </p>
                 <p className="text-sm text-gray-500">
-                  Duration: {selectedDuration} min
+                  Duration: {selectedSlot.durationMinutes} min
                 </p>
               </div>
               <button

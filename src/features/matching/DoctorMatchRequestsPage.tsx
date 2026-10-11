@@ -6,6 +6,7 @@ import { Loader2, UserPlus, Check, X, Clock, FileText, AlertTriangle, Zap } from
 import toast from 'react-hot-toast';
 import { MatchRequest, TriageLevel } from '../../lib/types/api';
 import { formatSpecialty } from '../../lib/format';
+import { getErrorMessage } from '../../lib/api/error.utils';
 
 const triageConfig: Record<string, { icon: React.ElementType; color: string; ring: string; label: string }> = {
   SELF_CARE: { icon: Check, color: 'bg-emerald-50 text-emerald-700', ring: 'ring-emerald-500/10', label: 'Self Care' },
@@ -136,30 +137,30 @@ export const DoctorMatchRequestsPage: React.FC = () => {
   }, [handleWsEvent]);
 
   const handleAccept = async (matchRequestId: string) => {
+    if (processingId) return; // the server's error event doesn't say which offer it is about
     setProcessingId(matchRequestId);
     try {
-      matchingSocket.acceptMatch(matchRequestId);
+      await matchingSocket.acceptMatch(matchRequestId);
       toast.success('Match accepted! Consultation created.');
-      queryClient.invalidateQueries({ queryKey: ['matching', 'pending'] });
-    } catch {
-      toast.error('Failed to accept match');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to accept match'));
     } finally {
       setProcessingId(null);
+      queryClient.invalidateQueries({ queryKey: ['matching', 'pending'] });
     }
   };
 
   const handleReject = async (matchRequestId: string) => {
+    if (processingId) return; // the server's error event doesn't say which offer it is about
     setProcessingId(matchRequestId);
     try {
-      matchingSocket.rejectMatch(matchRequestId);
+      await matchingSocket.rejectMatch(matchRequestId);
       toast('Match declined');
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ['matching', 'pending'] });
-      }, 500);
-    } catch {
-      toast.error('Failed to decline match');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to decline match'));
     } finally {
       setProcessingId(null);
+      queryClient.invalidateQueries({ queryKey: ['matching', 'pending'] });
     }
   };
 

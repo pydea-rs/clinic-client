@@ -484,6 +484,20 @@ describe('Chat', () => {
       expect(error).toBeDefined();
       expect(error.message).toContain('5000');
     });
+
+    it.each([
+      ['a javascript: fileUrl', { type: 'FILE', fileUrl: 'javascript:alert(document.cookie)' }, 'fileUrl'],
+      ['a SYSTEM message', { type: 'SYSTEM' }, 'Invalid message type'],
+    ])('should refuse %s over WebSocket, as over HTTP, and save nothing', async (_case, extra, expected) => {
+      const content = `Refused ${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const errorPromise = waitForEvent<any>(patientSocket, 'exception', 10_000);
+
+      patientSocket.emit('chat:message', { chatId, content, ...extra });
+
+      expect((await errorPromise).message).toContain(expected);
+      const { messages } = await patientChat.getMessages(chatId);
+      expect(messages.map((m: any) => m.content)).not.toContain(content);
+    });
   });
 
   // ─── Who may start a chat (SPEC-01) ────────────────────────────
@@ -785,14 +799,14 @@ describe('Chat', () => {
         expect(await chatNotifications()).toHaveLength(1);
       });
 
-      it('should notify again after the chat is closed, with one notification counting the messages', async () => {
+      it('should keep delivering live after the chat is closed, and notify with one notification counting the messages', async () => {
         socket.emit('chat:leave', { chatId: chat });
         await settle();
         const burst = 2 + Math.floor(Math.random() * 3);
 
-        // The chat: room is left too, so these don't arrive live; send over HTTP without waiting for them.
+        // send() waits for each message to reach the socket live.
         for (let i = 0; i < burst; i++) {
-          expect((await doctorA.tc.axios.post(`/chat/${chat}/message`, { content: `Later ${i} ${tag()}` })).status).toBe(201);
+          await send(`Later ${i} ${tag()}`);
         }
 
         await vi.waitFor(

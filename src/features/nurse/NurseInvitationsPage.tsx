@@ -30,7 +30,14 @@ export const NurseInvitationsPage: React.FC = () => {
     onSuccess: async (_result, invitation) => {
       toast.success(`You joined ${doctorName(invitation)}'s team`);
       // Accepting may have made this account a nurse; the guards and sidebar follow the user's role.
-      setUser(await authApi.me());
+      // The accept itself succeeded, so a failed reload must not surface as a failed accept.
+      try {
+        setUser(await authApi.me());
+      } catch {
+        toast.error('Reload the page to see your nurse dashboard');
+        queryClient.invalidateQueries();
+        return;
+      }
       queryClient.invalidateQueries();
       navigate('/nurse/dashboard');
     },
