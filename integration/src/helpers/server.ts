@@ -35,6 +35,7 @@ const { PrismaService } = require(path.join(serverDist, 'prisma/prisma.service')
 const { BotpressService } = require(path.join(serverDist, 'ai-agents/botpress.service'));
 const { OpenAiService } = require(path.join(serverDist, 'ai-agents/openai/openai.service'));
 const { CalendlyService } = require(path.join(serverDist, 'calendly/calendly.service'));
+const { MatchingGateway } = require(path.join(serverDist, 'matching/matching.gateway'));
 const { EmailChannel } = require(path.join(serverDist, 'notification/channels/email.channel'));
 const { WebPushChannel } = require(path.join(serverDist, 'notification/channels/web-push.channel'));
 
@@ -296,4 +297,10 @@ export function getPrisma(): any {
 export function getCalendlyService(): any {
   if (!app) throw new Error('Test server not running.');
   return app.get(CalendlyService);
+}
+
+/** The server's MatchingGateway, to run its expiry sweep on demand. */
+export function getMatchingGateway(): any {
+  if (!app) throw new Error('Test server not running.');
+  return app.get(MatchingGateway);
 }

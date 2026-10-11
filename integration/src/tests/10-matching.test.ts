@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { createTestClient, TestClient } from '../helpers/api-client.js';
-import { getPrisma } from '../helpers/server.js';
+import { getMatchingGateway, getPrisma } from '../helpers/server.js';
 import { createAdminApi } from '@client/api/admin.api';
 import { createConsultationApi } from '@client/api/consultation.api';
 import { createDoctorApi } from '@client/api/doctor.api';
@@ -25,8 +25,8 @@ import { Socket } from 'socket.io-client';
  * After the first accept, firstDoc has +1 consultation → scores strictly
  * higher for the remainder of the suite (until the reject flow which is last).
  *
- * Timeout + browse tests are skipped: the server hard-codes a 5-minute
- * timeout with no config override, making it impractical in integration.
+ * The 5-minute timeout is reached by backdating a request in the DB and running
+ * the expiry sweep, as after a restart. Browse after timeout is not covered.
  *
  * Register budget (5/60s): 3 used (doctor1 + doctor2 + patient)
  * Login budget (5/60s): 1 used (superadmin)
@@ -489,6 +489,73 @@ describe('Matching', () => {
           unauthSocket.connect();
         }),
       ).resolves.toBeUndefined();
+    });
+  });
+
+  // ─── Expiry (requests whose timers are gone, e.g. after a restart) ───
+  // Creates no consultation, so firstDoc still scores strictly higher after it.
+
+  describe('Expiry of requests past their 5 minutes', () => {
+    let staleId: string;
+
+    it('should keep an expired offer from the doctor: not pending, and neither accepted nor declined', async () => {
+      const offerPromise = waitForEvent<any>(firstDocSocket, 'match:request', 10_000);
+      const response = await patientTc.axios.post('/matching/request', { specialty: 'CARDIOLOGY' });
+      expect(response.status).toBe(201);
+      staleId = response.data.matchRequest.id;
+      expect((await offerPromise).matchRequestId).toBe(staleId);
+
+      const age = 5 * 60_000 + 1_000 + Math.floor(Math.random() * 3_600_000);
+      await getPrisma().matchRequest.update({
+        where: { id: staleId },
+        data: { createdAt: new Date(Date.now() - age) },
+      });
+
+      const pending = await firstDocMatching.getPending();
+      expect(pending.map((m: any) => m.id)).not.toContain(staleId);
+
+      for (const event of ['match:accept', 'match:reject']) {
+        const errorPromise = waitForEvent<any>(firstDocSocket, 'match:error', 10_000);
+        firstDocSocket.emit(event, { matchRequestId: staleId });
+        expect((await errorPromise).message).toBe('This match request has expired.');
+      }
+
+      const stored = await getPrisma().matchRequest.findUnique({ where: { id: staleId } });
+      expect(stored).toMatchObject({ status: 'MATCHED', matchedDoctorId: firstDocProfileId, consultationId: null });
+      expect(await getPrisma().matchRejection.count({ where: { matchRequestId: staleId } })).toBe(0);
+    });
+
+    it('should time it out on the sweep, tell the patient and the doctor, and free the patient to ask again', async () => {
+      const patTimeout = waitForEvent<any>(patientSocket, 'match:timeout', 10_000);
+      const docTimeout = waitForEvent<any>(firstDocSocket, 'match:timeout', 10_000);
+
+      await getMatchingGateway().expireStaleRequests();
+
+      expect((await patTimeout).matchRequestId).toBe(staleId);
+      expect((await docTimeout).matchRequestId).toBe(staleId);
+      const stored = await getPrisma().matchRequest.findUnique({ where: { id: staleId } });
+      expect(stored.status).toBe('TIMEOUT');
+      expect(stored.resolvedAt).not.toBeNull();
+
+      const again = await patientTc.axios.post('/matching/request', { specialty: 'CARDIOLOGY' });
+      expect(again.status).toBe(201);
+      expect((await patientMatching.cancel(again.data.matchRequest.id)).status).toBe('CANCELLED');
+    });
+
+    it('should leave requests inside their 5 minutes alone', async () => {
+      const response = await patientTc.axios.post('/matching/request', { specialty: 'CARDIOLOGY' });
+      expect(response.status).toBe(201);
+      const freshId = response.data.matchRequest.id;
+      await getPrisma().matchRequest.update({
+        where: { id: freshId },
+        data: { createdAt: new Date(Date.now() - 5 * 60_000 + 30_000) },
+      });
+
+      await getMatchingGateway().expireStaleRequests();
+
+      const stored = await getPrisma().matchRequest.findUnique({ where: { id: freshId } });
+      expect(stored.status).toBe('MATCHED');
+      expect((await patientMatching.cancel(freshId)).status).toBe('CANCELLED');
     });
   });
 
