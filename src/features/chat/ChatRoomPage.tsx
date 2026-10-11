@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { chatApi } from '../../api';
 import { socketService } from '../../lib/socket/socket.service';
 import { useAuthStore } from '../../lib/stores/auth.store';
-import { Chat, Message } from '../../lib/types/api';
+import { Chat, ChatParticipant, Message } from '../../lib/types/api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../lib/api/error.utils';
 
@@ -24,7 +24,8 @@ export const ChatRoomPage: React.FC = () => {
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
   const [chatInfo, setChatInfo] = useState<Chat | null>(null);
-  const [onlineParticipants, setOnlineParticipants] = useState<Set<string>>(new Set());
+  // Presence changes seen since the chat was fetched
+  const [presence, setPresence] = useState<Map<string, boolean>>(new Map());
   const [socketConnected, setSocketConnected] = useState(socketService.isConnected());
   const virtuosoRef = useRef<VirtuosoHandle>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -40,7 +41,13 @@ export const ChatRoomPage: React.FC = () => {
       ]);
 
       setChatInfo(chatData);
-      setMessages(messagesData.messages || []);
+      // Keep what arrived over the socket while the history was loading.
+      const history = messagesData.messages || [];
+      const loaded = new Set(history.map(m => String(m.id)));
+      setMessages(prev => [
+        ...history,
+        ...prev.filter(m => m.chatId === id && !loaded.has(String(m.id))),
+      ]);
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Failed to load chat'));
     } finally {
@@ -147,15 +154,7 @@ export const ChatRoomPage: React.FC = () => {
 
     // Listen for presence events
     const handleUserOnline = (data: { userId: string; isOnline?: boolean }) => {
-      setOnlineParticipants(prev => {
-        const next = new Set(prev);
-        if (data.isOnline === false) {
-          next.delete(data.userId);
-        } else {
-          next.add(data.userId);
-        }
-        return next;
-      });
+      setPresence(prev => new Map(prev).set(data.userId, data.isOnline !== false));
     };
 
     socket.on('chat:message', handleNewMessage);
@@ -288,11 +287,11 @@ export const ChatRoomPage: React.FC = () => {
 
   const getOtherParticipant = () => {
     if (!chatInfo?.participants || !user) return null;
-    return chatInfo.participants.find((p) => p.userId !== user.id);
+    return chatInfo.participants.find((p) => p.id !== user.id);
   };
 
-  const isParticipantOnline = (userId: string) => {
-    return onlineParticipants.has(userId) || socketService.isUserOnline(userId);
+  const isParticipantOnline = (participant: ChatParticipant) => {
+    return presence.get(participant.id) ?? (participant.isOnline === true || socketService.isUserOnline(participant.id));
   };
 
   const formatTime = (date: string) => {
@@ -358,7 +357,7 @@ export const ChatRoomPage: React.FC = () => {
   }
 
   const otherParticipant = getOtherParticipant();
-  const isOnline = otherParticipant ? isParticipantOnline(otherParticipant.userId) : false;
+  const isOnline = otherParticipant ? isParticipantOnline(otherParticipant) : false;
 
   return (
     <div className="flex flex-col h-full bg-gray-50 animate-fade-in">
@@ -373,8 +372,8 @@ export const ChatRoomPage: React.FC = () => {
           </button>
           <div>
             <h1 className="text-xl font-bold text-gray-900">
-              {chatInfo?.topic || (otherParticipant?.user
-                ? `${otherParticipant.user.firstname} ${otherParticipant.user.lastname}`
+              {chatInfo?.topic || (otherParticipant
+                ? `${otherParticipant.firstname} ${otherParticipant.lastname}`
                 : 'Chat')}
             </h1>
             {isOnline && (

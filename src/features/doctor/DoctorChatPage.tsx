@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { chatApi } from '../../api';
 import { socketService } from '../../lib/socket/socket.service';
 import { useAuthStore } from '../../lib/stores/auth.store';
-import { Chat } from '../../lib/types/api';
+import { Chat, ChatParticipant } from '../../lib/types/api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../lib/api/error.utils';
 import { MessageSquare, Search, Loader2, ChevronRight, Users } from 'lucide-react';
@@ -15,7 +15,8 @@ export const DoctorChatPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterTab, setFilterTab] = useState<FilterTab>('all');
-  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
+  // Presence changes seen since the list was fetched
+  const [presence, setPresence] = useState<Map<string, boolean>>(new Map());
   const { user } = useAuthStore();
 
   useEffect(() => {
@@ -24,15 +25,7 @@ export const DoctorChatPage: React.FC = () => {
     const socket = socketService.connect();
 
     const handleUserOnline = (data: { userId: string; isOnline?: boolean }) => {
-      setOnlineUsers((prev) => {
-        const next = new Set(prev);
-        if (data.isOnline === false) {
-          next.delete(data.userId);
-        } else {
-          next.add(data.userId);
-        }
-        return next;
-      });
+      setPresence((prev) => new Map(prev).set(data.userId, data.isOnline !== false));
     };
 
     socket.on('user:online', handleUserOnline);
@@ -55,11 +48,11 @@ export const DoctorChatPage: React.FC = () => {
 
   const getOtherParticipant = (chat: Chat) => {
     if (!chat.participants || !user) return null;
-    return chat.participants.find((p) => p.userId !== user.id);
+    return chat.participants.find((p) => p.id !== user.id);
   };
 
-  const isParticipantOnline = (userId: string) => {
-    return onlineUsers.has(userId) || socketService.isUserOnline(userId);
+  const isParticipantOnline = (participant: ChatParticipant) => {
+    return presence.get(participant.id) ?? (participant.isOnline === true || socketService.isUserOnline(participant.id));
   };
 
   // Filtering
@@ -71,8 +64,8 @@ export const DoctorChatPage: React.FC = () => {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       const other = getOtherParticipant(chat);
-      const participantName = other?.user
-        ? `${other.user.firstname} ${other.user.lastname}`.toLowerCase()
+      const participantName = other
+        ? `${other.firstname} ${other.lastname}`.toLowerCase()
         : '';
       const topic = (chat.topic || '').toLowerCase();
       if (!participantName.includes(query) && !topic.includes(query)) return false;
@@ -183,12 +176,12 @@ export const DoctorChatPage: React.FC = () => {
         <div className="space-y-3 stagger-children">
           {filteredChats.map((chat, index) => {
             const otherParticipant = getOtherParticipant(chat);
-            const isOnline = otherParticipant ? isParticipantOnline(otherParticipant.userId) : false;
-            const displayName = otherParticipant?.user
-              ? `${otherParticipant.user.firstname} ${otherParticipant.user.lastname}`
+            const isOnline = otherParticipant ? isParticipantOnline(otherParticipant) : false;
+            const displayName = otherParticipant
+              ? `${otherParticipant.firstname} ${otherParticipant.lastname}`
               : chat.topic || 'Chat';
-            const initials = otherParticipant?.user
-              ? `${otherParticipant.user.firstname[0] || ''}${otherParticipant.user.lastname[0] || ''}`.toUpperCase()
+            const initials = otherParticipant
+              ? `${otherParticipant.firstname[0] || ''}${otherParticipant.lastname[0] || ''}`.toUpperCase()
               : 'CH';
 
             return (
@@ -216,7 +209,7 @@ export const DoctorChatPage: React.FC = () => {
                       {isOnline && (
                         <span className="text-xs text-green-600 font-medium">Online</span>
                       )}
-                      {chat.unreadCount && chat.unreadCount > 0 && (
+                      {(chat.unreadCount ?? 0) > 0 && (
                         <span className="px-2 py-0.5 bg-gradient-to-r from-brand-600 to-brand-500 text-white text-xs font-semibold rounded-full shadow-sm">
                           {chat.unreadCount}
                         </span>
@@ -230,7 +223,7 @@ export const DoctorChatPage: React.FC = () => {
                         {chat.lastMessage.content}
                       </p>
                     )}
-                    {chat.topic && otherParticipant?.user && (
+                    {chat.topic && otherParticipant && (
                       <p className="text-xs text-gray-400 mt-0.5">{chat.topic}</p>
                     )}
                   </div>

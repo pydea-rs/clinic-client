@@ -202,11 +202,11 @@ export interface DoctorReview {
 
 // ─── Chat ───────────────────────────────────────────────────────────────────
 
-export interface ChatParticipant {
-  userId: string;
+export interface ChatParticipant extends Pick<User, 'id' | 'firstname' | 'lastname' | 'avatar' | 'role'> {
   joinedAt: string;
-  lastSeenAt?: string;
-  user?: Pick<User, 'id' | 'firstname' | 'lastname' | 'email'>;
+  lastSeenAt?: string | null;
+  /** Presence when the chat was fetched. */
+  isOnline?: boolean;
 }
 
 export interface Chat {

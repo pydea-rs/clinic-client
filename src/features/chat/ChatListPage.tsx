@@ -5,7 +5,7 @@ import { socketService } from '../../lib/socket/socket.service';
 import { useAuthStore } from '../../lib/stores/auth.store';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../lib/api/error.utils';
-import { Chat } from '../../lib/types/api';
+import { Chat, ChatParticipant } from '../../lib/types/api';
 
 export const ChatListPage: React.FC = () => {
   const [chats, setChats] = useState<Chat[]>([]);
@@ -14,7 +14,8 @@ export const ChatListPage: React.FC = () => {
   const [newChatParticipantId, setNewChatParticipantId] = useState('');
   const [newChatTopic, setNewChatTopic] = useState('');
   const [creating, setCreating] = useState(false);
-  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
+  // Presence changes seen since the list was fetched
+  const [presence, setPresence] = useState<Map<string, boolean>>(new Map());
   const { user } = useAuthStore();
 
   useEffect(() => {
@@ -25,15 +26,7 @@ export const ChatListPage: React.FC = () => {
 
     // Listen for presence events
     const handleUserOnline = (data: { userId: string; isOnline?: boolean }) => {
-      setOnlineUsers(prev => {
-        const next = new Set(prev);
-        if (data.isOnline === false) {
-          next.delete(data.userId);
-        } else {
-          next.add(data.userId);
-        }
-        return next;
-      });
+      setPresence(prev => new Map(prev).set(data.userId, data.isOnline !== false));
     };
 
     socket.on('user:online', handleUserOnline);
@@ -80,11 +73,11 @@ export const ChatListPage: React.FC = () => {
 
   const getOtherParticipant = (chat: Chat) => {
     if (!chat.participants || !user) return null;
-    return chat.participants.find(p => p.userId !== user.id);
+    return chat.participants.find(p => p.id !== user.id);
   };
 
-  const isParticipantOnline = (userId: string) => {
-    return onlineUsers.has(userId) || socketService.isUserOnline(userId);
+  const isParticipantOnline = (participant: ChatParticipant) => {
+    return presence.get(participant.id) ?? (participant.isOnline === true || socketService.isUserOnline(participant.id));
   };
 
   if (loading) {
@@ -146,7 +139,7 @@ export const ChatListPage: React.FC = () => {
         <div className="space-y-3 stagger-children">
           {chats.map((chat) => {
             const otherParticipant = getOtherParticipant(chat);
-            const isOnline = otherParticipant ? isParticipantOnline(otherParticipant.userId) : false;
+            const isOnline = otherParticipant ? isParticipantOnline(otherParticipant) : false;
 
             return (
               <Link
@@ -158,8 +151,8 @@ export const ChatListPage: React.FC = () => {
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <h3 className="font-semibold text-gray-900">
-                        {chat.topic || (otherParticipant?.user
-                          ? `${otherParticipant.user.firstname} ${otherParticipant.user.lastname}`
+                        {chat.topic || (otherParticipant
+                          ? `${otherParticipant.firstname} ${otherParticipant.lastname}`
                           : 'Chat')}
                       </h3>
                       {isOnline && (
@@ -168,7 +161,7 @@ export const ChatListPage: React.FC = () => {
                           Online
                         </span>
                       )}
-                      {chat.unreadCount && chat.unreadCount > 0 && (
+                      {(chat.unreadCount ?? 0) > 0 && (
                         <span className="px-2 py-0.5 bg-gradient-to-r from-brand-600 to-brand-500 text-white text-xs font-semibold rounded-full shadow-sm">
                           {chat.unreadCount}
                         </span>
@@ -177,11 +170,6 @@ export const ChatListPage: React.FC = () => {
                     {chat.lastMessage && (
                       <p className="text-sm text-gray-500 mt-1 truncate">
                         {chat.lastMessage.content}
-                      </p>
-                    )}
-                    {otherParticipant?.user && (
-                      <p className="text-xs text-gray-400 mt-1">
-                        {otherParticipant.user.email}
                       </p>
                     )}
                   </div>

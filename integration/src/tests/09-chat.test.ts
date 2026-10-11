@@ -148,6 +148,9 @@ describe('Chat', () => {
       expect(chats.length).toBeGreaterThanOrEqual(1);
       const found = chats.find((c: any) => c.id === chatId);
       expect(found).toBeDefined();
+      expect(found!.participants).toEqual([
+        expect.objectContaining({ id: doctorUserId, firstname: 'ChatDoc', lastname: 'Test', isOnline: false }),
+      ]);
     });
 
     it('should list chats for doctor', async () => {
@@ -167,6 +170,10 @@ describe('Chat', () => {
       expect(chat.id).toBe(chatId);
       const participants = chat.participants ?? [];
       expect(participants.length).toBe(2);
+      expect(participants.map((p) => p.id).sort()).toEqual([doctorUserId, patientUserId].sort());
+      expect(participants.find((p) => p.id === doctorUserId)).toEqual(
+        expect.objectContaining({ firstname: 'ChatDoc', lastname: 'Test', role: 'DOCTOR', isOnline: false }),
+      );
     });
   });
 
@@ -210,6 +217,19 @@ describe('Chat', () => {
       const { messages } = await patientChat.getMessages(chatId, { page: 1, limit: 2 });
       expect(messages.length).toBe(2);
     });
+
+    it('should return the latest messages oldest first', async () => {
+      const sent: string[] = [];
+      for (let i = 0; i < 3 + Math.floor(Math.random() * 4); i++) {
+        const content = `In order ${i} ${Math.random().toString(36).slice(2, 8)}`;
+        await (i % 2 ? doctorChat : patientChat).sendMessage(chatId, { content });
+        sent.push(content);
+      }
+
+      const { messages } = await doctorChat.getMessages(chatId, { page: 1, limit: sent.length });
+
+      expect(messages.map((m) => m.content)).toEqual(sent);
+    });
   });
 
   // ─── WebSocket Happy Paths ─────────────────────────────────────
@@ -227,6 +247,16 @@ describe('Chat', () => {
       await connectSocket(doctorSocket);
 
       expect(doctorSocket.connected).toBe(true);
+    });
+
+    it('should list a connected participant as online', async () => {
+      const chat = await patientChat.getById(chatId);
+      const { chats } = await patientChat.list();
+
+      expect(chat.participants?.find((p) => p.id === doctorUserId)?.isOnline).toBe(true);
+      expect(chats.find((c) => c.id === chatId)?.participants).toEqual([
+        expect.objectContaining({ id: doctorUserId, isOnline: true }),
+      ]);
     });
   });
 
@@ -306,7 +336,7 @@ describe('Chat', () => {
     it('should receive read receipt', async () => {
       // First, get the latest messages so we have a valid message ID
       const { messages } = await patientChat.getMessages(chatId);
-      const lastMessage = messages[0]; // most recent
+      const lastMessage = messages[messages.length - 1];
 
       const patientReceive = waitForEvent<any>(patientSocket, 'chat:read', 10_000);
 

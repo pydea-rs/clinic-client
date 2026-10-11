@@ -20,16 +20,18 @@ export function createChatApi(client: AxiosInstance) {
       return { chats: [], total: 0 };
     },
 
-    getById: async (id: string): Promise<Chat & { participants?: Array<{ userId: string; joinedAt: string; lastSeenAt?: string }> }> => {
+    getById: async (id: string): Promise<Chat> => {
       const response = await client.get(`/chat/${id}`);
       return response.data;
     },
 
+    /** Pages count back from the newest message; each page comes back oldest first. */
     getMessages: async (id: string, params?: { page?: number; limit?: number }): Promise<{ messages: Message[]; total: number }> => {
       const skip = params?.page ? (params.page - 1) * (params.limit || 20) : undefined;
       const response = await client.get(`/chat/${id}/messages`, { params: { skip, take: params?.limit } });
       const result = response.data;
-      return { messages: result?.messages || result?.data || (Array.isArray(result) ? result : []), total: result?.total || 0 };
+      const newestFirst: Message[] = result?.messages || result?.data || (Array.isArray(result) ? result : []);
+      return { messages: [...newestFirst].reverse(), total: result?.total || 0 };
     },
 
     sendMessage: async (chatId: string, payload: {

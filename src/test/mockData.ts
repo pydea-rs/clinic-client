@@ -1,4 +1,4 @@
-import { User } from '../lib/types/api';
+import { Chat, ChatParticipant, User } from '../lib/types/api';
 
 export const mockPatientUser: User = {
   id: '123e4567-e89b-12d3-a456-426614174000',
@@ -64,4 +64,27 @@ export const mockApiError = (status: number, message: string) => ({
   contents: null,
   timestamp: new Date().toISOString(),
   path: '/test',
+});
+
+const randomName = () => `${'BCDFGHJKLMNPRSTVZ'[Math.floor(Math.random() * 17)]}${Math.random().toString(36).slice(2, 8)}`;
+
+/** A chat participant as the server sends it: the user's public fields, flattened. */
+export const buildChatParticipant = (overrides: Partial<ChatParticipant> = {}): ChatParticipant => ({
+  id: crypto.randomUUID(),
+  firstname: randomName(),
+  lastname: randomName(),
+  role: (['DOCTOR', 'NURSE', 'PATIENT'] as const)[Math.floor(Math.random() * 3)],
+  joinedAt: new Date(Date.now() - Math.floor(Math.random() * 1e9)).toISOString(),
+  lastSeenAt: null,
+  isOnline: false,
+  ...overrides,
+});
+
+export const buildChat = (participants: ChatParticipant[], overrides: Partial<Chat> = {}): Chat => ({
+  id: crypto.randomUUID(),
+  createdAt: new Date(Date.now() - 86_400_000).toISOString(),
+  updatedAt: new Date().toISOString(),
+  participants,
+  unreadCount: 0,
+  ...overrides,
 });
