@@ -1,9 +1,11 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { createHmac, randomBytes, randomUUID } from 'crypto';
 import { createTestClient, TestClient } from '../helpers/api-client.js';
 import { createAdminApi } from '@client/api/admin.api';
 import { createDoctorApi } from '@client/api/doctor.api';
 import { createSchedulingApi } from '@client/api/scheduling.api';
 import { slotStartToIso } from '@client/lib/scheduling';
+import { getCalendlyService, getPrisma, getServerUrl } from '../helpers/server.js';
 
 /**
  * Phase 6 — Scheduling integration tests.
@@ -417,6 +419,110 @@ describe('Scheduling', () => {
       } finally {
         await patientScheduling.cancelAppointment(booking.id);
       }
+    });
+  });
+
+  // ─── Calendly Webhooks ───────────────────────────────────────────
+
+  // Calendly's servers send no cookies, so no CSRF token: only the signature authenticates them.
+  describe('Calendly Webhooks', () => {
+    const signingKey = randomBytes(24).toString('hex');
+    const eventUri = `https://api.calendly.com/scheduled_events/${randomUUID()}`;
+    let calendly: any;
+    let patched: { verify: unknown; handle: unknown; key: unknown };
+    let webhookAppointmentId: number;
+
+    const now = () => Math.floor(Date.now() / 1000);
+    const sign = (rawBody: string, timestamp = now(), key = signingKey) =>
+      `t=${timestamp},v1=${createHmac('sha256', key).update(`${timestamp}.${rawBody}`).digest('hex')}`;
+    const webhookBody = (event: 'invitee.created' | 'invitee.canceled') =>
+      // Irregular spacing: the signature must be checked over the bytes as sent.
+      JSON.stringify(
+        {
+          event,
+          created_at: new Date().toISOString(),
+          created_by: 'https://api.calendly.com/users/WEBHOOK_TEST',
+          payload: {
+            uri: `${eventUri}/invitees/${randomUUID()}`,
+            event: eventUri,
+            reschedule_url: 'https://calendly.com/reschedulings/test',
+            cancel_url: 'https://calendly.com/cancellations/test',
+            tracking: { utm_content: `apt_${webhookAppointmentId}` },
+          },
+        },
+        null,
+        1 + Math.floor(Math.random() * 3),
+      );
+    const postWebhook = async (rawBody: string, signature?: string) =>
+      (
+        await fetch(`${getServerUrl()}/calendly/webhook`, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            ...(signature ? { 'calendly-webhook-signature': signature } : {}),
+          },
+          body: rawBody,
+        })
+      ).status;
+    const appointmentRow = () =>
+      getPrisma().appointment.findUniqueOrThrow({
+        where: { id: webhookAppointmentId },
+        select: { status: true, calendlyEventUri: true },
+      });
+
+    beforeAll(async () => {
+      // The real signature check and handler, with a known signing key.
+      calendly = getCalendlyService();
+      patched = { verify: calendly.verifyWebhookSignature, handle: calendly.handleWebhookEvent, key: calendly.webhookSigningKey };
+      delete calendly.verifyWebhookSignature;
+      delete calendly.handleWebhookEvent;
+      calendly.webhookSigningKey = signingKey;
+
+      // Three weeks after futureMonday: a Monday (10-18) with no exceptions or other bookings.
+      const monday = futureMonday();
+      monday.setUTCDate(monday.getUTCDate() + 21);
+      monday.setUTCHours(10 + Math.floor(Math.random() * 7), Math.random() < 0.5 ? 0 : 30);
+      const booking = await patientScheduling.bookAppointment({
+        doctorId: doctorProfileId,
+        dateTime: monday.toISOString(),
+        durationMinutes: 30,
+        price: 50,
+        method: 'CHAT',
+      });
+      webhookAppointmentId = booking.id;
+    });
+
+    afterAll(() => {
+      calendly.verifyWebhookSignature = patched.verify;
+      calendly.handleWebhookEvent = patched.handle;
+      calendly.webhookSigningKey = patched.key;
+    });
+
+    it('should confirm the appointment from a signed invitee.created sent without a CSRF token', async () => {
+      const rawBody = webhookBody('invitee.created');
+
+      expect(await postWebhook(rawBody, sign(rawBody))).toBe(200);
+      expect(await appointmentRow()).toEqual({ status: 'CONFIRMED', calendlyEventUri: eventUri });
+    });
+
+    it.each([
+      ['no signature', (_rawBody: string) => undefined],
+      ['a stale timestamp (replay)', (rawBody: string) => sign(rawBody, now() - 181 - Math.floor(Math.random() * 3600))],
+      ['a timestamp from the future', (rawBody: string) => sign(rawBody, now() + 181 + Math.floor(Math.random() * 3600))],
+      ['a signature over another body', (_rawBody: string) => sign(webhookBody('invitee.created'))],
+      ['another signing key', (rawBody: string) => sign(rawBody, now(), randomBytes(24).toString('hex'))],
+    ])('should refuse an invitee.canceled with %s (401) and keep the appointment', async (_case, signatureFor) => {
+      const rawBody = webhookBody('invitee.canceled');
+
+      expect(await postWebhook(rawBody, signatureFor(rawBody))).toBe(401);
+      expect((await appointmentRow()).status).toBe('CONFIRMED');
+    });
+
+    it('should cancel the appointment from a signed invitee.canceled', async () => {
+      const rawBody = webhookBody('invitee.canceled');
+
+      expect(await postWebhook(rawBody, sign(rawBody))).toBe(200);
+      expect((await appointmentRow()).status).toBe('CANCELLED');
     });
   });
 

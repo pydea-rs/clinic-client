@@ -291,3 +291,9 @@ export function getPrisma(): any {
   if (!app) throw new Error('Test server not running.');
   return app.get(PrismaService);
 }
+
+/** The server's CalendlyService instance; its methods are patched with MockCalendlyService's. */
+export function getCalendlyService(): any {
+  if (!app) throw new Error('Test server not running.');
+  return app.get(CalendlyService);
+}
