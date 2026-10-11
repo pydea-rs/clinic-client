@@ -335,6 +335,27 @@ describe('Nurse Module', () => {
       });
     });
 
+    it('should refuse to re-invite them for 7 days, and allow it after', async () => {
+      const notificationCount = () => getPrisma().notification.count({ where: { userId: declinerId } });
+      const before = await notificationCount();
+      const { respondedAt } = await getPrisma().doctorNurseAssignment.findUnique({ where: { id: invitationId } });
+
+      const refused = await doctorTc.axios.post('/nurse/assign', { nurseId: declinerId });
+
+      expect(refused.status).toBe(409);
+      expect(refused.data.message).toBe(
+        'This user declined your invitation recently. You can invite them again from ' +
+          `${new Date(respondedAt.getTime() + 7 * 24 * 3600_000).toISOString()}.`,
+      );
+      expect(await notificationCount()).toBe(before);
+
+      const week = 7 * 24 * 3600_000;
+      await getPrisma().doctorNurseAssignment.update({
+        where: { id: invitationId },
+        data: { respondedAt: new Date(Date.now() - week - 1_000 - Math.floor(Math.random() * week)) },
+      });
+    });
+
     it('should not let anyone else answer an invitation (404)', async () => {
       const reinvited = await doctorNurseApi.assign(declinerId, ['VIEW_PATIENTS']);
       expect(reinvited).toMatchObject({ id: invitationId, status: 'PENDING' });
