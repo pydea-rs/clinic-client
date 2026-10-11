@@ -4,59 +4,75 @@ Frontend test client for the AI-Clinic telemedicine platform.
 
 ## Purpose
 
-This is a QA/test client designed to validate all backend features without requiring Postman or external tools. It provides role-based interfaces for developers and QA engineers to verify backend functionality end-to-end.
+This is a sample/QA client for the AI-Clinic NestJS server (`../server`, a separate repo). It provides role-based
+interfaces for developers and QA engineers to exercise the server end-to-end without Postman or external tools, and it
+hosts the full-stack integration test suite (`integration/`).
 
-**Note:** This is NOT a production UX. It's a testing tool.
+**Note:** This is NOT a production UX. The server is the product; this client is a replaceable sample.
 
 ## Quick Start
 
 ### Prerequisites
 
-- Node.js 18+ and npm (the Docker build uses pnpm, at the version pinned in `package.json`)
-- Backend server running on `http://localhost:8080`
+- Node.js 20+ (the Docker build uses Node 22)
+- pnpm, at the version pinned in `package.json` (`packageManager`; `corepack enable` picks it up). npm also works.
+- Backend server running on `http://localhost:8080`, with `CORS_ORIGIN` including the client origin
+  (the server defaults to `http://localhost:5173`)
 
 ### Installation
 
 ```bash
 cd client
-npm install
+pnpm install
 ```
 
 ### Development
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173)
+Open [http://localhost:5173](http://localhost:5173). The dev server also proxies `/api` (HTTP and WebSocket) to
+`http://localhost:8080` with the prefix stripped.
 
 ### Build
 
 ```bash
-npm run build
-npm run preview  # Preview production build
+pnpm build
+pnpm preview  # Preview production build
 ```
 
 ### Linting
 
 ```bash
-npm run lint        # Check for issues
-npm run lint:fix    # Auto-fix issues
+pnpm lint        # Check for issues
+pnpm lint:fix    # Auto-fix issues
 ```
 
 ### Type Checking
 
 ```bash
-npm run type-check  # TypeScript validation
+pnpm type-check  # TypeScript validation
 ```
 
 ### Testing
 
 ```bash
-npm test            # Run tests
-npm run test:ui     # Run tests with UI
-npm run test:coverage  # Run with coverage
+pnpm test              # Unit tests (watch mode)
+pnpm vitest run        # Unit tests, single run
+pnpm test:ui           # Run tests with UI
+pnpm test:coverage     # Run with coverage
 ```
+
+### Docker
+
+```bash
+docker build -t ai-clinic-client .   # optional: --build-arg VITE_API_BASE_URL=... --build-arg VITE_WS_URL=...
+```
+
+The image serves the build with nginx on port 80. `nginx.conf` proxies `/api/` to `http://server:8080/` (prefix
+stripped, WebSocket upgrades included), so the server must be reachable as `server:8080`, e.g. a Compose service
+named `server`.
 
 ## Environment Variables
 
@@ -74,55 +90,40 @@ which `nginx.conf` proxies to the server).
 
 ## Project Status
 
-**Progress:** 104/104 tasks (100%) ✅ COMPLETE  
-**Build:** ✅ Passing  
-**TypeScript:** ✅ No errors  
-**Linting:** ✅ Clean  
-**Tests:** ✅ Core functionality covered
+**Coverage:** the server's modules through phase 16 — auth, users, patients, doctors, SOAP, consultations,
+scheduling, reviews, admin, human chat, AI chat, matching, notifications, nurses (incl. invitations) and file uploads.
+Payment exists only at the API layer (no UI yet).
+**Unit tests:** 285 (Vitest)
+**Integration tests:** 405 in 18 files (real server + PostgreSQL)
 
-### All Phases Complete
-
-- ✅ Phase 0: Baseline Alignment (6/6)
-- ✅ Phase 1: Foundation & Routing (13/13)
-- ✅ Phase 2: Auth + AI Stabilization (11/11)
-- ✅ Phase 3: Core Domain Panels (38/38)
-- ✅ Phase 4: Admin Panels (8/8)
-- ✅ Phase 5: Human Chat Realtime (12/12)
-- ✅ Phase 6: QA Tooling (8/8)
-- ✅ Phase 7: Quality & Release Readiness (8/8)
+The original February 2026 plan (`docs/TASKS.md`, 104 tasks) was completed; later work went beyond it.
 
 ## Features
 
 ### Implemented
 
-- ✅ Session-based authentication
-- ✅ AI chat with SSE streaming
-- ✅ Patient profile management
-- ✅ Doctor profile management
-- ✅ SOAP note viewing
-- ✅ Consultation workflow
+- ✅ Session-based authentication (cookie + CSRF header)
+- ✅ AI chat with SSE streaming (polling fallback), conversation history, SOAP-ready banner
+- ✅ Patient profile management, consultations, SOAP notes
+- ✅ Doctor panel: dashboard, appointments, consultations, scheduling, documents, profile (re-submit after rejection)
+- ✅ Nurse management for doctors (invite, permissions, remove)
+- ✅ Nurse panel (dashboard, appointments, chat, consultations, SOAP notes, schedule — per permission)
+- ✅ Nurse invitations page (accept/decline)
+- ✅ Doctor–patient matching (request, live waiting page, doctor accept/reject)
+- ✅ Consultation workflow (create, decide, complete, cancel)
 - ✅ Scheduling & booking
 - ✅ Reviews & ratings
-- ✅ Admin panels
-- ✅ Human-to-human chat (REST + WebSocket)
-- ✅ Real-time messaging
-- ✅ Typing indicators
-- ✅ Read receipts
-- ✅ Message edit/delete
-- ✅ Presence tracking
-- ✅ Debug tools
-- ✅ Test checklist (25+ scenarios)
-- ✅ Account switcher
-- ✅ Unit tests
-- ✅ Component tests
-- ✅ Integration tests
+- ✅ Admin panels (stats, users, verifications, reviews, consultations, appointments)
+- ✅ Notifications (list, unread bell, mark read)
+- ✅ Human-to-human chat (REST + WebSocket): realtime messages, typing indicators, read receipts, edit/delete, presence
+- ✅ Avatar and document uploads
+- ✅ Theme customizer (light/dark/system, accent colour)
+- ✅ Unit tests and full-stack integration tests
 
-### Not Implemented (Backend Pending)
+### Not Implemented
 
-- ⏳ Calls & WebRTC (Phase 6 backend)
-- ⏳ Notifications (Phase 7 backend)
-- ⏳ Payment (Phase 8 backend)
-- ⏳ Nurse management (Phase 9 backend)
+- ⏳ Calls & WebRTC (`/calls` placeholder — server phase 19 pending)
+- ⏳ Payment UI (`/payment` placeholder — provider TBD; `src/api/payment.api.ts` exists)
 
 ## Architecture
 
@@ -131,45 +132,55 @@ which `nginx.conf` proxies to the server).
 - **React 18** + TypeScript
 - **Vite** for build tooling
 - **Tailwind CSS** for styling
-- **React Router v7** for routing
+- **React Router v7** for routing (lazy-loaded pages)
 - **Zustand** for state management
 - **React Query** for server state
 - **Axios** for HTTP client
-- **Socket.IO** for WebSocket
+- **Socket.IO** for WebSocket (chat and matching namespaces)
 - **Lucide React** for icons
+- **Vitest** + Testing Library for tests
 
 ### Project Structure
 
 ```
-client/src/
-├── api/              # API adapters
-├── components/       # Shared components
-├── features/         # Feature modules
-│   ├── admin/       # Admin panels
-│   ├── ai-chat/     # AI chat
-│   ├── auth/        # Authentication
-│   ├── chat/        # Human chat
-│   ├── consultation/# Consultations
-│   ├── debug/       # Debug tools
-│   ├── doctor/      # Doctor features
-│   ├── patient/     # Patient features
-│   ├── review/      # Reviews
-│   └── scheduling/  # Scheduling
-├── lib/
-│   ├── api/         # HTTP client
-│   ├── guards/      # Route guards
-│   ├── socket/      # WebSocket service
-│   ├── stores/      # Zustand stores
-│   └── types/       # TypeScript types
-├── routes/          # App router
-└── main.tsx         # Entry point
+client/
+├── src/
+│   ├── api/              # API modules (createXxxApi factories, bound in index.ts)
+│   ├── components/       # Shell, ErrorBoundary, Toast, ProfileModal, ThemeCustomizer
+│   ├── features/         # Feature modules
+│   │   ├── admin/        # Admin panels
+│   │   ├── ai-chat/      # AI chat
+│   │   ├── auth/         # Authentication
+│   │   ├── chat/         # Human chat
+│   │   ├── consultation/ # Consultations
+│   │   ├── dashboard/    # Main dashboard
+│   │   ├── doctor/       # Doctor panel
+│   │   ├── matching/     # Doctor–patient matching
+│   │   ├── notification/ # Notifications
+│   │   ├── nurse/        # Nurse panel + invitations
+│   │   ├── patient/      # Patient features
+│   │   ├── review/       # Reviews
+│   │   └── scheduling/   # Scheduling
+│   ├── lib/
+│   │   ├── ai/           # AI chat service
+│   │   ├── api/          # HTTP client
+│   │   ├── guards/       # Route guards
+│   │   ├── socket/       # Chat + matching socket services
+│   │   ├── stores/       # Zustand stores
+│   │   └── types/        # TypeScript types
+│   ├── routes/           # App router
+│   └── main.tsx          # Entry point
+├── integration/          # Full-stack integration tests (own package.json)
+├── Dockerfile
+└── nginx.conf
 ```
 
 ## Key Concepts
 
 ### Authentication
 
-Session-based cookie authentication (not JWT). The backend sets an HttpOnly cookie that's automatically sent with all requests.
+Session-based cookie authentication (not JWT). The backend sets an HttpOnly session cookie that's sent with all
+requests (`withCredentials: true`). Mutating requests also send the `csrf-token` cookie back as `X-CSRF-Token`.
 
 ### Response Envelope
 
@@ -187,92 +198,73 @@ The HTTP client automatically unwraps the envelope, so you receive `contents` di
 
 ### Route Guards
 
-- `AuthGuard` - Requires authentication
+- `AuthGuard` - Requires authentication (and an active, non-banned account)
 - `PatientGuard` - Requires PATIENT role
 - `DoctorGuard` - Requires DOCTOR role
-- `AdminGuard` - Requires admin privileges
-- `SuperAdminGuard` - Requires superadmin privileges
+- `NurseGuard` - Requires NURSE role
+- `AdminGuard` - Requires admin or superadmin privileges
+- `SuperAdminGuard` - Requires superadmin privileges (not used by any route)
 
 ### State Management
 
 - **Auth State:** `useAuthStore` from `src/lib/stores/auth.store`
+- **Theme:** `useThemeStore` from `src/lib/stores/theme.store`
 - **Diagnostics:** `useDiagnosticsStore` from `src/lib/stores/diagnostics.store`
 - **Server State:** React Query for caching and synchronization
 
 ### WebSocket
 
-Socket.IO client for real-time features:
+Socket.IO clients for real-time features:
 
-- Chat messaging
-- Typing indicators
-- Read receipts
-- Presence tracking
+- `/chat` namespace: messaging, typing indicators, read receipts, edit/delete, presence. Open chats are re-joined
+  automatically on every (re)connect.
+- `/matching` namespace: match requests and their outcome
 
 ## Testing
 
 ### Manual Testing
 
 1. Start backend: `cd server && npm run start:dev`
-2. Start frontend: `cd client && npm run dev`
-3. Navigate to `/debug` → "Test Checklist" tab
-4. Follow 25+ test scenarios organized by role
-5. Use "Account Switcher" tab for quick role switching
+2. Start frontend: `cd client && pnpm dev`
+3. Register accounts at `/auth` and walk through the role panels
+4. For chat, follow [docs/CHAT_TESTING_GUIDE.md](docs/CHAT_TESTING_GUIDE.md)
 
 ### Automated Testing
 
 ```bash
-# Run all tests
-npm test
+# Unit tests (single run)
+pnpm vitest run
 
 # Run specific test
-npm test src/api/__tests__/auth.api.test.ts
+pnpm vitest run src/api/__tests__/auth.api.test.ts
 
 # Run with coverage
-npm run test:coverage
+pnpm test:coverage
 
 # Run with UI
-npm run test:ui
+pnpm test:ui
+```
+
+Integration tests live in `integration/` (see [integration/README.md](integration/README.md)). They need a built
+server (`cd ../server && npm run build`) and a **throwaway** PostgreSQL database: the global setup drops and recreates
+the database named by `TEST_DATABASE_URL`.
+
+```bash
+cd integration
+cp .env.test.example .env.test   # set TEST_DATABASE_URL
+npm install
+npx vitest run
 ```
 
 ### Test Accounts
 
-Use the Account Switcher (`/debug` → Account Switcher tab):
+There are no pre-seeded test users besides the superadmin:
 
-```
-Patient 1:    patient@test.com / password123
-Patient 2:    patient2@test.com / password123
-Doctor 1:     doctor@test.com / password123
-Doctor 2:     doctor2@test.com / password123
-Admin:        admin@test.com / password123 (requires DB flag)
-Superadmin:   superadmin@test.com / password123 (requires DB flag)
-```
-
-**Note:** Admin accounts require manual database setup:
-
-```sql
-UPDATE "User" SET "isAdmin" = true WHERE email = 'admin@test.com';
-UPDATE "User" SET "isAdmin" = true, "isSuperAdmin" = true WHERE email = 'superadmin@test.com';
-```
-
-### Debug Tools
-
-Navigate to `/debug` to access:
-
-- **Diagnostics Tab:**
-  - API request inspector
-  - Session status
-  - Transport health (SSE/WebSocket)
-  - WebSocket event logs
-
-- **Test Checklist Tab:**
-  - 25+ role-based test scenarios
-  - Step-by-step instructions
-  - Progress tracking
-
-- **Account Switcher Tab:**
-  - Quick role switching
-  - 6 pre-configured seed accounts
-  - Create & switch functionality
+- Register patients and doctors at `/auth`.
+- The server seed creates a superadmin from `SUPERUSER_EMAIL` / `SUPERUSER_PASSWORD` (server env; defaults
+  `admin@ai-clinic.com` / `SuperAdmin123!`). A superadmin can promote users to admin at `/admin/users`.
+- Doctors need admin verification (`/admin/verifications`) before patients can book or match with them.
+- Nurses: a doctor invites a user at `/doctor/nurses`; the invitee accepts at `/invitations`.
 
 ## Common Issues
 
@@ -280,32 +272,30 @@ Navigate to `/debug` to access:
 
 ```bash
 # Check for TypeScript errors
-npm run build
-
-# Check imports
-grep -r "from.*stores/" src/
+pnpm type-check
+pnpm build
 ```
 
 ### WebSocket Not Connecting
 
 1. Verify backend is running
-2. Check `/debug` WebSocket panel
-3. Verify `VITE_API_BASE_URL` (or `VITE_WS_URL`, if set) is correct
+2. Check the socket.io connection in the browser dev tools (Network → WS)
+3. Verify `VITE_API_BASE_URL` (or `VITE_WS_URL`, if set) is correct; behind a prefix the socket path must be
+   `<prefix>/socket.io` and the proxy must forward WebSocket upgrades
 
-### State Not Updating
+### Requests Fail with 401/403 Cross-Origin
 
-1. Check store imports (must use `lib/stores/`)
-2. Verify using correct store methods
-3. Check React DevTools
+1. Check the server's `CORS_ORIGIN` includes the client origin
+2. Check the session and `csrf-token` cookies are being set
 
 ## Documentation
 
-- `docs/CONTEXT.md` - Complete project context
-- `docs/TASKS.md` - Task tracking
-- `docs/PRD.md` - Product requirements
-- `docs/COMPREHENSIVE_AUDIT_AND_FIXES.md` - Audit report
-- `docs/CHAT_TESTING_GUIDE.md` - Chat testing guide
-- `docs/SESSION_8_FINAL_SUMMARY.md` - Latest session summary
+- [docs/README.md](docs/README.md) - Index: which docs are current and which are historical
+- [docs/CONTEXT.md](docs/CONTEXT.md) - Current project context (routes, API modules, sockets, tests, Docker)
+- [docs/CHAT_TESTING_GUIDE.md](docs/CHAT_TESTING_GUIDE.md) - Chat testing guide
+- [docs/OUT_OF_SCOPE_PLACEHOLDER.md](docs/OUT_OF_SCOPE_PLACEHOLDER.md) - Remaining placeholder routes
+- [integration/README.md](integration/README.md) - Integration test suite
+- `docs/PRD.md`, `docs/TASKS.md` - Original February 2026 plan (completed)
 
 ## Contributing
 
@@ -316,7 +306,7 @@ This is a test client for backend validation. When adding features:
 3. Add loading states
 4. Handle errors with toast notifications
 5. Make it mobile responsive
-6. Update documentation
+6. Add tests and update documentation
 
 ## License
 
@@ -324,11 +314,9 @@ Private project - AI-Clinic
 
 ## Support
 
-For issues or questions, refer to the documentation in `docs/` or check the debug panel at `/debug`.
+For issues or questions, refer to the documentation in `docs/`.
 
 ---
 
-**Last Updated:** February 26, 2026  
-**Version:** 1.0.0  
-**Status:** ✅ COMPLETE - 104/104 tasks (100%)  
-**Ready for:** Production deployment, QA validation, UAT
+**Last Updated:** October 11, 2026
+**Status:** Sample/QA client covering server modules through phase 16

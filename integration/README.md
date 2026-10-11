@@ -7,7 +7,8 @@ Only third-party services are mocked (Botpress, OpenAI, Calendly, Email, WebPush
 ## Prerequisites
 
 - **Node.js** 22+
-- **PostgreSQL** running locally (or accessible via network)
+- **PostgreSQL** running locally (or accessible via network), with a **throwaway** test database — the global setup
+  drops and recreates the database named by `TEST_DATABASE_URL` on every run
 - **Server built**: the test harness loads from `server/dist/`, so the server must be compiled first
 
 ```bash
@@ -54,6 +55,9 @@ TEST_DATABASE_URL="postgresql://user:pass@localhost:5432/ai_clinic_test" npx vit
 
 # Watch mode (re-runs on file changes)
 npx vitest
+
+# Skip the rate-limit tests (they boot a second, production-mode app)
+RUN_RATE_LIMIT_TESTS=false npx vitest run
 ```
 
 The global setup automatically:
@@ -71,6 +75,8 @@ The global setup automatically:
 - **Cookie jar per client** — each `createTestClient()` simulates an independent browser session
 - **Real CSRF** — the test client captures the `csrf-token` cookie from responses and replays it as the `X-CSRF-Token` header on mutating requests, exactly like the frontend
 - **Response envelope unwrapping** — the test client automatically extracts `contents` from the `{ status, message, contents }` envelope, so test assertions work on the actual data
+- **Client code reused** — the `@client` alias points at `client/src`, so tests call the client's own `createXxxApi`
+  factories and `socketTarget`
 - **Sequential execution** — test files run in order (`00` → `17`) because later phases depend on data created by earlier ones
 - **`validateStatus: () => true`** — axios never throws on HTTP errors; tests assert on `response.status` directly
 
@@ -101,24 +107,24 @@ The global setup automatically:
 | # | File | Tests | Covers |
 |---|------|-------|--------|
 | 00 | `00-smoke.test.ts` | 4 | Server boot, health check, DB connectivity, Helmet headers |
-| 01 | `01-auth-user.test.ts` | 30 | Registration, login, logout, session, profile CRUD, password security |
+| 01 | `01-auth-user.test.ts` | 29 | Registration, login, logout, session, profile CRUD, password change, avatar upload, CSRF cookies |
 | 02 | `02-doctor.test.ts` | 18 | Doctor profile creation, update, document upload, public listing, validation |
-| 03 | `03-admin.test.ts` | 32 | User management, verification, ban/unban, promote/demote, stats |
+| 03 | `03-admin.test.ts` | 45 | User management, verification, rejection and re-submission, ban/unban, deactivate, promote/demote, stats, self-protection |
 | 04 | `04-patient.test.ts` | 7 | Patient profile, medical history, allergies, auth/validation guards |
-| 05 | `05-scheduling.test.ts` | 22 | Availability, slot durations, exceptions, appointments, double-booking |
-| 06 | `06-consultation.test.ts` | 18 | Full consultation lifecycle (create → decide → complete), doctor rejection, cancellation |
-| 07 | `07-payment.test.ts` | 11 | Payment records, status transitions, refunds, role/validation guards |
-| 08 | `08-review.test.ts` | 13 | Doctor reviews, ratings, admin deletion, invalid rating validation |
-| 09 | `09-chat.test.ts` | 26 | WebSocket chat, rooms, messaging, typing indicators, history, non-member guards |
-| 10 | `10-matching.test.ts` | 18 | Doctor-patient matching, accept/reject, WebSocket notifications |
+| 05 | `05-scheduling.test.ts` | 34 | Availability, slot durations, exceptions, slots, appointments, double-booking, signed Calendly webhooks |
+| 06 | `06-consultation.test.ts` | 19 | Full consultation lifecycle (create → decide → complete), doctor rejection, cancellation |
+| 07 | `07-payment.test.ts` | 19 | Payment records, confirmation (direct, via consultation, by admin), filters, role/validation guards |
+| 08 | `08-review.test.ts` | 14 | Doctor reviews, ratings, admin deletion, invalid rating validation |
+| 09 | `09-chat.test.ts` | 52 | HTTP + WebSocket chat, HTTP sends broadcast, typing, read receipts, edit/delete, who may start a chat, grouped notifications for chats not open |
+| 10 | `10-matching.test.ts` | 21 | Doctor-patient matching over WebSocket and REST, accept/reject/cancel |
 | 11 | `11-ai-agents.test.ts` | 18 | Botpress conversations, OpenAI SOAP generation, AI triage |
 | 12 | `12-notification.test.ts` | 13 | Email/WebPush notifications, pagination, push subscriptions, auth guards |
-| 13 | `13-nurse.test.ts` | 16 | Nurse role, assignment, permissions, dashboard |
-| 14 | `14-soap.test.ts` | 8 | SOAP note access control, AI flow creation, empty list, auth guards |
-| 15 | `15-file-upload.test.ts` | 10 | File upload, MIME validation, size limits, avatar URL validation |
-| 16 | `16-security.test.ts` | 15 | CSRF, role enforcement, ban/deactivation, rate limiting, input validation |
+| 13 | `13-nurse.test.ts` | 28 | Nurse invitations, assignment, permissions and their enforcement, dashboard |
+| 14 | `14-soap.test.ts` | 15 | SOAP note access control (incl. linked doctor/nurse), AI flow creation, auth guards |
+| 15 | `15-file-upload.test.ts` | 30 | File upload, MIME validation, size limits, serving uploads, path traversal, banned owners |
+| 16 | `16-security.test.ts` | 32 | CSRF, role enforcement, socket target behind an `/api` reverse proxy, forged cookies, ban/deactivation, input validation, rate limiting |
 | 17 | `17-concurrent.test.ts` | 7 | Parallel reads, concurrent bookings, chat races, double-booking, profile races, match accept/cancel race |
-| | **Total** | **286** | |
+| | **Total** | **405** | |
 
 ## File Structure
 
@@ -135,8 +141,8 @@ integration/
 │   ├── setup.ts               # Per-file: boots server if not running
 │   ├── helpers/
 │   │   ├── api-client.ts      # Axios + cookie jar + CSRF + envelope unwrap
-│   │   ├── frontend-api.ts    # Per-module API helpers (mirrors client/src/api/)
-│   │   ├── ws-client.ts       # Socket.IO test client
+│   │   ├── ws-client.ts       # Socket.IO test client (uses the client's socketTarget)
+│   │   ├── prefix-proxy.ts    # /api reverse proxy mimicking the client's nginx.conf
 │   │   ├── sse-client.ts      # SSE test client
 │   │   ├── seed.ts            # Test data factories
 │   │   ├── cleanup.ts         # DB truncation utilities
