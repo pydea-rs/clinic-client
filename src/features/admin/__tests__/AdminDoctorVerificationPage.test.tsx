@@ -216,4 +216,15 @@ describe('AdminDoctorVerificationPage', () => {
     expect(await screen.findByText('No pending verifications')).toBeInTheDocument();
     expect(mockToast.error).toHaveBeenCalledWith('Failed to load pending doctors');
   });
+
+  it('renders pending doctor avatar image when provided', async () => {
+    const avatar = `/uploads/avatars/${crypto.randomUUID()}.png`;
+    const doctor = buildPendingDoctor();
+    doctor.user.avatar = avatar;
+    mockListPending.mockResolvedValue([doctor]);
+
+    render(<AdminDoctorVerificationPage />);
+
+    expect(await screen.findByAltText(fullName(doctor))).toHaveAttribute('src', `${API_BASE_URL}${avatar}`);
+  });
 });

@@ -118,4 +118,17 @@ describe('DoctorProfileEnhancedPage verification status', () => {
     expect(await screen.findByText(badge)).toBeInTheDocument();
     expect(resubmitButton()).not.toBeInTheDocument();
   });
+
+  it('should render doctor avatar image when present', async () => {
+    const avatar = `/uploads/avatars/${crypto.randomUUID()}.png`;
+    const profile = buildProfile({
+      verified: true,
+      user: { id: crypto.randomUUID(), firstname: 'Kamran', lastname: 'Tehrani', avatar },
+    });
+    mockGetMyProfile.mockResolvedValue(profile);
+
+    render(<DoctorProfileEnhancedPage />);
+
+    expect(await screen.findByAltText('Kamran Tehrani')).toHaveAttribute('src', expect.stringContaining(avatar));
+  });
 });

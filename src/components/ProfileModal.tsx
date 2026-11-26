@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../lib/stores/auth.store';
 import { userApi, UpdateProfilePayload } from '../api';
 import { getErrorMessage } from '../lib/api/error.utils';
@@ -29,6 +30,7 @@ const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,}$/;
 
 export const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose }) => {
   const { user, setUser } = useAuthStore();
+  const queryClient = useQueryClient();
   const [tab, setTab] = useState<Tab>('profile');
 
   const [firstname, setFirstname] = useState('');
@@ -99,6 +101,11 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose }) => 
       const updated = await userApi.updateProfile(payload);
       setUser(updated);
       setProfileDirty(false);
+      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+      queryClient.invalidateQueries({ queryKey: ['doctor-my-profile'] });
+      queryClient.invalidateQueries({ queryKey: ['doctors'] });
+      queryClient.invalidateQueries({ queryKey: ['doctors-featured'] });
+      queryClient.invalidateQueries({ queryKey: ['doctor'] });
       toast.success('Profile updated');
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Failed to update profile'));
@@ -133,6 +140,11 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose }) => 
       const result = await userApi.uploadAvatar(avatarFile);
       setUser({ ...user, avatar: result.avatar });
       setAvatarFile(null);
+      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+      queryClient.invalidateQueries({ queryKey: ['doctor-my-profile'] });
+      queryClient.invalidateQueries({ queryKey: ['doctors'] });
+      queryClient.invalidateQueries({ queryKey: ['doctors-featured'] });
+      queryClient.invalidateQueries({ queryKey: ['doctor'] });
       toast.success('Avatar updated');
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Failed to upload avatar'));

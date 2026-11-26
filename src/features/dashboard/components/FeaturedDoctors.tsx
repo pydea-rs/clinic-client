@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { doctorApi } from '../../../api';
 import { MapPin, Star, Stethoscope, Users } from 'lucide-react';
 import { formatSpecialty } from '../../../lib/format';
+import { UserAvatar } from '../../../components/UserAvatar';
 
 export const FeaturedDoctors: React.FC = () => {
   const { data, isLoading } = useQuery({
@@ -49,9 +50,14 @@ export const FeaturedDoctors: React.FC = () => {
             className="card-shine border border-gray-100 rounded-xl p-4 hover:border-brand-200 hover:shadow-soft transition-all duration-300 ease-spring group hover:-translate-y-0.5"
           >
             <div className="flex items-center gap-2.5 mb-2">
-              <div className="w-9 h-9 bg-gradient-to-br from-brand-50 to-blue-50 rounded-xl flex items-center justify-center flex-shrink-0 ring-2 ring-brand-200/50 group-hover:ring-brand-300/60 transition-all duration-200">
-                <Stethoscope className="w-4 h-4 text-brand-600" />
-              </div>
+              <UserAvatar
+                avatar={doctor.user?.avatar}
+                firstname={doctor.user?.firstname}
+                lastname={doctor.user?.lastname}
+                alt={doctor.user ? `Dr. ${doctor.user.firstname} ${doctor.user.lastname}` : doctor.specialty}
+                fallback={<Stethoscope className="w-4 h-4 text-brand-600" />}
+                className="w-9 h-9 bg-gradient-to-br from-brand-50 to-blue-50 rounded-xl flex-shrink-0 ring-2 ring-brand-200/50 group-hover:ring-brand-300/60 transition-all duration-200"
+              />
               <span className="text-sm font-semibold text-gray-900 truncate group-hover:text-brand-700 transition-colors">
                 {doctor.user?.firstname} {doctor.user?.lastname}
               </span>

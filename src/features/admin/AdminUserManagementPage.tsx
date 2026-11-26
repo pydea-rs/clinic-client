@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { adminApi } from '../../api';
 import toast from 'react-hot-toast';
 import { User } from '../../lib/types/api';
+import { UserAvatar } from '../../components/UserAvatar';
 import { Users, Ban, ShieldOff } from 'lucide-react';
 
 type UserUpdatePayload = {
@@ -234,7 +235,16 @@ export const AdminUserManagementPage: React.FC = () => {
             {users.map((user) => (
               <tr key={user.id} className="table-row-hover">
                 <td className="px-4 py-3 text-sm font-medium">
-                  {user.firstname} {user.lastname}
+                  <div className="flex items-center gap-3">
+                    <UserAvatar
+                      avatar={user.avatar}
+                      firstname={user.firstname}
+                      lastname={user.lastname}
+                      alt={`${user.firstname} ${user.lastname}`}
+                      className="w-8 h-8 rounded-full bg-gray-100 text-xs font-semibold text-gray-600 flex-shrink-0"
+                    />
+                    <span>{user.firstname} {user.lastname}</span>
+                  </div>
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-500">{user.email}</td>
                 <td className="px-4 py-3 text-sm">

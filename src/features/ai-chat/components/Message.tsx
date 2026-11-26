@@ -3,6 +3,8 @@ import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Bot, User, Copy, Check, CheckCircle2 } from 'lucide-react';
 import { AiChatMessage } from '../../../lib/types/chat';
+import { useAuthStore } from '../../../lib/stores/auth.store';
+import { UserAvatar } from '../../../components/UserAvatar';
 
 interface MessageProps {
   message: AiChatMessage;
@@ -111,6 +113,7 @@ const MarkdownContent: React.FC<{ text: string }> = ({ text }) => {
 };
 
 export const Message: React.FC<MessageProps> = ({ message, onChoiceSelect }) => {
+  const { user } = useAuthStore();
   const formatTime = (date: Date) => {
     const d = new Date(date);
     return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -132,9 +135,14 @@ export const Message: React.FC<MessageProps> = ({ message, onChoiceSelect }) => 
             </div>
             <p className="text-[10px] text-gray-400 mt-1 text-right pr-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">{formatTime(message.timestamp)}</p>
           </div>
-          <div className={`w-7 h-7 rounded-full ${avatarBg} flex items-center justify-center flex-shrink-0 mb-5 ring-2 ring-white`}>
-            <User className={`w-3.5 h-3.5 ${avatarIcon}`} />
-          </div>
+          <UserAvatar
+            avatar={user?.avatar}
+            firstname={user?.firstname}
+            lastname={user?.lastname}
+            alt={user ? `${user.firstname} ${user.lastname}`.trim() : 'Your avatar'}
+            fallback={<User className={`w-3.5 h-3.5 ${avatarIcon}`} />}
+            className={`w-7 h-7 rounded-full ${avatarBg} flex-shrink-0 mb-5 ring-2 ring-white`}
+          />
         </div>
       </div>
     );

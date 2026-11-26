@@ -7,6 +7,7 @@ import { Loader2, Search, CheckCircle, XCircle, Clock, UserCheck, ArrowRight, X 
 import toast from 'react-hot-toast';
 import { ScoredDoctor, MatchRequest } from '../../lib/types/api';
 import { formatSpecialty } from '../../lib/format';
+import { UserAvatar } from '../../components/UserAvatar';
 
 const MATCH_TIMEOUT_SECONDS = 300;
 
@@ -234,9 +235,14 @@ export const MatchWaitingPage: React.FC = () => {
         {matchRequest.status === 'MATCHED' && matchRequest.matchedDoctor && (
           <div className="px-6 py-4 border-b border-gray-100 bg-brand-50/50">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-brand-100 to-brand-50 rounded-xl flex items-center justify-center ring-1 ring-brand-200/50">
-                <UserCheck className="w-5 h-5 text-brand-700" />
-              </div>
+              <UserAvatar
+                avatar={matchRequest.matchedDoctor.user.avatar}
+                firstname={matchRequest.matchedDoctor.user.firstname}
+                lastname={matchRequest.matchedDoctor.user.lastname}
+                alt={`Dr. ${matchRequest.matchedDoctor.user.firstname} ${matchRequest.matchedDoctor.user.lastname}`}
+                fallback={<UserCheck className="w-5 h-5 text-brand-700" />}
+                className="w-10 h-10 bg-gradient-to-br from-brand-100 to-brand-50 rounded-xl ring-1 ring-brand-200/50 flex-shrink-0"
+              />
               <div>
                 <div className="font-semibold text-sm text-gray-900">
                   Dr. {matchRequest.matchedDoctor.user.firstname} {matchRequest.matchedDoctor.user.lastname}
@@ -255,9 +261,13 @@ export const MatchWaitingPage: React.FC = () => {
               {doctors.slice(0, 5).map(doc => (
                 <div key={doc.doctorId} className="flex items-center justify-between text-sm p-2 rounded-lg hover:bg-gray-50 transition-colors">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 bg-brand-50 rounded-lg flex items-center justify-center text-xs font-bold text-brand-600 ring-1 ring-brand-100">
-                      {doc.firstname[0]}{doc.lastname[0]}
-                    </div>
+                    <UserAvatar
+                      avatar={doc.avatar}
+                      firstname={doc.firstname}
+                      lastname={doc.lastname}
+                      alt={`Dr. ${doc.firstname} ${doc.lastname}`}
+                      className="w-7 h-7 bg-brand-50 rounded-lg text-xs font-bold text-brand-600 ring-1 ring-brand-100 flex-shrink-0"
+                    />
                     <span className="text-gray-700 font-medium">Dr. {doc.firstname} {doc.lastname}</span>
                   </div>
                   <div className="flex items-center gap-2">

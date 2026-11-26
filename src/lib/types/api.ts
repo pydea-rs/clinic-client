@@ -178,7 +178,7 @@ export interface DoctorDocument {
 }
 
 export interface PendingDoctor extends Omit<DoctorProfile, 'user'> {
-  user: Pick<User, 'id' | 'firstname' | 'lastname' | 'email'>;
+  user: Pick<User, 'id' | 'firstname' | 'lastname' | 'email' | 'avatar'>;
   documents: DoctorDocument[];
 }
 

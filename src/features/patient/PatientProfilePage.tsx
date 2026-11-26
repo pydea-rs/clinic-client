@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { userApi, UpdateProfilePayload } from '../../api';
+import { useAuthStore } from '../../lib/stores/auth.store';
 import toast from 'react-hot-toast';
 import { Loader2, Upload, User } from 'lucide-react';
 import { getErrorMessage } from '../../lib/api/error.utils';
 import { resolveFileUrl } from '../../lib/api/client';
 
 export const PatientProfilePage: React.FC = () => {
+  const { user: authUser, setUser } = useAuthStore();
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     firstname: '',
     lastname: '',
@@ -21,7 +24,11 @@ export const PatientProfilePage: React.FC = () => {
 
   const updateMutation = useMutation({
     mutationFn: (payload: UpdateProfilePayload) => userApi.updateProfile(payload),
-    onSuccess: () => {
+    onSuccess: (updated) => {
+      if (updated) {
+        setUser(updated);
+      }
+      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
       toast.success('Profile updated successfully');
     },
     onError: (error: unknown) => {
@@ -31,10 +38,14 @@ export const PatientProfilePage: React.FC = () => {
 
   const avatarMutation = useMutation({
     mutationFn: (file: File) => userApi.uploadAvatar(file),
-    onSuccess: () => {
+    onSuccess: (result) => {
       toast.success('Avatar uploaded successfully');
       setAvatarFile(null);
-      setAvatarPreview('');
+      setAvatarPreview(result.avatar);
+      if (authUser) {
+        setUser({ ...authUser, avatar: result.avatar });
+      }
+      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error, 'Failed to upload avatar'));

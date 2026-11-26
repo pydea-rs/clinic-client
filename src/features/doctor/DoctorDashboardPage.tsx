@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { doctorApi } from '../../api';
 import { useAuthStore } from '../../lib/stores/auth.store';
+import { UserAvatar } from '../../components/UserAvatar';
 import {
   Calendar, MessageSquare, Zap, Users, ClipboardList,
   Bot, Clock, UserPlus, ArrowRight, Activity, Loader2, Stethoscope,
@@ -142,9 +143,14 @@ export const DoctorDashboardPage: React.FC = () => {
           <Stethoscope className="absolute top-6 right-48 w-5 h-5 text-white/20 animate-drift" style={{ animationDelay: '3s' }} />
 
           <div className="relative flex items-center gap-4">
-            <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-              <Stethoscope className="w-7 h-7 text-white" />
-            </div>
+            <UserAvatar
+              avatar={user?.avatar}
+              firstname={user?.firstname}
+              lastname={user?.lastname}
+              alt={user ? `Dr. ${user.firstname} ${user.lastname}` : 'Doctor avatar'}
+              fallback={<Stethoscope className="w-7 h-7 text-white" />}
+              className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex-shrink-0 ring-2 ring-white/30"
+            />
             <div>
               <h1 className="text-xl font-bold text-white">
                 {greeting}, Dr. {user?.firstname || 'Doctor'}

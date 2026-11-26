@@ -160,4 +160,18 @@ describe('ChatListPage — listing chats', () => {
     expect(cardOf(fullName(withUnread)).getByText(String(unread))).toBeInTheDocument();
     expect(cardOf(fullName(allRead)).queryByText('0')).not.toBeInTheDocument();
   });
+
+  it('should show participant avatar image when available and initials otherwise', async () => {
+    const avatar = `/uploads/avatars/${crypto.randomUUID()}.png`;
+    const withAvatar = buildChatParticipant({ avatar });
+    const withoutAvatar = buildChatParticipant({ firstname: 'Sara', lastname: 'Nouri', avatar: undefined });
+
+    await renderList([buildChat([withAvatar]), buildChat([withoutAvatar])]);
+
+    expect(cardOf(fullName(withAvatar)).getByAltText(fullName(withAvatar))).toHaveAttribute(
+      'src',
+      expect.stringContaining(avatar),
+    );
+    expect(cardOf(fullName(withoutAvatar)).getByText('SN')).toBeInTheDocument();
+  });
 });

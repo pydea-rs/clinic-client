@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { adminApi } from '../../api';
 import { resolveFileUrl } from '../../lib/api/client';
+import { UserAvatar } from '../../components/UserAvatar';
 import toast from 'react-hot-toast';
 import { ShieldCheck } from 'lucide-react';
 import { formatDocType, formatSpecialty, formatStatus } from '../../lib/format';
@@ -109,11 +110,13 @@ export const AdminDoctorVerificationPage: React.FC = () => {
             return (
               <div key={doctor.id} className="card p-6 animate-slide-in-up" style={{ animationDelay: `${index * 60}ms` }}>
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-brand-500 to-purple-500 rounded-full flex items-center justify-center">
-                    <span className="text-2xl font-bold text-white">
-                      {doctor.user.firstname[0]}{doctor.user.lastname[0]}
-                    </span>
-                  </div>
+                  <UserAvatar
+                    avatar={doctor.user.avatar}
+                    firstname={doctor.user.firstname}
+                    lastname={doctor.user.lastname}
+                    alt={`${doctor.user.firstname} ${doctor.user.lastname}`}
+                    className="w-16 h-16 bg-gradient-to-br from-brand-500 to-purple-500 rounded-full text-2xl font-bold text-white flex-shrink-0"
+                  />
                   <div>
                     <h3 className="font-bold text-lg">{doctor.user.firstname} {doctor.user.lastname}</h3>
                     <p className="text-sm text-gray-500">{doctor.user.email}</p>

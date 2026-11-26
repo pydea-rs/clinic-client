@@ -120,6 +120,15 @@ describe('ChatRoomPage', () => {
     expect(await screen.findByRole('heading', { name: fullName(other) })).toBeInTheDocument();
   });
 
+  it('should display the other participant avatar in the header when set', async () => {
+    const avatar = `/uploads/avatars/${crypto.randomUUID()}.png`;
+    const { chat, other } = setUp({ other: buildChatParticipant({ avatar }) });
+
+    renderRoom(chat);
+
+    expect(await screen.findByAltText(fullName(other))).toHaveAttribute('src', expect.stringContaining(avatar));
+  });
+
   it.each([true, false])('should show the other participant online only when they are (%s)', async (isOnline) => {
     const { chat, other } = setUp({ other: buildChatParticipant({ isOnline }) });
 

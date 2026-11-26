@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { doctorApi } from '../../api';
+import { useAuthStore } from '../../lib/stores/auth.store';
+import { UserAvatar } from '../../components/UserAvatar';
 import { getErrorMessage } from '../../lib/api/error.utils';
 import { DoctorProfileForm } from './DoctorProfileForm';
 import { DoctorDocumentsPage } from './DoctorDocumentsPage';
@@ -9,6 +11,7 @@ import { formatSpecialty, formatEnum } from '../../lib/format';
 import { User, FileText, Shield, Edit, Loader2, Mail, Phone, Globe, Award, CheckCircle, Clock, XCircle } from 'lucide-react';
 
 export const DoctorProfileEnhancedPage: React.FC = () => {
+  const { user: authUser } = useAuthStore();
   const [isEditing, setIsEditing] = useState(false);
   const queryClient = useQueryClient();
 
@@ -139,9 +142,14 @@ export const DoctorProfileEnhancedPage: React.FC = () => {
               {/* Top section: Avatar + Name */}
               <div className="flex items-start justify-between mb-6">
                 <div className="flex items-center gap-4">
-                  <div className="w-20 h-20 bg-gradient-to-br from-brand-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-soft">
-                    <span className="text-2xl font-bold text-white">{initials}</span>
-                  </div>
+                  <UserAvatar
+                    avatar={profile?.user?.avatar ?? authUser?.avatar}
+                    firstname={profile?.user?.firstname}
+                    lastname={profile?.user?.lastname}
+                    alt={fullName}
+                    fallback={<span className="text-2xl font-bold text-white">{initials}</span>}
+                    className="w-20 h-20 bg-gradient-to-br from-brand-500 to-purple-500 rounded-2xl shadow-soft flex-shrink-0"
+                  />
                   <div>
                     <h2 className="text-xl font-bold text-gray-900">{fullName}</h2>
                     {profile?.specialty && (

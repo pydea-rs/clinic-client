@@ -6,6 +6,7 @@ import { useAuthStore } from '../../lib/stores/auth.store';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../lib/api/error.utils';
 import { Chat, ChatParticipant } from '../../lib/types/api';
+import { UserAvatar } from '../../components/UserAvatar';
 
 export const ChatListPage: React.FC = () => {
   const [chats, setChats] = useState<Chat[]>([]);
@@ -140,6 +141,12 @@ export const ChatListPage: React.FC = () => {
           {chats.map((chat) => {
             const otherParticipant = getOtherParticipant(chat);
             const isOnline = otherParticipant ? isParticipantOnline(otherParticipant) : false;
+            const participantName = otherParticipant
+              ? `${otherParticipant.firstname} ${otherParticipant.lastname}`
+              : 'Chat';
+            const initials = otherParticipant
+              ? `${otherParticipant.firstname?.[0] || ''}${otherParticipant.lastname?.[0] || ''}`.toUpperCase()
+              : 'CH';
 
             return (
               <Link
@@ -147,33 +154,48 @@ export const ChatListPage: React.FC = () => {
                 to={`/chat/${chat.id}`}
                 className="block card-interactive p-5 animate-slide-in-up"
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-gray-900">
-                        {chat.topic || (otherParticipant
-                          ? `${otherParticipant.firstname} ${otherParticipant.lastname}`
-                          : 'Chat')}
-                      </h3>
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <div className="relative flex-shrink-0">
+                      <UserAvatar
+                        avatar={otherParticipant?.avatar}
+                        firstname={otherParticipant?.firstname}
+                        lastname={otherParticipant?.lastname}
+                        alt={participantName}
+                        fallback={<span className="text-sm font-bold text-white">{initials}</span>}
+                        className="w-11 h-11 bg-gradient-to-br from-brand-500 to-purple-500 rounded-full"
+                      />
                       {isOnline && (
-                        <span className="flex items-center gap-1.5 text-xs text-green-600 font-medium">
-                          <span className="status-dot status-dot-online"></span>
-                          Online
-                        </span>
-                      )}
-                      {(chat.unreadCount ?? 0) > 0 && (
-                        <span className="px-2 py-0.5 bg-gradient-to-r from-brand-600 to-brand-500 text-white text-xs font-semibold rounded-full shadow-sm">
-                          {chat.unreadCount}
-                        </span>
+                        <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
                       )}
                     </div>
-                    {chat.lastMessage && (
-                      <p className="text-sm text-gray-500 mt-1 truncate">
-                        {chat.lastMessage.content}
-                      </p>
-                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-gray-900 truncate">
+                          {chat.topic || (otherParticipant
+                            ? `${otherParticipant.firstname} ${otherParticipant.lastname}`
+                            : 'Chat')}
+                        </h3>
+                        {isOnline && (
+                          <span className="flex items-center gap-1.5 text-xs text-green-600 font-medium">
+                            <span className="status-dot status-dot-online"></span>
+                            Online
+                          </span>
+                        )}
+                        {(chat.unreadCount ?? 0) > 0 && (
+                          <span className="px-2 py-0.5 bg-gradient-to-r from-brand-600 to-brand-500 text-white text-xs font-semibold rounded-full shadow-sm">
+                            {chat.unreadCount}
+                          </span>
+                        )}
+                      </div>
+                      {chat.lastMessage && (
+                        <p className="text-sm text-gray-500 mt-1 truncate">
+                          {chat.lastMessage.content}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right flex-shrink-0">
                     <span className="text-sm text-gray-400">
                       {new Date(chat.updatedAt).toLocaleDateString()}
                     </span>

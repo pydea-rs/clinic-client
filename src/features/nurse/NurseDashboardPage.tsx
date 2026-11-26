@@ -5,6 +5,7 @@ import { nurseApi, NurseDashboardData } from '../../api';
 import { formatSpecialty } from '../../lib/format';
 import { NursePermission } from '../../lib/types/api';
 import { Link } from 'react-router-dom';
+import { UserAvatar } from '../../components/UserAvatar';
 
 const PERMISSION_META: Record<NursePermission, { label: string; path: string }> = {
   VIEW_PATIENTS: { label: 'View Patients', path: '/nurse/dashboard' },
@@ -107,9 +108,14 @@ export const NurseDashboardPage: React.FC = () => {
           return (
             <div key={a.id} className="card p-5 animate-slide-in-up">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-100 to-brand-50 flex items-center justify-center flex-shrink-0">
-                  <Stethoscope className="w-6 h-6 text-brand-600" />
-                </div>
+                <UserAvatar
+                  avatar={docUser?.avatar}
+                  firstname={docUser?.firstname}
+                  lastname={docUser?.lastname}
+                  alt={docUser ? `Dr. ${docUser.firstname} ${docUser.lastname}` : 'Doctor avatar'}
+                  fallback={<Stethoscope className="w-6 h-6 text-brand-600" />}
+                  className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-100 to-brand-50 flex-shrink-0"
+                />
                 <div>
                   <h3 className="font-semibold text-gray-900">
                     Dr. {docUser?.firstname} {docUser?.lastname}

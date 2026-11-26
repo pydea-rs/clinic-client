@@ -108,3 +108,13 @@ export function formatNotificationType(type: string): string {
 export function formatEnum(value: string): string {
   return toTitleCase(value);
 }
+
+/** Uppercase first-letter initials for a user, falling back when names are absent. */
+export function getUserInitials(
+  firstname?: string | null,
+  lastname?: string | null,
+  defaultInitials = '?',
+): string {
+  const initials = `${firstname?.[0] || ''}${lastname?.[0] || ''}`.toUpperCase();
+  return initials || defaultInitials;
+}

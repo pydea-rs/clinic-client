@@ -2,9 +2,10 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { Check, Loader2, Mail, X } from 'lucide-react';
+import { Check, Loader2, Mail, Stethoscope, X } from 'lucide-react';
 import { authApi, nurseApi } from '../../api';
 import { useAuthStore } from '../../lib/stores/auth.store';
+import { UserAvatar } from '../../components/UserAvatar';
 import { getErrorMessage } from '../../lib/api/error.utils';
 import { formatEnum } from '../../lib/format';
 import type { NurseAssignment } from '../../lib/types/api';
@@ -100,11 +101,21 @@ export const NurseInvitationsPage: React.FC = () => {
           {invitations.map((invitation) => (
             <div key={invitation.id} className="card p-5" data-testid={`invitation-${invitation.id}`}>
               <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h3 className="font-semibold text-gray-900">{doctorName(invitation)}</h3>
-                  {invitation.doctor?.specialty && (
-                    <p className="text-sm text-gray-500">{formatEnum(invitation.doctor.specialty)}</p>
-                  )}
+                <div className="flex items-center gap-3">
+                  <UserAvatar
+                    avatar={invitation.doctor?.user?.avatar}
+                    firstname={invitation.doctor?.user?.firstname}
+                    lastname={invitation.doctor?.user?.lastname}
+                    alt={doctorName(invitation)}
+                    fallback={<Stethoscope className="w-5 h-5 text-brand-600" />}
+                    className="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-100 to-brand-50 flex-shrink-0"
+                  />
+                  <div>
+                    <h3 className="font-semibold text-gray-900">{doctorName(invitation)}</h3>
+                    {invitation.doctor?.specialty && (
+                      <p className="text-sm text-gray-500">{formatEnum(invitation.doctor.specialty)}</p>
+                    )}
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <button

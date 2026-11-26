@@ -234,4 +234,50 @@ describe('DoctorNurseManagementPage', () => {
       await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('Nurse removed successfully'));
     });
   });
+
+  describe('nurse and candidate avatars', () => {
+    it('shows nurse avatar in assigned nurses list when available', async () => {
+      const avatar = `/uploads/avatars/${crypto.randomUUID()}.png`;
+      const nurseId = crypto.randomUUID();
+      const assignment = buildAssignment({
+        nurseId,
+        nurse: {
+          id: nurseId,
+          firstname: 'Nadia',
+          lastname: 'Sadeghi',
+          email: 'nadia@test.local',
+          avatar,
+        },
+      });
+      const card = await renderWith(assignment);
+
+      expect(card.getByAltText('Nadia Sadeghi')).toHaveAttribute('src', expect.stringContaining(avatar));
+    });
+
+    it('shows candidate avatar in user search dropdown and selected user card', async () => {
+      const avatar = `/uploads/avatars/${crypto.randomUUID()}.png`;
+      const candidate = {
+        id: crypto.randomUUID(),
+        firstname: 'Reza',
+        lastname: 'Hosseini',
+        email: 'reza@test.local',
+        role: 'PATIENT',
+        avatar,
+      };
+      mockGetAssignments.mockResolvedValue([]);
+      mockSearchUsers.mockResolvedValue([candidate]);
+
+      render(<DoctorNurseManagementPage />);
+
+      fireEvent.change(screen.getByPlaceholderText('Search by name or email...'), {
+        target: { value: 'Reza' },
+      });
+
+      const dropdownImg = await screen.findByAltText('Reza Hosseini');
+      expect(dropdownImg).toHaveAttribute('src', expect.stringContaining(avatar));
+
+      fireEvent.click(screen.getByText('Reza Hosseini'));
+      expect(screen.getByAltText('Reza Hosseini')).toHaveAttribute('src', expect.stringContaining(avatar));
+    });
+  });
 });

@@ -7,6 +7,7 @@ import { useAuthStore } from '../../lib/stores/auth.store';
 import { Chat, ChatParticipant, Message } from '../../lib/types/api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../lib/api/error.utils';
+import { UserAvatar } from '../../components/UserAvatar';
 
 interface TypingUser {
   userId: string;
@@ -370,6 +371,15 @@ export const ChatRoomPage: React.FC = () => {
           >
             ← Back
           </button>
+          {otherParticipant && (
+            <UserAvatar
+              avatar={otherParticipant.avatar}
+              firstname={otherParticipant.firstname}
+              lastname={otherParticipant.lastname}
+              alt={`${otherParticipant.firstname} ${otherParticipant.lastname}`}
+              className="w-10 h-10 bg-gradient-to-br from-brand-500 to-purple-500 rounded-full text-sm font-bold text-white flex-shrink-0"
+            />
+          )}
           <div>
             <h1 className="text-xl font-bold text-gray-900">
               {chatInfo?.topic || (otherParticipant

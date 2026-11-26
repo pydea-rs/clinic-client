@@ -115,4 +115,14 @@ describe('DoctorChatPage', () => {
 
     expect(cardOf(patient).queryByText('0')).not.toBeInTheDocument();
   });
+
+  it('should display participant avatar image when avatar is set', async () => {
+    const avatar = `/uploads/avatars/${crypto.randomUUID()}.png`;
+    const patient = buildChatParticipant({ role: 'PATIENT', avatar });
+
+    await renderPage([buildChat([patient])]);
+
+    const img = cardOf(patient).getByAltText(fullName(patient));
+    expect(img).toHaveAttribute('src', expect.stringContaining(avatar));
+  });
 });

@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { nurseApi, userApi } from '../../api';
 import { NurseAssignment, NursePermission } from '../../lib/types/api';
 import { formatEnum } from '../../lib/format';
+import { UserAvatar } from '../../components/UserAvatar';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../lib/api/error.utils';
 import { UserPlus, Users, Shield, Loader2, X, Search, CheckCircle, ToggleLeft, ToggleRight } from 'lucide-react';
@@ -173,11 +174,13 @@ export const DoctorNurseManagementPage: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">Find User</label>
             {selectedUser ? (
               <div className="flex items-center gap-3 px-4 py-3 border border-brand-200 bg-brand-50/30 rounded-xl">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center flex-shrink-0">
-                  <span className="text-xs font-bold text-white">
-                    {selectedUser.firstname[0]}{selectedUser.lastname[0]}
-                  </span>
-                </div>
+                <UserAvatar
+                  avatar={selectedUser.avatar}
+                  firstname={selectedUser.firstname}
+                  lastname={selectedUser.lastname}
+                  alt={`${selectedUser.firstname} ${selectedUser.lastname}`}
+                  className="w-9 h-9 rounded-full bg-gradient-to-br from-brand-500 to-brand-600 text-xs font-bold text-white flex-shrink-0"
+                />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-900">{selectedUser.firstname} {selectedUser.lastname}</p>
                   <p className="text-xs text-gray-500">{selectedUser.email} &middot; {selectedUser.role || 'NONE'}</p>
@@ -210,11 +213,13 @@ export const DoctorNurseManagementPage: React.FC = () => {
                         onClick={() => handleSelectUser(u)}
                         className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-left transition-colors"
                       >
-                        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
-                          <span className="text-xs font-medium text-gray-600">
-                            {u.firstname?.[0]}{u.lastname?.[0]}
-                          </span>
-                        </div>
+                        <UserAvatar
+                          avatar={u.avatar}
+                          firstname={u.firstname}
+                          lastname={u.lastname}
+                          alt={`${u.firstname} ${u.lastname}`}
+                          className="w-8 h-8 rounded-full bg-gray-200 text-xs font-medium text-gray-600 flex-shrink-0"
+                        />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-900 truncate">{u.firstname} {u.lastname}</p>
                           <p className="text-xs text-gray-500 truncate">{u.email}</p>
@@ -359,9 +364,14 @@ export const DoctorNurseManagementPage: React.FC = () => {
                   <div className="flex items-start justify-between gap-4 mb-4">
                     {/* Nurse Info */}
                     <div className="flex items-center gap-3">
-                      <div className="w-11 h-11 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-sm font-bold text-white">{initials}</span>
-                      </div>
+                      <UserAvatar
+                        avatar={assignment.nurse?.avatar}
+                        firstname={assignment.nurse?.firstname}
+                        lastname={assignment.nurse?.lastname}
+                        alt={nurseName}
+                        fallback={<span className="text-sm font-bold text-white">{initials}</span>}
+                        className="w-11 h-11 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex-shrink-0"
+                      />
                       <div>
                         <h3 className="font-semibold text-gray-900">{nurseName}</h3>
                         <p className="text-sm text-gray-500">{nurseEmail}</p>

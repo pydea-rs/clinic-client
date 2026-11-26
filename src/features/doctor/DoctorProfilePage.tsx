@@ -6,6 +6,7 @@ import { Loader2, MapPin, CheckCircle, MessageSquare, Calendar } from 'lucide-re
 import { Link } from 'react-router-dom';
 import { RatingWidget } from '../review/RatingWidget';
 import { formatSpecialty } from '../../lib/format';
+import { UserAvatar } from '../../components/UserAvatar';
 
 export const DoctorProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -68,11 +69,14 @@ export const DoctorProfilePage: React.FC = () => {
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-6">
               {/* Doctor Avatar */}
-              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-brand-400 to-purple-500 flex items-center justify-center text-white font-bold text-3xl ring-4 ring-white shadow-soft-lg flex-shrink-0">
-                {doctor.user
-                  ? `${doctor.user.firstname?.[0] || ''}${doctor.user.lastname?.[0] || ''}`
-                  : doctor.specialty?.[0] || 'D'}
-              </div>
+              <UserAvatar
+                avatar={doctor.user?.avatar}
+                firstname={doctor.user?.firstname}
+                lastname={doctor.user?.lastname}
+                alt={doctor.user ? `Dr. ${doctor.user.firstname} ${doctor.user.lastname}` : doctor.specialty}
+                fallback={!doctor.user ? (doctor.specialty?.[0] || 'D') : undefined}
+                className="w-24 h-24 rounded-full bg-gradient-to-br from-brand-400 to-purple-500 text-white font-bold text-3xl ring-4 ring-white shadow-soft-lg flex-shrink-0"
+              />
               <div>
                 <div className="flex items-center gap-3 mb-2">
                   <h1 className="text-3xl font-bold text-gray-900">
