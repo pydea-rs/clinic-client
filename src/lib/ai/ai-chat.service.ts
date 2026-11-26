@@ -23,6 +23,7 @@ export interface AiAgentMessage {
   title?: string;
   audioUrl?: string;
   fileUrl?: string;
+  soapId?: string;
   payload?: BotpressPayload;
   createdAt?: string;
 }

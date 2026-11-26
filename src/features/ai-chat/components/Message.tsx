@@ -5,6 +5,7 @@ import { Bot, User, Copy, Check, CheckCircle2 } from 'lucide-react';
 import { AiChatMessage } from '../../../lib/types/chat';
 import { useAuthStore } from '../../../lib/stores/auth.store';
 import { UserAvatar } from '../../../components/UserAvatar';
+import { getMessageDirection } from '../../../lib/text-direction';
 
 interface MessageProps {
   message: AiChatMessage;
@@ -47,10 +48,10 @@ const MarkdownContent: React.FC<{ text: string }> = ({ text }) => {
       <em className="italic">{children}</em>
     ),
     ul: ({ children }) => (
-      <ul className="mb-2 last:mb-0 ml-4 space-y-0.5 list-disc">{children}</ul>
+      <ul className="mb-2 last:mb-0 ms-4 space-y-0.5 list-disc">{children}</ul>
     ),
     ol: ({ children }) => (
-      <ol className="mb-2 last:mb-0 ml-4 space-y-0.5 list-decimal">{children}</ol>
+      <ol className="mb-2 last:mb-0 ms-4 space-y-0.5 list-decimal">{children}</ol>
     ),
     li: ({ children }) => (
       <li className="leading-relaxed">{children}</li>
@@ -65,7 +66,7 @@ const MarkdownContent: React.FC<{ text: string }> = ({ text }) => {
       <h3 className="text-sm font-bold mb-1 mt-2 first:mt-0">{children}</h3>
     ),
     blockquote: ({ children }) => (
-      <blockquote className="border-l-2 border-brand-300 pl-3 my-2 text-gray-600 italic">{children}</blockquote>
+      <blockquote className="border-s-2 border-brand-300 ps-3 my-2 text-gray-600 italic">{children}</blockquote>
     ),
     code: ({ className, children }) => {
       const isBlock = /^language-/.test(className || '');
@@ -78,7 +79,7 @@ const MarkdownContent: React.FC<{ text: string }> = ({ text }) => {
       }
       const codeString = String(children).replace(/\n$/, '');
       return (
-        <div className="relative group/code my-2">
+        <div className="relative group/code my-2" dir="ltr">
           <CopyButton text={codeString} />
           <pre className="bg-gray-900 text-gray-100 rounded-lg p-3 overflow-x-auto text-[13px]">
             <code className={className}>{children}</code>
@@ -98,7 +99,7 @@ const MarkdownContent: React.FC<{ text: string }> = ({ text }) => {
       </div>
     ),
     th: ({ children }) => (
-      <th className="px-3 py-1.5 bg-gray-50 text-left font-medium border-b border-gray-200">{children}</th>
+      <th className="px-3 py-1.5 bg-gray-50 text-start font-medium border-b border-gray-200">{children}</th>
     ),
     td: ({ children }) => (
       <td className="px-3 py-1.5 border-b border-gray-100">{children}</td>
@@ -114,6 +115,7 @@ const MarkdownContent: React.FC<{ text: string }> = ({ text }) => {
 
 export const Message: React.FC<MessageProps> = ({ message, onChoiceSelect }) => {
   const { user } = useAuthStore();
+  const direction = getMessageDirection(message.text);
   const formatTime = (date: Date) => {
     const d = new Date(date);
     return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -130,7 +132,11 @@ export const Message: React.FC<MessageProps> = ({ message, onChoiceSelect }) => 
       <div className="group flex justify-end mb-5 animate-msg-in">
         <div className="flex items-end gap-2.5 max-w-[85%] sm:max-w-[75%] lg:max-w-[65%]">
           <div>
-            <div className={`${bubbleClass} px-4 py-3 rounded-2xl rounded-br-sm`} style={{ boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1), 0 2px 15px -3px rgba(0,0,0,0.07)' }}>
+            <div
+              dir={direction}
+              className={`${bubbleClass} text-start px-4 py-3 rounded-2xl rounded-br-sm`}
+              style={{ boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1), 0 2px 15px -3px rgba(0,0,0,0.07)' }}
+            >
               <p className="text-[14px] leading-relaxed whitespace-pre-wrap break-words">{message.text}</p>
             </div>
             <p className="text-[10px] text-gray-400 mt-1 text-right pr-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">{formatTime(message.timestamp)}</p>
@@ -148,6 +154,9 @@ export const Message: React.FC<MessageProps> = ({ message, onChoiceSelect }) => 
     );
   }
 
+  const botAccentBorder =
+    direction === 'rtl' ? 'border-r-2 border-r-brand-200' : 'border-l-2 border-l-brand-200';
+
   return (
     <div className="group flex justify-start mb-5 animate-msg-in">
       <div className="flex items-end gap-2.5 max-w-[90%] sm:max-w-[80%] lg:max-w-[75%]">
@@ -155,7 +164,10 @@ export const Message: React.FC<MessageProps> = ({ message, onChoiceSelect }) => 
           <Bot className="w-3.5 h-3.5 text-white" />
         </div>
         <div>
-          <div className="bg-gradient-to-br from-white to-brand-50/40 border border-gray-100 border-l-2 border-l-brand-200 px-4 py-3 rounded-2xl rounded-bl-sm shadow-soft">
+          <div
+            dir={direction}
+            className={`bg-gradient-to-br from-white to-brand-50/40 border border-gray-100 ${botAccentBorder} text-start px-4 py-3 rounded-2xl rounded-bl-sm shadow-soft`}
+          >
             <div className="text-[14px] text-gray-800 prose-sm">
               <MarkdownContent text={message.text} />
             </div>

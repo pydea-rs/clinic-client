@@ -12,6 +12,11 @@ export function createSoapApi(client: AxiosInstance) {
       const response = await client.get(`/soap/${id}`);
       return response.data;
     },
+
+    getByConversation: async (conversationId: string): Promise<PatientSOAP | null> => {
+      const response = await client.get(`/soap/conversation/${encodeURIComponent(conversationId)}`);
+      return response.data ?? null;
+    },
   };
 }
 

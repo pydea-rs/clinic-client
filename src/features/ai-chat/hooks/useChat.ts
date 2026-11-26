@@ -49,6 +49,13 @@ export const useChat = (options?: UseChatOptions) => {
 
   const typewriterIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const seenBotMessageIds = useRef<Set<string>>(new Set());
+  const notifiedSoapIdsRef = useRef<Set<string>>(new Set());
+
+  const notifySoapReady = useCallback((soapId: string, conversationId: string) => {
+    if (notifiedSoapIdsRef.current.has(soapId)) return;
+    notifiedSoapIdsRef.current.add(soapId);
+    soapReadyCallbackRef.current?.({ soapId, conversationId });
+  }, []);
 
   const stopPolling = useCallback(() => {
     isWaitingForBotRef.current = false;
@@ -226,14 +233,42 @@ export const useChat = (options?: UseChatOptions) => {
             pollSinceRef.current ?? undefined
           );
           if (messages.length > 0) {
-            const first = messages[0];
-            const text = extractBotMessageText(first);
-            if (text) {
+            const ordered = [...messages].sort(
+              (a, b) =>
+                (a.createdAt ? new Date(a.createdAt).getTime() : 0) -
+                (b.createdAt ? new Date(b.createdAt).getTime() : 0),
+            );
+
+            for (const msg of ordered) {
+              if (msg.soapId) {
+                notifySoapReady(msg.soapId, conversationId);
+              }
+            }
+
+            const unseen = ordered
+              .map((msg) => ({ msg, text: extractBotMessageText(msg) }))
+              .filter((entry): entry is { msg: AiAgentMessage; text: string } => {
+                if (!entry.text) return false;
+                return !entry.msg.id || !seenBotMessageIds.current.has(entry.msg.id);
+              });
+
+            if (unseen.length > 0) {
+              for (const item of unseen.slice(0, -1)) {
+                if (item.msg.id) seenBotMessageIds.current.add(item.msg.id);
+                addMessage({
+                  id: item.msg.id,
+                  text: item.text,
+                  isUser: false,
+                  timestamp: item.msg.createdAt ? new Date(item.msg.createdAt) : new Date(),
+                  choices: extractBotMessageChoices(item.msg),
+                });
+              }
+              const last = unseen[unseen.length - 1];
               addBotMessage({
-                id: first.id,
-                text,
-                timestamp: first.createdAt ? new Date(first.createdAt) : new Date(),
-                choices: extractBotMessageChoices(first),
+                id: last.msg.id,
+                text: last.text,
+                timestamp: last.msg.createdAt ? new Date(last.msg.createdAt) : new Date(),
+                choices: extractBotMessageChoices(last.msg),
               });
               return;
             }
@@ -254,12 +289,13 @@ export const useChat = (options?: UseChatOptions) => {
         void poll();
       }, POLLING_INTERVAL_MS);
     },
-    [addBotMessage, extractBotMessageText, extractBotMessageChoices, stopPolling]
+    [addBotMessage, addMessage, extractBotMessageText, extractBotMessageChoices, notifySoapReady, stopPolling]
   );
 
   const startConversation = useCallback(async () => {
     try {
       seenBotMessageIds.current.clear();
+      notifiedSoapIdsRef.current.clear();
 
       let conversationId: string;
 
@@ -451,7 +487,7 @@ export const useChat = (options?: UseChatOptions) => {
       eventSource.addEventListener("soap_ready", (e: MessageEvent) => {
         try {
           const data = JSON.parse(e.data as string) as { soapId: string; conversationId: string };
-          soapReadyCallbackRef.current?.(data);
+          notifySoapReady(data.soapId, data.conversationId);
         } catch {
           // ignore
         }
@@ -498,7 +534,7 @@ export const useChat = (options?: UseChatOptions) => {
 
       eventSourceRef.current = eventSource;
     },
-    [addBotMessage, updateConnectionStatus, extractMessageText, extractChoices]
+    [addBotMessage, updateConnectionStatus, extractMessageText, extractChoices, notifySoapReady]
   );
 
   // Use refs for values accessed inside sendMessage to avoid stale closures
@@ -527,6 +563,7 @@ export const useChat = (options?: UseChatOptions) => {
   const resetChat = useCallback(async () => {
     disconnect();
     seenBotMessageIds.current.clear();
+    notifiedSoapIdsRef.current.clear();
     lastUserMessageRef.current = null;
     lastUserMessageAtRef.current = 0;
     isInitializingRef.current = false;

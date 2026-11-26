@@ -52,6 +52,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ forceNew }) => {
       setSoapData({ id: data.soapId });
     }
     void queryClient.invalidateQueries({ queryKey: ['ai-conversations'] });
+    void queryClient.invalidateQueries({ queryKey: ['soaps'] });
+    void queryClient.invalidateQueries({ queryKey: ['soaps-recent'] });
   }, []);
 
   const handleNewChat = useCallback(() => {
@@ -90,6 +92,31 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ forceNew }) => {
   useEffect(() => {
     initializeChat();
   }, [initializeChat]);
+
+  useEffect(() => {
+    setSoapData(null);
+    if (!routeConversationId || conversationId !== routeConversationId) return;
+
+    let cancelled = false;
+    soapApi
+      .getByConversation(conversationId)
+      .then((soap) => {
+        if (cancelled || !soap) return;
+        setSoapData({
+          id: soap.id,
+          assessment: soap.assessment,
+          suggestedSpecialty: soap.suggestedSpecialty,
+          triageLevel: soap.triageLevel,
+        });
+      })
+      .catch(() => {
+        // existing SOAP lookup is best-effort for resumed chats
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [routeConversationId, conversationId]);
 
   // Loading / error state
   if (!conversationId) {

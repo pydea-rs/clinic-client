@@ -3,6 +3,7 @@ import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { FileText, Search, X, AlertTriangle, CheckCircle, AlertCircle } from 'lucide-react';
 import { formatSpecialty } from '../../../lib/format';
+import { getMessageDirection } from '../../../lib/text-direction';
 
 interface SOAPReadyBannerProps {
   soapId: string;
@@ -55,7 +56,10 @@ export const SOAPReadyBanner: React.FC<SOAPReadyBannerProps> = ({
                 )}
               </div>
               {assessment && (
-                <div className="text-xs text-gray-500 mt-1.5 line-clamp-2 [&_p]:mb-0 [&_strong]:font-semibold leading-relaxed">
+                <div
+                  dir={getMessageDirection(assessment)}
+                  className="text-xs text-gray-500 mt-1.5 line-clamp-2 [&_p]:mb-0 [&_strong]:font-semibold leading-relaxed text-start"
+                >
                   <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ p: ({ children }) => <span>{children}</span> } satisfies Components}>{assessment}</ReactMarkdown>
                 </div>
               )}
