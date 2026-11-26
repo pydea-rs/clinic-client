@@ -58,7 +58,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ forceNew }) => {
 
   const handleNewChat = useCallback(() => {
     setSoapData(null);
-    if (location.pathname === '/ai/new') {
+    if (location.pathname === '/ai/new' || location.pathname === '/ai') {
       resetChat();
     } else {
       navigate('/ai/new');

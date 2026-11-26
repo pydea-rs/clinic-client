@@ -7,7 +7,7 @@ import { Chat, ChatParticipant } from '../../lib/types/api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../lib/api/error.utils';
 import { UserAvatar } from '../../components/UserAvatar';
-import { MessageSquare, Search, Loader2, ChevronRight, Users } from 'lucide-react';
+import { MessageSquare, Search, ChevronRight, Users } from 'lucide-react';
 
 type FilterTab = 'all' | 'active';
 

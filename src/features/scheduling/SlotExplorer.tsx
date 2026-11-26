@@ -36,6 +36,11 @@ export const SlotExplorer: React.FC = () => {
     try {
       const data = await schedulingApi.getDoctorDurations(Number(doctorId));
       setDurations(data);
+      if (data.length > 0) {
+        setSelectedDuration((prev) =>
+          data.some((d) => d.minutes === prev) ? prev : data[0].minutes
+        );
+      }
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Failed to load durations'));
     }
@@ -43,10 +48,15 @@ export const SlotExplorer: React.FC = () => {
 
   useEffect(() => {
     if (doctorId) {
-      loadSlots();
       loadDurations();
     }
-  }, [doctorId, loadSlots, loadDurations]);
+  }, [doctorId, loadDurations]);
+
+  useEffect(() => {
+    if (doctorId) {
+      loadSlots();
+    }
+  }, [doctorId, loadSlots]);
 
   const handleBook = () => {
     if (selectedSlot) {
@@ -156,7 +166,7 @@ export const SlotExplorer: React.FC = () => {
               >
                 <div className="font-medium">{slot.startTime} - {slot.endTime}</div>
                 <div className="text-sm text-gray-500">
-                  {durations.find((d) => d.minutes === selectedDuration)?.price || 'N/A'} USD
+                  {durations.find((d) => d.minutes === slot.durationMinutes)?.price || 'N/A'} USD
                 </div>
               </button>
             ))}

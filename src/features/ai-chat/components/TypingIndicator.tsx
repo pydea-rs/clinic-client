@@ -16,13 +16,17 @@ export const TypingIndicator: React.FC = () => {
   const [phaseIndex, setPhaseIndex] = useState(() => Math.floor(Math.random() * THINKING_PHASES.length));
   const [isFading, setIsFading] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const fadeTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    let active = true;
     const scheduleNext = () => {
       const delay = PHASE_INTERVAL_MIN + Math.floor(Math.random() * (PHASE_INTERVAL_MAX - PHASE_INTERVAL_MIN));
       timerRef.current = setTimeout(() => {
+        if (!active) return;
         setIsFading(true);
-        setTimeout(() => {
+        fadeTimerRef.current = setTimeout(() => {
+          if (!active) return;
           setPhaseIndex((prev) => {
             let next = Math.floor(Math.random() * THINKING_PHASES.length);
             while (next === prev && THINKING_PHASES.length > 1) {
@@ -37,7 +41,11 @@ export const TypingIndicator: React.FC = () => {
     };
 
     scheduleNext();
-    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+    return () => {
+      active = false;
+      if (timerRef.current) clearTimeout(timerRef.current);
+      if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current);
+    };
   }, []);
 
   const phase = THINKING_PHASES[phaseIndex];

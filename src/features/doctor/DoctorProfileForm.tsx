@@ -61,22 +61,27 @@ export const DoctorProfileForm: React.FC<DoctorProfileFormProps> = ({
   // Build a payload containing ONLY the fields the backend DTO accepts.
   // Spreading the full profile (id, userId, verified, createdAt, ...) would be
   // rejected by the server's `forbidNonWhitelisted` validation with HTTP 400.
-  const buildPayload = (): CreateDoctorProfilePayload => {
+  const buildUpdatePayload = (): UpdateDoctorProfilePayload => {
     const f = formData;
-    const payload: Partial<CreateDoctorProfilePayload> = {};
+    const payload: UpdateDoctorProfilePayload = {};
     if (f.specialty) payload.specialty = f.specialty as DoctorSpecialty;
-    if (f.startedAt) payload.startedAt = f.startedAt;
-    if (f.secondarySpecialties?.length) payload.secondarySpecialties = f.secondarySpecialties as DoctorSpecialty[];
-    if (f.visitMethods?.length) payload.visitMethods = f.visitMethods as VisitMethod[];
-    if (f.visitTypes?.length) payload.visitTypes = f.visitTypes as VisitType[];
-    if (f.clinicLocation) payload.clinicLocation = f.clinicLocation;
-    if (f.bio) payload.bio = f.bio;
-    if (f.university) payload.university = f.university;
-    if (f.phoneNumber) payload.phoneNumber = f.phoneNumber;
-    if (f.languages?.length) payload.languages = f.languages;
-    if (f.licenseNumber) payload.licenseNumber = f.licenseNumber;
-    return payload as CreateDoctorProfilePayload;
+    payload.secondarySpecialties = (f.secondarySpecialties || []) as DoctorSpecialty[];
+    payload.visitMethods = (f.visitMethods || []) as VisitMethod[];
+    payload.visitTypes = (f.visitTypes || []) as VisitType[];
+    if (f.clinicLocation !== undefined) payload.clinicLocation = f.clinicLocation;
+    if (f.bio !== undefined) payload.bio = f.bio;
+    if (f.university !== undefined) payload.university = f.university;
+    if (f.phoneNumber !== undefined) payload.phoneNumber = f.phoneNumber;
+    if (f.languages !== undefined) payload.languages = f.languages;
+    if (f.licenseNumber !== undefined) payload.licenseNumber = f.licenseNumber;
+    return payload;
   };
+
+  const buildCreatePayload = (): CreateDoctorProfilePayload => ({
+    ...buildUpdatePayload(),
+    specialty: formData.specialty as DoctorSpecialty,
+    startedAt: formData.startedAt as string,
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,14 +95,11 @@ export const DoctorProfileForm: React.FC<DoctorProfileFormProps> = ({
     }
     setLoading(true);
     try {
-      const payload = buildPayload();
       if (initialData?.id) {
-        // `startedAt` is accepted by the update DTO too, but the client type
-        // omits it — cast to satisfy the adapter signature.
-        await doctorApi.updateProfile(payload as UpdateDoctorProfilePayload);
+        await doctorApi.updateProfile(buildUpdatePayload());
         toast.success('Profile updated successfully');
       } else {
-        await doctorApi.createProfile(payload);
+        await doctorApi.createProfile(buildCreatePayload());
         toast.success('Profile created successfully');
       }
       onSubmitSuccess?.();
@@ -132,7 +134,8 @@ export const DoctorProfileForm: React.FC<DoctorProfileFormProps> = ({
             type="date"
             value={formData.startedAt ? formData.startedAt.split('T')[0] : ''}
             onChange={(e) => setFormData({ ...formData, startedAt: e.target.value })}
-            className="w-full px-4 py-2 input-focus"
+            disabled={Boolean(initialData?.id)}
+            className="w-full px-4 py-2 input-focus disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
           />
         </div>
       </div>

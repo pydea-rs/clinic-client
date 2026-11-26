@@ -77,28 +77,39 @@ export const BookingPage: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await schedulingApi.bookAppointment({
-        ...formData,
-        consultationId: formData.consultationId || undefined,
-        notes: formData.notes || undefined,
-      });
+      let linkedConsultationId = formData.consultationId || undefined;
+      let createdConsultationId: string | null = null;
 
-      if (soapId) {
+      if (soapId && !linkedConsultationId) {
         try {
           const consultation = await consultationApi.create({
             doctorId: formData.doctorId,
             soapId,
           });
-          toast.success('Appointment booked and consultation created!');
-          navigate(`/consultation/${consultation.id}`);
-          return;
+          linkedConsultationId = consultation.id;
+          createdConsultationId = consultation.id;
         } catch {
-          toast.success('Appointment booked! (Could not auto-link consultation)');
+          // still allow booking even if consultation auto-creation fails
         }
-      } else {
-        toast.success('Appointment booked successfully');
       }
 
+      await schedulingApi.bookAppointment({
+        ...formData,
+        consultationId: linkedConsultationId,
+        notes: formData.notes || undefined,
+      });
+
+      if (createdConsultationId) {
+        toast.success('Appointment booked and consultation created!');
+        navigate(`/consultation/${createdConsultationId}`);
+        return;
+      }
+
+      toast.success(
+        soapId && !linkedConsultationId
+          ? 'Appointment booked! (Could not auto-link consultation)'
+          : 'Appointment booked successfully'
+      );
       navigate('/appointments');
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Failed to book appointment'));

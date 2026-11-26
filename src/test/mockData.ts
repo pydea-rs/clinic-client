@@ -9,6 +9,8 @@ export const mockPatientUser: User = {
   isActive: true,
   isAdmin: false,
   isSuperAdmin: false,
+  isPrivate: false,
+  isBanned: false,
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: '2024-01-01T00:00:00.000Z',
 };
@@ -22,6 +24,8 @@ export const mockDoctorUser: User = {
   isActive: true,
   isAdmin: false,
   isSuperAdmin: false,
+  isPrivate: false,
+  isBanned: false,
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: '2024-01-01T00:00:00.000Z',
 };
@@ -35,6 +39,8 @@ export const mockAdminUser: User = {
   isActive: true,
   isAdmin: true,
   isSuperAdmin: false,
+  isPrivate: false,
+  isBanned: false,
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: '2024-01-01T00:00:00.000Z',
 };
@@ -48,6 +54,8 @@ export const mockSuperAdminUser: User = {
   isActive: true,
   isAdmin: true,
   isSuperAdmin: true,
+  isPrivate: false,
+  isBanned: false,
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: '2024-01-01T00:00:00.000Z',
 };

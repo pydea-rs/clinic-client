@@ -13,6 +13,13 @@ export interface AvailableSlot {
   durationMinutes: number;
 }
 
+export interface CreateSlotDurationPayload {
+  minutes: number;
+  price: number;
+  label?: string;
+  isActive?: boolean;
+}
+
 export interface BookingPayload {
   doctorId: number;
   dateTime: string;
@@ -49,7 +56,7 @@ export function createSchedulingApi(client: AxiosInstance) {
       return response.data;
     },
 
-    createSlotDuration: async (payload: Partial<SlotDuration>, doctorId?: number): Promise<SlotDuration> => {
+    createSlotDuration: async (payload: CreateSlotDurationPayload, doctorId?: number): Promise<SlotDuration> => {
       const response = await client.post('/scheduling/slot-durations', payload, { params: { doctorId } });
       return response.data;
     },

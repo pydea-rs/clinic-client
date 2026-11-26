@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { reviewApi } from '../../api';
 import { useParams } from 'react-router-dom';
+import { queryClient } from '../../lib/queryClient';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../../lib/stores/auth.store';
 import { DoctorReview } from '../../lib/types/api';
@@ -70,6 +71,8 @@ export const ReviewFeedPage: React.FC = () => {
       });
       toast.success('Review updated');
       setEditingId(null);
+      void queryClient.invalidateQueries({ queryKey: ['doctor', doctorId] });
+      void queryClient.invalidateQueries({ queryKey: ['doctor-rating', doctorId] });
       await loadReviews();
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Failed to update review'));
@@ -81,6 +84,8 @@ export const ReviewFeedPage: React.FC = () => {
     try {
       await reviewApi.deleteReview(reviewId);
       toast.success('Review deleted');
+      void queryClient.invalidateQueries({ queryKey: ['doctor', doctorId] });
+      void queryClient.invalidateQueries({ queryKey: ['doctor-rating', doctorId] });
       await loadReviews();
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Failed to delete review'));

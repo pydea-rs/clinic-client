@@ -64,13 +64,14 @@ export function createDoctorApi(client: AxiosInstance) {
     ): Promise<DoctorDocument> => {
       const formData = new FormData();
       const docType = documentType ?? documentTypeOrFilename;
+      // append metadata before file so streaming multipart parsers always see type first
+      formData.append('type', docType);
       if (contentType && documentType) {
         const blob = file instanceof Blob ? file : new Blob([file as unknown as BlobPart], { type: contentType });
         formData.append('file', blob, documentTypeOrFilename);
       } else {
         formData.append('file', file as File);
       }
-      formData.append('type', docType);
       const response = await client.post('/doctor/documents', formData, {
         headers: { 'Content-Type': undefined },
       });

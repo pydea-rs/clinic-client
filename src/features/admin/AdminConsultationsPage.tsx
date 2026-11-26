@@ -3,8 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { ClipboardList, Search, X } from 'lucide-react';
 import { consultationApi } from '../../api';
-import { Consultation } from '../../lib/types/api';
 import { formatStatus, formatVisitMethod } from '../../lib/format';
+import { Consultation } from '../../lib/types/api';
 
 const STATUS_OPTIONS = [
   { value: '', label: 'All Statuses' },
@@ -72,13 +72,12 @@ export const AdminConsultationsPage: React.FC = () => {
     }
 
     if (dateFrom) {
-      const from = new Date(dateFrom);
+      const from = new Date(`${dateFrom}T00:00:00.000Z`);
       result = result.filter((c) => new Date(c.createdAt) >= from);
     }
 
     if (dateTo) {
-      const to = new Date(dateTo);
-      to.setHours(23, 59, 59, 999);
+      const to = new Date(`${dateTo}T23:59:59.999Z`);
       result = result.filter((c) => new Date(c.createdAt) <= to);
     }
 
@@ -93,6 +92,7 @@ export const AdminConsultationsPage: React.FC = () => {
     setSearchTerm('');
     setDateFrom('');
     setDateTo('');
+    setPage(1);
   };
 
   if (isLoading) {

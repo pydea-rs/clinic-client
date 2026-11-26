@@ -151,7 +151,7 @@ export interface DoctorProfile {
   platformSummary?: string;
   createdAt: string;
   updatedAt: string;
-  user?: Pick<User, 'id' | 'firstname' | 'lastname' | 'avatar'>;
+  user?: Pick<User, 'id' | 'firstname' | 'lastname' | 'avatar'> & { email?: string };
   averageRating?: number | null;
   totalReviews?: number;
 }

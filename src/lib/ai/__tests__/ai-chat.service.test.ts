@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AiChatService } from '../ai-chat.service';
-import { apiClient, getApiBaseUrl } from '../../api/client';
+import { apiClient } from '../../api/client';
 
 vi.mock('../../api/client', () => ({
   apiClient: {

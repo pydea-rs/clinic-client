@@ -5,11 +5,12 @@ import { matchingApi } from '../../api';
 import { matchingSocket } from '../../lib/socket/matching.socket';
 import { Loader2, Search, CheckCircle, XCircle, Clock, UserCheck, ArrowRight, X } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { ScoredDoctor, MatchRequest } from '../../lib/types/api';
+import { ScoredDoctor } from '../../lib/types/api';
 import { formatSpecialty } from '../../lib/format';
 import { UserAvatar } from '../../components/UserAvatar';
 
 const MATCH_TIMEOUT_SECONDS = 300;
+const TERMINAL_STATUSES = ['CONSULTATION_CREATED', 'TIMEOUT', 'MANUAL_BROWSE', 'CANCELLED'];
 
 export const MatchWaitingPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -22,11 +23,14 @@ export const MatchWaitingPage: React.FC = () => {
   const [wsStatus, setWsStatus] = useState<string>('');
   const timerRef = useRef<ReturnType<typeof setInterval>>();
 
-  const { data: matchRequest, refetch } = useQuery({
+  const { data: matchRequest, isError, refetch } = useQuery({
     queryKey: ['matching', 'status', id],
     queryFn: () => matchingApi.getStatus(id!),
     enabled: !!id,
-    refetchInterval: 5000,
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      return status && TERMINAL_STATUSES.includes(status) ? false : 5000;
+    },
   });
 
   useEffect(() => {
@@ -63,8 +67,10 @@ export const MatchWaitingPage: React.FC = () => {
     };
   }, [id, refetch]);
 
+  const isTerminal = Boolean(matchRequest?.status && TERMINAL_STATUSES.includes(matchRequest.status));
+
   useEffect(() => {
-    if (!matchRequest?.createdAt) return;
+    if (!matchRequest?.createdAt || isTerminal) return;
     const createdMs = new Date(matchRequest.createdAt).getTime();
     if (isNaN(createdMs)) return;
 
@@ -77,7 +83,7 @@ export const MatchWaitingPage: React.FC = () => {
     timerRef.current = setInterval(tick, 1000);
 
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [matchRequest?.createdAt]);
+  }, [matchRequest?.createdAt, isTerminal]);
 
   const handleCancel = async () => {
     if (!id) return;
@@ -94,12 +100,35 @@ export const MatchWaitingPage: React.FC = () => {
     if (!id) return;
     try {
       await matchingApi.browse(id);
+      void queryClient.invalidateQueries({ queryKey: ['matching'] });
       const specialty = matchRequest?.specialty;
       navigate(`/doctors${specialty ? `?specialty=${specialty}` : ''}`);
     } catch {
       toast.error('Failed to switch to browsing');
     }
   };
+
+  if (isError) {
+    return (
+      <div className="max-w-lg mx-auto p-6 mt-12 animate-scale-in">
+        <div className="card p-8 text-center">
+          <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <XCircle className="w-8 h-8 text-red-500" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Match Request Unavailable</h2>
+          <p className="text-gray-600 mb-4">We could not load the status of this match request.</p>
+          <div className="flex gap-3 justify-center">
+            <button onClick={() => void refetch()} className="btn-primary px-5 py-2.5">
+              Retry
+            </button>
+            <button onClick={() => navigate('/dashboard')} className="btn-secondary px-5 py-2.5">
+              Back to Dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!matchRequest) {
     return (
@@ -113,7 +142,6 @@ export const MatchWaitingPage: React.FC = () => {
   const minutes = Math.floor(remaining / 60);
   const seconds = remaining % 60;
   const progress = Math.min(100, (elapsed / MATCH_TIMEOUT_SECONDS) * 100);
-  const isTerminal = ['CONSULTATION_CREATED', 'TIMEOUT', 'MANUAL_BROWSE', 'CANCELLED'].includes(matchRequest.status);
 
   if (matchRequest.status === 'CONSULTATION_CREATED' && matchRequest.consultationId) {
     return (
@@ -159,6 +187,31 @@ export const MatchWaitingPage: React.FC = () => {
               onClick={() => navigate('/dashboard')}
               className="btn-secondary px-5 py-2.5"
             >
+              Back to Dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (matchRequest.status === 'MANUAL_BROWSE') {
+    return (
+      <div className="max-w-lg mx-auto p-6 mt-12 animate-scale-in">
+        <div className="card p-8 text-center">
+          <div className="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Search className="w-8 h-8 text-brand-600" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Switched to Manual Browse</h2>
+          <p className="text-gray-600 mb-6">Browse verified doctors directly to schedule your consultation.</p>
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={() => navigate(`/doctors${matchRequest.specialty ? `?specialty=${matchRequest.specialty}` : ''}`)}
+              className="btn-primary px-5 py-2.5 inline-flex items-center gap-2"
+            >
+              <Search className="w-4 h-4" /> Browse Doctors
+            </button>
+            <button onClick={() => navigate('/dashboard')} className="btn-secondary px-5 py-2.5">
               Back to Dashboard
             </button>
           </div>

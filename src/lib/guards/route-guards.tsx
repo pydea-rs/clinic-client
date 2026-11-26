@@ -1,10 +1,23 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../stores/auth.store';
+import type { User } from '../types/api';
 
 interface GuardProps {
   children: React.ReactNode;
 }
+
+export function isUserAccountBlocked(user: User | null): boolean {
+  return Boolean(user?.isBanned || user?.isActive === false);
+}
+
+const BlockedRedirect: React.FC = () => {
+  const clearAuth = useAuthStore((s) => s.clearAuth);
+  useEffect(() => {
+    clearAuth();
+  }, [clearAuth]);
+  return <Navigate to="/auth" replace />;
+};
 
 // Auth guard - requires authentication + active & not banned
 export const AuthGuard: React.FC<GuardProps> = ({ children }) => {
@@ -19,8 +32,8 @@ export const AuthGuard: React.FC<GuardProps> = ({ children }) => {
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
-  if (user?.isBanned || user?.isActive === false) {
-    return <Navigate to="/auth" replace />;
+  if (isUserAccountBlocked(user)) {
+    return <BlockedRedirect />;
   }
 
   return <>{children}</>;
@@ -37,6 +50,10 @@ export const PatientGuard: React.FC<GuardProps> = ({ children }) => {
 
   if (!isAuthenticated) {
     return <Navigate to="/auth" state={{ from: location }} replace />;
+  }
+
+  if (isUserAccountBlocked(user)) {
+    return <BlockedRedirect />;
   }
 
   if (user?.role !== 'PATIENT') {
@@ -59,6 +76,10 @@ export const DoctorGuard: React.FC<GuardProps> = ({ children }) => {
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
+  if (isUserAccountBlocked(user)) {
+    return <BlockedRedirect />;
+  }
+
   if (user?.role !== 'DOCTOR') {
     return <Navigate to="/" replace />;
   }
@@ -77,6 +98,10 @@ export const AdminGuard: React.FC<GuardProps> = ({ children }) => {
 
   if (!isAuthenticated) {
     return <Navigate to="/auth" state={{ from: location }} replace />;
+  }
+
+  if (isUserAccountBlocked(user)) {
+    return <BlockedRedirect />;
   }
 
   if (!user?.isAdmin && !user?.isSuperAdmin) {
@@ -99,6 +124,10 @@ export const NurseGuard: React.FC<GuardProps> = ({ children }) => {
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
+  if (isUserAccountBlocked(user)) {
+    return <BlockedRedirect />;
+  }
+
   if (user?.role !== 'NURSE') {
     return <Navigate to="/" replace />;
   }
@@ -117,6 +146,10 @@ export const SuperAdminGuard: React.FC<GuardProps> = ({ children }) => {
 
   if (!isAuthenticated) {
     return <Navigate to="/auth" state={{ from: location }} replace />;
+  }
+
+  if (isUserAccountBlocked(user)) {
+    return <BlockedRedirect />;
   }
 
   if (!user?.isSuperAdmin) {

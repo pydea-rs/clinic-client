@@ -3,8 +3,15 @@ import { useQuery } from '@tanstack/react-query';
 import { doctorApi } from '../../api';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Loader2, MapPin, Star, Search, FileText } from 'lucide-react';
-import { formatSpecialty } from '../../lib/format';
+import { formatSpecialty, formatVisitMethod } from '../../lib/format';
 import { UserAvatar } from '../../components/UserAvatar';
+import type { DoctorSpecialty } from '../../lib/types/api';
+
+const SPECIALTIES: DoctorSpecialty[] = [
+  'CARDIOLOGY', 'DERMATOLOGY', 'ENT', 'GASTROENTEROLOGY', 'GYNECOLOGY',
+  'NEUROLOGY', 'ONCOLOGY', 'ORTHOPEDICS', 'PEDIATRICS', 'PSYCHIATRY',
+  'UROLOGY', 'GENERAL', 'OTHER',
+];
 
 export const DoctorListPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -79,16 +86,19 @@ export const DoctorListPage: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Specialty</label>
-              <input
-                type="text"
+              <select
                 value={specialty}
                 onChange={(e) => {
                   setSpecialty(e.target.value);
                   setPage(1);
                 }}
-                placeholder="e.g., Cardiology"
                 className="w-full px-4 py-2 input-focus"
-              />
+              >
+                <option value="">All Specialties</option>
+                {SPECIALTIES.map((s) => (
+                  <option key={s} value={s}>{formatSpecialty(s)}</option>
+                ))}
+              </select>
             </div>
 
             <div>
@@ -232,7 +242,7 @@ export const DoctorListPage: React.FC = () => {
                                 key={method}
                                 className="badge badge-blue"
                               >
-                                {method}
+                                {formatVisitMethod(method)}
                               </span>
                             ))}
                           </div>

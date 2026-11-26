@@ -38,7 +38,6 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose }) => 
   const [email, setEmail] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
   const [profileSaving, setProfileSaving] = useState(false);
-  const [profileDirty, setProfileDirty] = useState(false);
 
   const [avatarPreview, setAvatarPreview] = useState('');
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -61,7 +60,6 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose }) => 
       setIsPrivate(user.isPrivate);
       setAvatarPreview(user.avatar || '');
       setAvatarFile(null);
-      setProfileDirty(false);
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
@@ -100,7 +98,6 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose }) => 
     try {
       const updated = await userApi.updateProfile(payload);
       setUser(updated);
-      setProfileDirty(false);
       queryClient.invalidateQueries({ queryKey: ['user-profile'] });
       queryClient.invalidateQueries({ queryKey: ['doctor-my-profile'] });
       queryClient.invalidateQueries({ queryKey: ['doctors'] });
@@ -307,7 +304,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose }) => 
                     <input
                       type="text"
                       value={firstname}
-                      onChange={(e) => { setFirstname(e.target.value); setProfileDirty(true); }}
+                      onChange={(e) => setFirstname(e.target.value)}
                       className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 text-sm input-focus transition-colors"
                     />
                   </div>
@@ -316,7 +313,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose }) => 
                     <input
                       type="text"
                       value={lastname}
-                      onChange={(e) => { setLastname(e.target.value); setProfileDirty(true); }}
+                      onChange={(e) => setLastname(e.target.value)}
                       className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 text-sm input-focus transition-colors"
                     />
                   </div>
@@ -330,7 +327,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose }) => 
                     <input
                       type="email"
                       value={email}
-                      onChange={(e) => { setEmail(e.target.value); setProfileDirty(true); }}
+                      onChange={(e) => setEmail(e.target.value)}
                       className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 text-sm input-focus transition-colors"
                     />
                   </div>
@@ -343,7 +340,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose }) => 
                     <div className="text-xs text-gray-400 dark:text-slate-500">Hide your profile from other users</div>
                   </div>
                   <button
-                    onClick={() => { setIsPrivate(!isPrivate); setProfileDirty(true); }}
+                    onClick={() => setIsPrivate(!isPrivate)}
                     className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
                       isPrivate ? 'bg-brand-600' : 'bg-gray-300 dark:bg-slate-600'
                     }`}

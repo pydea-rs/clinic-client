@@ -4,6 +4,7 @@ import { useAuthStore } from '../lib/stores/auth.store';
 import { authApi } from '../api';
 import { queryClient } from '../lib/queryClient';
 import { socketService } from '../lib/socket/socket.service';
+import { matchingSocket } from '../lib/socket/matching.socket';
 import {
   Home,
   Bot,
@@ -57,7 +58,7 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
   const [showProfile, setShowProfile] = React.useState(false);
 
   const role = user?.role || 'NONE';
-  const isAdmin = user?.isAdmin || false;
+  const isAdmin = Boolean(user?.isAdmin || user?.isSuperAdmin);
   const isDoctor = role === 'DOCTOR';
   const isNurse = role === 'NURSE';
 
@@ -68,6 +69,7 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
       await authApi.logout();
     } finally {
       socketService.disconnect();
+      matchingSocket.disconnect();
       queryClient.clear();
       clearAuth();
     }

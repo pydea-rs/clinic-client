@@ -71,7 +71,7 @@ export const NurseConsultationsPage: React.FC = () => {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="input py-1.5 px-3 text-sm w-44"
+            className="input-focus py-1.5 px-3 text-sm w-44"
           >
             {STATUS_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>

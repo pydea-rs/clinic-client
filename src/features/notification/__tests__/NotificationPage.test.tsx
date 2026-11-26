@@ -31,11 +31,11 @@ vi.mock('../../../api', () => ({
 
 const NOW = new Date('2026-07-25T12:00:00.000Z').getTime();
 
-function makeNotification(overrides: Partial<Notification> & { type: string }): Notification {
+function makeNotification(overrides: Partial<Notification> = {}): Notification {
   return {
     id: 1,
     userId: 'user-1',
-    type: 'SYSTEM',
+    type: 'CONSULTATION_REQUEST',
     title: 'Test Notification',
     body: 'Test body',
     channel: 'EMAIL',
@@ -254,14 +254,14 @@ describe('NotificationPage', () => {
       expect(mockNavigate).toHaveBeenCalledWith('/patient/soaps');
     });
 
-    it('should navigate to /doctor/workspace for DOCTOR_VERIFIED', async () => {
+    it('should navigate to /doctor/dashboard for DOCTOR_VERIFIED', async () => {
       await renderAndClick(
         makeNotification({
           type: 'DOCTOR_VERIFIED',
           title: 'Verified',
         }),
       );
-      expect(mockNavigate).toHaveBeenCalledWith('/doctor/workspace');
+      expect(mockNavigate).toHaveBeenCalledWith('/doctor/dashboard');
     });
 
     it('should navigate to /doctor/profile for a doctor rejection', async () => {
@@ -275,7 +275,7 @@ describe('NotificationPage', () => {
       expect(mockNavigate).toHaveBeenCalledWith('/doctor/profile');
     });
 
-    it('should navigate to /doctor/workspace for DOCTOR_VERIFIED with approved true', async () => {
+    it('should navigate to /doctor/dashboard for DOCTOR_VERIFIED with approved true', async () => {
       await renderAndClick(
         makeNotification({
           type: 'DOCTOR_VERIFIED',
@@ -283,17 +283,17 @@ describe('NotificationPage', () => {
           data: { approved: true },
         }),
       );
-      expect(mockNavigate).toHaveBeenCalledWith('/doctor/workspace');
+      expect(mockNavigate).toHaveBeenCalledWith('/doctor/dashboard');
     });
 
-    it('should navigate to /doctor/workspace for NEW_REVIEW', async () => {
+    it('should navigate to /doctor/dashboard for NEW_REVIEW', async () => {
       await renderAndClick(
         makeNotification({
           type: 'NEW_REVIEW',
           title: 'New Review',
         }),
       );
-      expect(mockNavigate).toHaveBeenCalledWith('/doctor/workspace');
+      expect(mockNavigate).toHaveBeenCalledWith('/doctor/dashboard');
     });
 
     it.each([

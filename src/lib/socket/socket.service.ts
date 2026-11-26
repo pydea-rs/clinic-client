@@ -23,11 +23,12 @@ class SocketService {
   private openChats = new Set<string>();
 
   connect(): Socket {
-    if (this.socket?.connected) {
+    if (this.socket && (this.socket.connected || this.socket.active)) {
       return this.socket;
     }
 
     if (this.socket) {
+      this.socket.io?.removeAllListeners();
       this.socket.removeAllListeners();
       this.socket.disconnect();
       this.socket = null;
@@ -55,15 +56,24 @@ class SocketService {
       this.updateStatus({ connected: false, reconnecting: false, reconnectAttempts: 0 });
     });
 
-    this.socket.on('reconnect_attempt', (attempt) => {
+    this.socket.on('connect_error', (error) => {
+      this.updateStatus({
+        ...this.connectionStatus,
+        connected: false,
+        lastError: error?.message || 'Connection error',
+      });
+    });
+
+    // in Socket.IO v4 reconnection lifecycle events fire on the Manager (`socket.io`), not the Socket
+    this.socket.io?.on('reconnect_attempt', (attempt: number) => {
       this.updateStatus({ connected: false, reconnecting: true, reconnectAttempts: attempt });
     });
 
-    this.socket.on('reconnect', () => {
+    this.socket.io?.on('reconnect', () => {
       this.updateStatus({ connected: true, reconnecting: false, reconnectAttempts: 0 });
     });
 
-    this.socket.on('reconnect_failed', () => {
+    this.socket.io?.on('reconnect_failed', () => {
       this.updateStatus({
         connected: false,
         reconnecting: false,
@@ -72,10 +82,10 @@ class SocketService {
       });
     });
 
-    this.socket.on('error', (error) => {
+    this.socket.io?.on('error', (error: Error) => {
       this.updateStatus({
         ...this.connectionStatus,
-        lastError: error.message || 'Unknown error'
+        lastError: error?.message || 'Unknown error'
       });
     });
 
@@ -103,6 +113,7 @@ class SocketService {
 
   disconnect(): void {
     if (this.socket) {
+      this.socket.io?.removeAllListeners();
       this.socket.removeAllListeners();
       this.socket.disconnect();
       this.socket = null;
@@ -193,11 +204,11 @@ class SocketService {
     this.emit('chat:read', { chatId, messageId });
   }
 
-  editMessage(chatId: string, messageId: string, content: string): void {
+  editMessage(_chatId: string, messageId: string, content: string): void {
     this.emit('chat:edit', { messageId, content });
   }
 
-  deleteMessage(chatId: string, messageId: string): void {
+  deleteMessage(_chatId: string, messageId: string): void {
     this.emit('chat:delete', { messageId });
   }
 }

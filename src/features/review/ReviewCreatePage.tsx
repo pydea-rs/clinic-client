@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { reviewApi } from '../../api';
 import { useNavigate, useParams } from 'react-router-dom';
+import { queryClient } from '../../lib/queryClient';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../lib/api/error.utils';
 export const ReviewCreatePage: React.FC = () => {
@@ -37,6 +38,9 @@ export const ReviewCreatePage: React.FC = () => {
         rating: formData.rating,
       });
       toast.success('Review created successfully');
+      void queryClient.invalidateQueries({ queryKey: ['doctor', doctorId] });
+      void queryClient.invalidateQueries({ queryKey: ['doctor-rating', doctorId] });
+      void queryClient.invalidateQueries({ queryKey: ['doctors'] });
       navigate(`/doctor/${doctorId}`);
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Failed to create review'));

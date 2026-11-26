@@ -5,7 +5,7 @@ import { doctorApi } from '../../api';
 import { useAuthStore } from '../../lib/stores/auth.store';
 import { UserAvatar } from '../../components/UserAvatar';
 import {
-  Calendar, MessageSquare, Zap, Users, ClipboardList,
+  Calendar, Zap, Users, ClipboardList,
   Bot, Clock, UserPlus, ArrowRight, Activity, Loader2, Stethoscope,
   Sparkles, Heart,
 } from 'lucide-react';

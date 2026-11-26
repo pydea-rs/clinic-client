@@ -6,6 +6,8 @@ import { Loader2, Search, Zap, FileText, ArrowRight, Stethoscope } from 'lucide-
 import toast from 'react-hot-toast';
 import { DoctorSpecialty, TriageLevel } from '../../lib/types/api';
 import { formatSpecialty } from '../../lib/format';
+import { getErrorMessage } from '../../lib/api/error.utils';
+import { queryClient } from '../../lib/queryClient';
 
 function stripMarkdown(text: string): string {
   return text.replace(/\*\*/g, '').replace(/^[\s-]+/, '').trim();
@@ -52,10 +54,11 @@ export const MatchRequestPage: React.FC = () => {
   const createMutation = useMutation({
     mutationFn: matchingApi.createRequest,
     onSuccess: (data) => {
+      void queryClient.invalidateQueries({ queryKey: ['matching', 'active'] });
       navigate(`/matching/${data.matchRequest.id}/waiting`, { state: { doctors: data.doctors } });
     },
-    onError: () => {
-      toast.error('Failed to create match request');
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Failed to create match request'));
     },
   });
 

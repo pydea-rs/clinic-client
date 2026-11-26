@@ -35,9 +35,10 @@ export const ExceptionsPanel: React.FC<{ doctorId?: number }> = ({ doctorId }) =
     e.preventDefault();
     try {
       await schedulingApi.createException({
-        ...formData,
-        startTime: formData.startTime || undefined,
-        endTime: formData.endTime || undefined,
+        date: formData.date,
+        isBlocked: formData.isBlocked,
+        startTime: formData.isBlocked ? undefined : (formData.startTime || undefined),
+        endTime: formData.isBlocked ? undefined : (formData.endTime || undefined),
         reason: formData.reason || undefined,
       }, doctorId);
       toast.success('Exception created');
@@ -180,7 +181,7 @@ export const ExceptionsPanel: React.FC<{ doctorId?: number }> = ({ doctorId }) =
             <div key={item.id} className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-medium">{item.date}</h3>
+                  <h3 className="font-medium">{item.date.split('T')[0]}</h3>
                   <p className="text-sm text-gray-500">
                     {item.isBlocked ? 'Day blocked' : `${item.startTime} - ${item.endTime}`}
                   </p>

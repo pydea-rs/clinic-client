@@ -57,9 +57,9 @@ export const DoctorDocumentsPage: React.FC = () => {
     }
   };
 
-  const handleUpload = async () => {
+  const handleUpload = () => {
     if (!selectedFile) return;
-    await uploadMutation.mutateAsync(selectedFile);
+    uploadMutation.mutate(selectedFile);
   };
 
   const getStatusBadge = (status: string) => {

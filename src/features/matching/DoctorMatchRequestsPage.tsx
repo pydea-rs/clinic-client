@@ -142,6 +142,9 @@ export const DoctorMatchRequestsPage: React.FC = () => {
     try {
       await matchingSocket.acceptMatch(matchRequestId);
       toast.success('Match accepted! Consultation created.');
+      void queryClient.invalidateQueries({ queryKey: ['doctor-consultations'] });
+      void queryClient.invalidateQueries({ queryKey: ['doctor-stats'] });
+      void queryClient.invalidateQueries({ queryKey: ['consultations'] });
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Failed to accept match'));
     } finally {

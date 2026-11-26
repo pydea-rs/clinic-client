@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNurseAssignments } from './useNurseAssignments';
 import { Link } from 'react-router-dom';
 import { soapApi } from '../../api';
-import { formatTriageLevel } from '../../lib/format';
+import { formatSpecialty, formatTriageLevel } from '../../lib/format';
 import { PatientSOAP } from '../../lib/types/api';
 
 export const NurseSOAPNotesPage: React.FC = () => {
@@ -70,7 +70,7 @@ export const NurseSOAPNotesPage: React.FC = () => {
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-gray-900">
-                    {soap.suggestedSpecialty || 'General'}
+                    {soap.suggestedSpecialty ? formatSpecialty(soap.suggestedSpecialty) : 'General'}
                   </span>
                   {soap.triageLevel && (
                     <span className={`badge text-xs ${

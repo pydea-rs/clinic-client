@@ -33,8 +33,8 @@ export const AdminAppointmentsPage: React.FC = () => {
 
   const filters = {
     ...(statusFilter !== 'ALL' && { status: statusFilter }),
-    ...(dateFrom && { from: dateFrom }),
-    ...(dateTo && { to: dateTo }),
+    ...(dateFrom && { from: `${dateFrom}T00:00:00.000Z` }),
+    ...(dateTo && { to: `${dateTo}T23:59:59.999Z` }),
   };
 
   const { data, isLoading } = useQuery({

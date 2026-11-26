@@ -1,12 +1,22 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { consultationApi } from '../../api';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../../lib/stores/auth.store';
+import { queryClient } from '../../lib/queryClient';
 import toast from 'react-hot-toast';
 import { Consultation } from '../../lib/types/api';
 import { getErrorMessage } from '../../lib/api/error.utils';
 import { formatStatus, formatVisitMethod, formatEnum } from '../../lib/format';
 import { Loader2, ClipboardList } from 'lucide-react';
+
+const CANCELLABLE_STATUSES = [
+  'CREATED',
+  'PENDING_DOCTOR_REVIEW',
+  'DOCTOR_DECIDED',
+  'PENDING_PAYMENT',
+  'PAYMENT_CONFIRMED',
+  'IN_PROGRESS',
+];
 
 export const ConsultationDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,11 +24,21 @@ export const ConsultationDetailPage: React.FC = () => {
   const [consultation, setConsultation] = useState<Consultation | null>(null);
   const [loading, setLoading] = useState(true);
   const [deciding, setDeciding] = useState(false);
+  const [advancing, setAdvancing] = useState(false);
+  const [confirmingPayment, setConfirmingPayment] = useState(false);
+  const [starting, setStarting] = useState(false);
   const [completing, setCompleting] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [showDecisionForm, setShowDecisionForm] = useState(false);
   const [showCompletionForm, setShowCompletionForm] = useState(false);
   const { user } = useAuthStore();
+
+  const invalidateConsultationCaches = () => {
+    void queryClient.invalidateQueries({ queryKey: ['consultations'] });
+    void queryClient.invalidateQueries({ queryKey: ['doctor-consultations'] });
+    void queryClient.invalidateQueries({ queryKey: ['patient-consultations'] });
+    void queryClient.invalidateQueries({ queryKey: ['doctor-stats'] });
+  };
 
   const loadConsultation = useCallback(async () => {
     if (!id) return;
@@ -49,11 +69,57 @@ export const ConsultationDetailPage: React.FC = () => {
       await consultationApi.decide(id, { doctorDecision, visitMethod });
       toast.success('Consultation decided successfully');
       setShowDecisionForm(false);
+      invalidateConsultationCaches();
       loadConsultation();
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Failed to decide consultation'));
     } finally {
       setDeciding(false);
+    }
+  };
+
+  const handleAdvancePayment = async () => {
+    if (!id) return;
+    setAdvancing(true);
+    try {
+      await consultationApi.advancePayment(id);
+      toast.success('Consultation advanced to payment');
+      invalidateConsultationCaches();
+      loadConsultation();
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to advance to payment'));
+    } finally {
+      setAdvancing(false);
+    }
+  };
+
+  const handleConfirmPayment = async () => {
+    if (!id) return;
+    setConfirmingPayment(true);
+    try {
+      await consultationApi.confirmPayment(id);
+      toast.success('Payment confirmed');
+      invalidateConsultationCaches();
+      loadConsultation();
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to confirm payment'));
+    } finally {
+      setConfirmingPayment(false);
+    }
+  };
+
+  const handleStart = async () => {
+    if (!id) return;
+    setStarting(true);
+    try {
+      await consultationApi.start(id);
+      toast.success('Consultation started');
+      invalidateConsultationCaches();
+      loadConsultation();
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to start consultation'));
+    } finally {
+      setStarting(false);
     }
   };
 
@@ -71,6 +137,7 @@ export const ConsultationDetailPage: React.FC = () => {
       await consultationApi.complete(id, { notes, summary, followUpNeeded });
       toast.success('Consultation completed successfully');
       setShowCompletionForm(false);
+      invalidateConsultationCaches();
       loadConsultation();
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Failed to complete consultation'));
@@ -90,6 +157,7 @@ export const ConsultationDetailPage: React.FC = () => {
     try {
       await consultationApi.cancel(id);
       toast.success('Consultation cancelled successfully');
+      invalidateConsultationCaches();
       navigate('/consultations');
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Failed to cancel consultation'));
@@ -98,10 +166,14 @@ export const ConsultationDetailPage: React.FC = () => {
     }
   };
 
+  const isParticipant = user?.role === 'PATIENT' || user?.role === 'DOCTOR' || user?.isAdmin || user?.isSuperAdmin;
   const canDecide = user?.role === 'DOCTOR' && consultation?.status === 'PENDING_DOCTOR_REVIEW';
+  const canAdvancePayment = isParticipant && consultation?.status === 'DOCTOR_DECIDED';
+  const canConfirmPayment = isParticipant && consultation?.status === 'PENDING_PAYMENT';
+  const canStart = user?.role === 'DOCTOR' && consultation?.status === 'PAYMENT_CONFIRMED';
   const canComplete = user?.role === 'DOCTOR' && consultation?.status === 'IN_PROGRESS';
-  const canCancel = (user?.role === 'PATIENT' || user?.role === 'DOCTOR') &&
-    !!consultation?.status && ['CREATED', 'PENDING_DOCTOR_REVIEW', 'DOCTOR_DECIDED'].includes(consultation.status);
+  const canCancel = isParticipant &&
+    !!consultation?.status && CANCELLABLE_STATUSES.includes(consultation.status);
 
   if (loading) {
     return (
@@ -189,8 +261,15 @@ export const ConsultationDetailPage: React.FC = () => {
 
         {consultation.soapId && (
           <div className="mb-4">
-            <span className="text-gray-500">SOAP ID:</span>
-            <p className="font-medium">{consultation.soapId}</p>
+            <span className="text-gray-500">SOAP Note:</span>
+            <p className="font-medium">
+              <Link
+                to={`/soap/${consultation.soapId}`}
+                className="text-brand-600 hover:text-brand-700 underline"
+              >
+                View SOAP Note ({consultation.soapId.substring(0, 8)}...)
+              </Link>
+            </p>
           </div>
         )}
 
@@ -283,6 +362,57 @@ export const ConsultationDetailPage: React.FC = () => {
         </div>
       )}
 
+      {/* Advance to Payment */}
+      {canAdvancePayment && (
+        <div className="card p-6 mb-6 animate-slide-in-up" style={{ animationDelay: '140ms' }}>
+          <h2 className="text-xl font-bold mb-2">Proceed to Payment</h2>
+          <p className="text-sm text-gray-500 mb-4">
+            The doctor has decided on the consultation plan. Advance this consultation to the payment step to continue.
+          </p>
+          <button
+            onClick={handleAdvancePayment}
+            disabled={advancing}
+            className="w-full btn-primary py-2.5 disabled:opacity-50"
+          >
+            {advancing ? 'Advancing...' : 'Proceed to Payment'}
+          </button>
+        </div>
+      )}
+
+      {/* Confirm Payment */}
+      {canConfirmPayment && (
+        <div className="card p-6 mb-6 animate-slide-in-up" style={{ animationDelay: '140ms' }}>
+          <h2 className="text-xl font-bold mb-2">Payment Confirmation</h2>
+          <p className="text-sm text-gray-500 mb-4">
+            Confirm payment for this consultation so the doctor can begin.
+          </p>
+          <button
+            onClick={handleConfirmPayment}
+            disabled={confirmingPayment}
+            className="w-full btn-success py-2.5 disabled:opacity-50"
+          >
+            {confirmingPayment ? 'Confirming...' : 'Confirm Payment'}
+          </button>
+        </div>
+      )}
+
+      {/* Doctor Start Consultation */}
+      {canStart && (
+        <div className="card p-6 mb-6 animate-slide-in-up" style={{ animationDelay: '160ms' }}>
+          <h2 className="text-xl font-bold mb-2">Ready to Start</h2>
+          <p className="text-sm text-gray-500 mb-4">
+            Payment is confirmed. Start the consultation when you are ready.
+          </p>
+          <button
+            onClick={handleStart}
+            disabled={starting}
+            className="w-full btn-primary py-2.5 disabled:opacity-50"
+          >
+            {starting ? 'Starting...' : 'Start Consultation'}
+          </button>
+        </div>
+      )}
+
       {/* Doctor Completion Panel */}
       {canComplete && (
         <div className="card p-6 mb-6 animate-slide-in-up" style={{ animationDelay: '180ms' }}>
@@ -363,6 +493,14 @@ export const ConsultationDetailPage: React.FC = () => {
         >
           Back
         </button>
+        {user?.role === 'PATIENT' && consultation.status === 'COMPLETED' && (
+          <Link
+            to={`/doctor/${consultation.doctorId}/review`}
+            className="btn-primary px-4 py-2"
+          >
+            Write a Review
+          </Link>
+        )}
         {user?.role === 'PATIENT' && (
           <button
             onClick={() => navigate('/patient/consultations')}

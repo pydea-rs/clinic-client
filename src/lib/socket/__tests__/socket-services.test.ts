@@ -9,6 +9,11 @@ const { mockIo } = vi.hoisted(() => ({
     emit: vi.fn(),
     removeAllListeners: vi.fn(),
     disconnect: vi.fn(),
+    io: {
+      on: vi.fn(),
+      off: vi.fn(),
+      removeAllListeners: vi.fn(),
+    },
   })),
 }));
 

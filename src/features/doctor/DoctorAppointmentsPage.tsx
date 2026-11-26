@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { schedulingApi } from '../../api';
-import { AppointmentStatus } from '../../lib/types/api';
 import { formatStatus, formatVisitMethod } from '../../lib/format';
-import { Calendar, Loader2, ChevronRight, Filter, Clock, Timer } from 'lucide-react';
+import { Calendar, ChevronRight, Filter, Clock, Timer } from 'lucide-react';
 
 const STATUS_OPTIONS: Array<{ value: string; label: string }> = [
   { value: 'ALL', label: 'All' },
@@ -45,8 +44,8 @@ export const DoctorAppointmentsPage: React.FC = () => {
 
   const filters = {
     ...(statusFilter !== 'ALL' && { status: statusFilter }),
-    ...(dateFrom && { from: dateFrom }),
-    ...(dateTo && { to: dateTo }),
+    ...(dateFrom && { from: `${dateFrom}T00:00:00.000Z` }),
+    ...(dateTo && { to: `${dateTo}T23:59:59.999Z` }),
   };
 
   const { data, isLoading } = useQuery({

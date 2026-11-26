@@ -17,11 +17,12 @@ class MatchingSocketService {
   private status: MatchSocketStatus = { connected: false, reconnecting: false };
 
   connect(): Socket {
-    if (this.socket?.connected) {
+    if (this.socket && (this.socket.connected || this.socket.active)) {
       return this.socket;
     }
 
     if (this.socket) {
+      this.socket.io?.removeAllListeners();
       this.socket.removeAllListeners();
       this.socket.disconnect();
     }
@@ -45,15 +46,15 @@ class MatchingSocketService {
       this.updateStatus({ connected: false, reconnecting: false });
     });
 
-    this.socket.on('reconnect_attempt', () => {
+    this.socket.io?.on('reconnect_attempt', () => {
       this.updateStatus({ connected: false, reconnecting: true });
     });
 
-    this.socket.on('reconnect', () => {
+    this.socket.io?.on('reconnect', () => {
       this.updateStatus({ connected: true, reconnecting: false });
     });
 
-    this.socket.on('reconnect_failed', () => {
+    this.socket.io?.on('reconnect_failed', () => {
       this.updateStatus({ connected: false, reconnecting: false });
     });
 
@@ -68,6 +69,7 @@ class MatchingSocketService {
 
   disconnect(): void {
     if (this.socket) {
+      this.socket.io?.removeAllListeners();
       this.socket.removeAllListeners();
       this.socket.disconnect();
       this.socket = null;

@@ -21,9 +21,13 @@ export const NurseInvitationsPage: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  const canReceiveInvitations =
+    Boolean(user) && user?.role !== 'DOCTOR' && !user?.isAdmin && !user?.isSuperAdmin;
+
   const { data: invitations = [], isLoading } = useQuery({
     queryKey: NURSE_INVITATIONS_QUERY_KEY,
     queryFn: () => nurseApi.getInvitations(),
+    enabled: canReceiveInvitations,
   });
 
   const acceptMutation = useMutation({

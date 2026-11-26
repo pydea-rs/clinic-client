@@ -64,7 +64,7 @@ export const RecentSOAPs: React.FC = () => {
             return (
               <div key={soap.id} className="p-3.5 border border-gray-100 rounded-xl hover:border-gray-200 hover:bg-gray-50/50 transition-all duration-200 group">
                 <div className="flex items-center gap-2 mb-2 flex-wrap">
-                  {triage && (
+                  {triage && soap.triageLevel && (
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-semibold ring-1 ${triage.color} ${triage.ring}`}>
                       {triage.icon}
                       {formatTriageLevel(soap.triageLevel)}

@@ -50,6 +50,7 @@ export const useChat = (options?: UseChatOptions) => {
 
   const typewriterIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const activeTypewriterIdRef = useRef<string | null>(null);
+  const activeTypewriterFullTextRef = useRef<string | null>(null);
   const seenBotMessageIds = useRef<Set<string>>(new Set());
   const notifiedSoapIdsRef = useRef<Set<string>>(new Set());
   const greetingStripperRef = useRef<GreetingStripper | null>(null);
@@ -86,6 +87,7 @@ export const useChat = (options?: UseChatOptions) => {
       typewriterIntervalRef.current = null;
     }
     activeTypewriterIdRef.current = null;
+    activeTypewriterFullTextRef.current = null;
   }, []);
 
   const updateConnectionStatus = useCallback(
@@ -110,6 +112,9 @@ export const useChat = (options?: UseChatOptions) => {
 
   const startTypewriter = useCallback(
     (id: string, fullText: string, timestamp: Date, choices?: MessageChoice[]) => {
+      // flush any in-progress typewriter message to its full text instead of dropping it
+      const prevId = activeTypewriterIdRef.current;
+      const prevFullText = activeTypewriterFullTextRef.current;
       stopTypewriter();
 
       if (typingTimeoutRef.current) {
@@ -121,13 +126,22 @@ export const useChat = (options?: UseChatOptions) => {
         ...prev,
         isTyping: false,
         messages: [
-          ...prev.messages.filter((m) => !(m.isStreaming && !m.isUser)),
+          ...prev.messages.map((m) =>
+            m.isStreaming && !m.isUser
+              ? {
+                  ...m,
+                  text: m.id === prevId && prevFullText !== null ? prevFullText : m.text,
+                  isStreaming: false,
+                }
+              : m
+          ),
           { id, text: "", isUser: false, timestamp, isStreaming: true, choices },
         ],
       }));
 
       let charIndex = 0;
       activeTypewriterIdRef.current = id;
+      activeTypewriterFullTextRef.current = fullText;
 
       typewriterIntervalRef.current = setInterval(() => {
         charIndex++;
@@ -327,15 +341,16 @@ export const useChat = (options?: UseChatOptions) => {
 
       let conversationId: string;
 
-      if (options?.conversationId) {
+      if (options?.conversationId && !options?.forceNew) {
         conversationId = await aiChatService.resumeConversation(options.conversationId);
       } else {
         conversationId = await aiChatService.startNewConversation();
       }
 
       if (!conversationId) throw new Error("No conversationId returned by server");
+      if (!mountedRef.current) return;
 
-      if (options?.conversationId) {
+      if (options?.conversationId && !options?.forceNew) {
         const loadedMessages: AiChatMessage[] = [];
         try {
           const history = await aiChatService.getConversationHistory(conversationId);
@@ -382,7 +397,7 @@ export const useChat = (options?: UseChatOptions) => {
       toast.error("Failed to start conversation. Please check your connection.");
       updateConnectionStatus({ error: "Failed to start conversation" });
     }
-  }, [updateConnectionStatus, getGreetingStripper, options?.conversationId]);
+  }, [updateConnectionStatus, getGreetingStripper, options?.conversationId, options?.forceNew]);
 
   const connectSSE = useCallback(
     (conversationId: string) => {
@@ -716,7 +731,7 @@ export const useChat = (options?: UseChatOptions) => {
     updateConnectionStatus({ error: undefined });
     try {
       const conversationId = await startConversation();
-      if (conversationId) connectSSE(conversationId);
+      if (conversationId && mountedRef.current) connectSSE(conversationId);
     } finally {
       isInitializingRef.current = false;
     }

@@ -128,7 +128,7 @@ export const NurseProfilePage: React.FC = () => {
                 <h2 className="text-xl font-bold text-gray-900">{user?.firstname} {user?.lastname}</h2>
                 <p className="text-sm text-gray-500 mt-0.5">{user?.email}</p>
                 <div className="flex items-center gap-2 mt-2">
-                  <span className="badge badge-teal text-xs">Nurse</span>
+                  <span className="badge badge-blue text-xs">Nurse</span>
                 </div>
                 <button onClick={() => setEditing(true)} className="mt-3 text-sm text-brand-600 hover:text-brand-700 font-medium">
                   Edit Profile

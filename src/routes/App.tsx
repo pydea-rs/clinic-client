@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { ToastProvider } from '../components/Toast';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { useAuth } from '../features/auth/hooks/useAuth';
-import { AuthGuard, PatientGuard, DoctorGuard, NurseGuard, AdminGuard } from '../lib/guards/route-guards';
+import { AuthGuard, PatientGuard, DoctorGuard, NurseGuard, AdminGuard, isUserAccountBlocked } from '../lib/guards/route-guards';
 import { Shell } from '../components/Shell';
 const AuthForm = React.lazy(() => import('../features/auth/components/AuthForm').then(m => ({ default: m.AuthForm })));
 const ChatInterface = React.lazy(() => import('../features/ai-chat/components/ChatInterface').then(m => ({ default: m.ChatInterface })));
@@ -17,7 +17,6 @@ const UserDetailPage = React.lazy(() => import('../features/patient/UserDetailPa
 const DoctorDocumentsPage = React.lazy(() => import('../features/doctor/DoctorDocumentsPage').then(m => ({ default: m.DoctorDocumentsPage })));
 const DoctorListPage = React.lazy(() => import('../features/doctor/DoctorListPage').then(m => ({ default: m.DoctorListPage })));
 const DoctorProfilePage = React.lazy(() => import('../features/doctor/DoctorProfilePage').then(m => ({ default: m.DoctorProfilePage })));
-const DoctorProfileForm = React.lazy(() => import('../features/doctor/DoctorProfileForm').then(m => ({ default: m.DoctorProfileForm })));
 const DoctorDashboardPage = React.lazy(() => import('../features/doctor/DoctorDashboardPage').then(m => ({ default: m.DoctorDashboardPage })));
 const DoctorAppointmentsPage = React.lazy(() => import('../features/doctor/DoctorAppointmentsPage').then(m => ({ default: m.DoctorAppointmentsPage })));
 const DoctorChatPage = React.lazy(() => import('../features/doctor/DoctorChatPage').then(m => ({ default: m.DoctorChatPage })));
@@ -96,7 +95,8 @@ const LazyPage: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 );
 
 function App() {
-  const { isAuthenticated, initializing, login, register } = useAuth();
+  const { user, isAuthenticated, initializing, login, register } = useAuth();
+  const hasActiveSession = isAuthenticated && !isUserAccountBlocked(user);
 
   if (initializing) {
     return (
@@ -122,8 +122,8 @@ function App() {
       <BrowserRouter>
         <Routes>
           {/* Public routes */}
-          <Route path="/" element={<Navigate to={isAuthenticated ? '/dashboard' : '/auth'} replace />} />
-          <Route path="/auth" element={<AuthRedirect isAuthenticated={isAuthenticated}><LazyPage><AuthForm onLogin={login} onRegister={register} /></LazyPage></AuthRedirect>} />
+          <Route path="/" element={<Navigate to={hasActiveSession ? '/dashboard' : '/auth'} replace />} />
+          <Route path="/auth" element={<AuthRedirect isAuthenticated={hasActiveSession}><LazyPage><AuthForm onLogin={login} onRegister={register} /></LazyPage></AuthRedirect>} />
 
           {/* Dashboard */}
           <Route path="/dashboard" element={<AuthGuard><Shell><LazyPage><DashboardPage /></LazyPage></Shell></AuthGuard>} />
@@ -166,7 +166,7 @@ function App() {
 
           {/* Scheduling routes — now wrapped in Shell */}
           <Route path="/slots/:doctorId" element={<AuthGuard><Shell><LazyPage><SlotExplorer /></LazyPage></Shell></AuthGuard>} />
-          <Route path="/booking/:doctorId" element={<AuthGuard><Shell><LazyPage><BookingPage /></LazyPage></Shell></AuthGuard>} />
+          <Route path="/booking/:doctorId" element={<PatientGuard><Shell><LazyPage><BookingPage /></LazyPage></Shell></PatientGuard>} />
           <Route path="/appointments" element={<AuthGuard><Shell><LazyPage><AppointmentsPage /></LazyPage></Shell></AuthGuard>} />
           <Route path="/appointments/:id" element={<AuthGuard><Shell><LazyPage><AppointmentDetailPage /></LazyPage></Shell></AuthGuard>} />
 

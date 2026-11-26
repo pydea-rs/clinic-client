@@ -31,26 +31,31 @@ const isDoctorRejection = (notification: Notification) =>
 const rejectionConfig = { icon: AlertCircle, color: 'text-red-600 bg-red-100' };
 
 function getNotificationLink(notification: Notification): string | null {
-  const data = notification.data as Record<string, string> | undefined;
+  const data = notification.data as Record<string, string | number> | undefined;
   const type = notification.type as NotificationType;
 
-  if (type === 'CONSULTATION_REQUEST' || type === 'DOCTOR_DECISION' || type === 'PAYMENT_CONFIRMED') {
+  if (type === 'CONSULTATION_REQUEST') {
+    if (data?.consultationId) return `/consultation/${data.consultationId}`;
+    if (data?.matchRequestId) return '/doctor/matching';
+    return null;
+  }
+  if (type === 'DOCTOR_DECISION' || type === 'PAYMENT_CONFIRMED') {
     return data?.consultationId ? `/consultation/${data.consultationId}` : null;
   }
   if (type === 'NEW_CHAT_MESSAGE') {
     return data?.chatId ? `/chat/${data.chatId}` : null;
   }
   if (type === 'APPOINTMENT_REMINDER' || type === 'APPOINTMENT_CANCELLED') {
-    return '/appointments';
+    return data?.appointmentId ? `/appointments/${data.appointmentId}` : '/appointments';
   }
   if (type === 'SOAP_READY') {
     return data?.conversationId ? `/ai/${data.conversationId}` : '/patient/soaps';
   }
   if (type === 'DOCTOR_VERIFIED') {
-    return isDoctorRejection(notification) ? '/doctor/profile' : '/doctor/workspace';
+    return isDoctorRejection(notification) ? '/doctor/profile' : '/doctor/dashboard';
   }
   if (type === 'NEW_REVIEW') {
-    return '/doctor/workspace';
+    return '/doctor/dashboard';
   }
   if (type === 'NURSE_INVITATION') {
     return '/invitations';

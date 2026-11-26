@@ -76,15 +76,15 @@ export const PatientProfilePage: React.FC = () => {
     }
   };
 
-  const handleAvatarUpload = async () => {
+  const handleAvatarUpload = () => {
     if (avatarFile) {
-      await avatarMutation.mutateAsync(avatarFile);
+      avatarMutation.mutate(avatarFile);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    await updateMutation.mutateAsync(formData);
+    updateMutation.mutate(formData);
   };
 
   if (isLoading) {

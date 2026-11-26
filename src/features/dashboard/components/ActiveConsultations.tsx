@@ -38,14 +38,12 @@ const progressColor: Record<string, string> = {
   CANCELLED: 'bg-red-400',
 };
 
-function formatStatus(status: string): string {
-  return status.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-}
+import { formatStatus } from '../../../lib/format';
 
 export const ActiveConsultations: React.FC = () => {
   const { data, isLoading } = useQuery({
     queryKey: ['consultations-dashboard'],
-    queryFn: () => consultationApi.getConsultations(1, 5),
+    queryFn: () => consultationApi.getConsultations(1, 20),
   });
 
   if (isLoading) {
@@ -62,7 +60,7 @@ export const ActiveConsultations: React.FC = () => {
   }
 
   const consultations = data?.consultations || [];
-  const active = consultations.filter((c) => c.status !== 'COMPLETED' && c.status !== 'CANCELLED');
+  const active = consultations.filter((c) => c.status !== 'COMPLETED' && c.status !== 'CANCELLED').slice(0, 5);
 
   return (
     <div className="card p-5">
