@@ -104,28 +104,28 @@ export const AuthForm: React.FC<AuthFormProps> = ({
     return (
         <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
             {/* Animated background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50/50 to-indigo-100/60" />
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50/50 to-indigo-100/60 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/70" />
             <div className="absolute inset-0 bg-grid opacity-50" />
 
             {/* Morphing gradient blob */}
-            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-bl from-brand-200/30 to-purple-200/20 blob animate-morph -translate-y-1/2 translate-x-1/4 blur-3xl pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-purple-200/20 to-transparent rounded-full translate-y-1/3 -translate-x-1/4 blur-3xl pointer-events-none" />
+            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-bl from-brand-200/30 to-purple-200/20 dark:from-brand-800/25 dark:to-purple-900/20 blob animate-morph -translate-y-1/2 translate-x-1/4 blur-3xl pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-purple-200/20 to-transparent dark:from-brand-900/25 rounded-full translate-y-1/3 -translate-x-1/4 blur-3xl pointer-events-none" />
 
             {/* Floating decorative medical icons */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-                <Heart className="absolute top-[12%] left-[8%] w-8 h-8 text-brand-200/30 animate-float-slow" style={{ animationDelay: "0s" }} />
-                <Shield className="absolute top-[18%] right-[12%] w-10 h-10 text-purple-200/30 animate-drift" style={{ animationDelay: "2s" }} />
-                <Activity className="absolute bottom-[22%] left-[14%] w-7 h-7 text-emerald-200/30 animate-drift" style={{ animationDelay: "4s" }} />
-                <Sparkles className="absolute bottom-[30%] right-[10%] w-6 h-6 text-brand-200/30 animate-float-slow" style={{ animationDelay: "1s" }} />
-                <Pill className="absolute top-[45%] left-[5%] w-9 h-9 text-purple-200/30 animate-float-slow" style={{ animationDelay: "3s" }} />
+                <Heart className="absolute top-[12%] left-[8%] w-8 h-8 text-brand-200/40 dark:text-brand-700/30 animate-float-slow" style={{ animationDelay: "0s" }} />
+                <Shield className="absolute top-[18%] right-[12%] w-10 h-10 text-purple-200/40 dark:text-purple-700/30 animate-drift" style={{ animationDelay: "2s" }} />
+                <Activity className="absolute bottom-[22%] left-[14%] w-7 h-7 text-emerald-200/40 dark:text-emerald-700/30 animate-drift" style={{ animationDelay: "4s" }} />
+                <Sparkles className="absolute bottom-[30%] right-[10%] w-6 h-6 text-brand-200/40 dark:text-brand-700/30 animate-float-slow" style={{ animationDelay: "1s" }} />
+                <Pill className="absolute top-[45%] left-[5%] w-9 h-9 text-purple-200/40 dark:text-purple-700/30 animate-float-slow" style={{ animationDelay: "3s" }} />
             </div>
 
             <div className="max-w-[420px] w-full relative z-10 animate-fade-in">
                 {/* Card ambient glow */}
-                <div className="absolute -inset-4 bg-gradient-to-br from-brand-400/15 via-purple-400/10 to-brand-300/15 rounded-[2rem] blur-2xl animate-breathe pointer-events-none" />
+                <div className="absolute -inset-4 bg-gradient-to-br from-brand-400/15 via-purple-400/10 to-brand-300/15 dark:from-brand-500/20 dark:via-purple-600/15 rounded-[2rem] blur-2xl animate-breathe pointer-events-none" />
 
                 {/* Card */}
-                <div className="relative bg-white/80 backdrop-blur-xl rounded-3xl shadow-soft-xl border border-white/60 p-8 animate-scale-in">
+                <div className="relative bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl rounded-3xl shadow-soft-xl border border-white/60 dark:border-slate-700/60 p-8 animate-scale-in">
                     {/* Logo */}
                     <div className="text-center mb-8">
                         <div className="w-16 h-16 bg-gradient-to-br from-brand-600 via-brand-500 to-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-brand-500/25 animate-float">
@@ -134,7 +134,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({
                         <h1 className="text-2xl font-bold tracking-tight gradient-text mb-1">
                             AI-Clinic
                         </h1>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-gray-500 dark:text-slate-400">
                             {mode === "login"
                                 ? "Welcome back! Sign in to continue."
                                 : "Create your account to get started."}
@@ -142,13 +142,13 @@ export const AuthForm: React.FC<AuthFormProps> = ({
                     </div>
 
                     {/* Mode tabs */}
-                    <div className="flex bg-gray-100/80 rounded-xl p-1 mb-6">
+                    <div className="flex bg-gray-100/80 dark:bg-slate-800/80 rounded-xl p-1 mb-6">
                         <button
                             onClick={() => setMode("login")}
                             className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all duration-300 ${
                                 mode === "login"
-                                    ? "bg-white text-gray-900 shadow-sm shadow-glow-blue"
-                                    : "text-gray-500 hover:text-gray-700"
+                                    ? "bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm shadow-glow-blue"
+                                    : "text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200"
                             }`}
                         >
                             Sign In
@@ -157,8 +157,8 @@ export const AuthForm: React.FC<AuthFormProps> = ({
                             onClick={() => setMode("register")}
                             className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all duration-300 ${
                                 mode === "register"
-                                    ? "bg-white text-gray-900 shadow-sm shadow-glow-blue"
-                                    : "text-gray-500 hover:text-gray-700"
+                                    ? "bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm shadow-glow-blue"
+                                    : "text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200"
                             }`}
                         >
                             Register
@@ -168,18 +168,18 @@ export const AuthForm: React.FC<AuthFormProps> = ({
                     <form onSubmit={handleSubmit} className="space-y-4">
                         {mode === "register" && (
                             <div className="animate-slide-in-up">
-                                <label htmlFor="name" className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">
+                                <label htmlFor="name" className="block text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                                     Full Name
                                 </label>
                                 <div className="relative">
-                                    <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                                    <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-slate-500 pointer-events-none" />
                                     <input
                                         id="name"
                                         type="text"
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                         placeholder="John Doe"
-                                        className="w-full pl-10 pr-4 py-3 bg-gray-50/80 border border-gray-200 rounded-xl input-focus text-sm"
+                                        className="w-full pl-10 pr-4 py-3 bg-gray-50/80 dark:bg-slate-800/80 border border-gray-200 dark:border-slate-700 rounded-xl input-focus text-sm"
                                         disabled={isLoading || initializing}
                                     />
                                 </div>
@@ -187,18 +187,18 @@ export const AuthForm: React.FC<AuthFormProps> = ({
                         )}
 
                         <div>
-                            <label htmlFor="email" className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">
+                            <label htmlFor="email" className="block text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                                 Email
                             </label>
                             <div className="relative">
-                                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-slate-500 pointer-events-none" />
                                 <input
                                     id="email"
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     placeholder="you@example.com"
-                                    className="w-full pl-10 pr-4 py-3 bg-gray-50/80 border border-gray-200 rounded-xl input-focus text-sm"
+                                    className="w-full pl-10 pr-4 py-3 bg-gray-50/80 dark:bg-slate-800/80 border border-gray-200 dark:border-slate-700 rounded-xl input-focus text-sm"
                                     disabled={isLoading || initializing}
                                     autoComplete="email"
                                     required
@@ -207,18 +207,18 @@ export const AuthForm: React.FC<AuthFormProps> = ({
                         </div>
 
                         <div>
-                            <label htmlFor="password" className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">
+                            <label htmlFor="password" className="block text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                                 Password
                             </label>
                             <div className="relative">
-                                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-slate-500 pointer-events-none" />
                                 <input
                                     id="password"
                                     type={showPassword ? "text" : "password"}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="Enter your password"
-                                    className="w-full pl-10 pr-11 py-3 bg-gray-50/80 border border-gray-200 rounded-xl input-focus text-sm"
+                                    className="w-full pl-10 pr-11 py-3 bg-gray-50/80 dark:bg-slate-800/80 border border-gray-200 dark:border-slate-700 rounded-xl input-focus text-sm"
                                     disabled={isLoading || initializing}
                                     autoComplete={mode === "login" ? "current-password" : "new-password"}
                                     required
@@ -226,7 +226,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
                                     tabIndex={-1}
                                 >
                                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -236,7 +236,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({
                             {/* Password strength indicator (register mode only) */}
                             {mode === "register" && password.length > 0 && (
                                 <div className="mt-2 animate-slide-in-up">
-                                    <div className="h-1 rounded-full bg-gray-100 overflow-hidden">
+                                    <div className="h-1 rounded-full bg-gray-100 dark:bg-slate-800 overflow-hidden">
                                         <div className={`strength-bar ${strengthConfig[passwordStrength].barClass}`} />
                                     </div>
                                     <p className={`text-xs mt-1 font-medium ${strengthConfig[passwordStrength].colorClass}`}>
@@ -249,19 +249,19 @@ export const AuthForm: React.FC<AuthFormProps> = ({
                         <button
                             type="submit"
                             disabled={isLoading || initializing}
-                            className="w-full py-3.5 mt-2 btn-primary text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+                            className="group w-full py-3.5 mt-2 btn-primary text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                         >
                             {isLoading || initializing ? (
                                 <><Loader2 className="w-4 h-4 animate-spin" /> Please wait...</>
                             ) : (
-                                <>{mode === "login" ? "Sign In" : "Create Account"} <ArrowRight className="w-4 h-4" /></>
+                                <>{mode === "login" ? "Sign In" : "Create Account"} <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" /></>
                             )}
                         </button>
                     </form>
                 </div>
 
                 {/* Footer */}
-                <p className="text-center text-xs text-gray-400 mt-6">
+                <p className="text-center text-xs text-gray-400 dark:text-slate-500 mt-6">
                     AI-powered telemedicine platform
                 </p>
             </div>

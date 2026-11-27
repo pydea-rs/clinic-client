@@ -30,7 +30,7 @@ export const NurseInvitationsBanner: React.FC = () => {
   return (
     <Link
       to="/invitations"
-      className="flex items-center gap-2 px-6 py-3 bg-brand-50 text-brand-800 text-sm font-medium hover:bg-brand-100 transition-colors"
+      className="flex-shrink-0 flex items-center gap-2 px-6 py-3 bg-brand-50 dark:bg-brand-950/60 border-b border-brand-100 dark:border-brand-800/40 text-brand-800 dark:text-brand-200 text-sm font-medium hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors"
     >
       <Mail className="w-4 h-4" />
       {count === 1

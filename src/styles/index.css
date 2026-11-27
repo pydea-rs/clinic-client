@@ -117,6 +117,22 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes pulseRing {
+  0% { transform: scale(0.95); opacity: 0.7; }
+  70% { transform: scale(1.65); opacity: 0; }
+  100% { transform: scale(1.65); opacity: 0; }
+}
+
+@keyframes modalIn {
+  0% { opacity: 0; transform: translateY(12px) scale(0.96); }
+  100% { opacity: 1; transform: none; }
+}
+
 @keyframes slideInDown {
   from { opacity: 0; transform: translateY(-12px); }
   to { opacity: 1; transform: translateY(0); }
@@ -310,6 +326,14 @@ body {
   animation: slideUpSpring 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+.animate-modal-in {
+  animation: modalIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-pulse-ring {
+  animation: pulseRing 2.2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
 .animate-expand-in {
   animation: expandIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -423,30 +447,35 @@ body {
 .btn-primary {
   @apply bg-gradient-to-r from-brand-600 to-brand-500 text-white font-medium rounded-xl
          shadow-sm hover:shadow-glow-blue hover:from-brand-500 hover:to-brand-400
+         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900
          transition-all duration-200 ease-spring btn-press;
 }
 
 .btn-secondary {
   @apply bg-white border border-gray-200 text-gray-700 font-medium rounded-xl
          shadow-sm hover:border-gray-300 hover:shadow-soft hover:bg-gray-50
+         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/30 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900
          transition-all duration-200 ease-spring btn-press;
 }
 
 .btn-ghost {
   @apply bg-transparent text-gray-500 font-medium rounded-xl
          hover:bg-gray-100 hover:text-gray-700
+         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/30
          transition-all duration-200 ease-spring btn-press;
 }
 
 .btn-danger {
   @apply bg-gradient-to-r from-red-600 to-red-500 text-white font-medium rounded-xl
          shadow-sm hover:shadow-glow-red hover:from-red-500 hover:to-red-400
+         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900
          transition-all duration-200 ease-spring btn-press;
 }
 
 .btn-success {
   @apply bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-medium rounded-xl
          shadow-sm hover:shadow-glow-green hover:from-emerald-500 hover:to-emerald-400
+         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900
          transition-all duration-200 ease-spring btn-press;
 }
 
@@ -643,7 +672,7 @@ body {
    ═══════════════════════════════════ */
 
 .page-enter {
-  animation: slideInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: pageEnter 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .page-fade {
@@ -869,10 +898,18 @@ body {
   border-color: rgb(51 65 85 / 0.5);
   box-shadow: 0 2px 15px -3px rgba(0, 0, 0, 0.4);
 }
+.dark .card-interactive {
+  background: rgb(30 41 59 / 0.9);
+  border-color: rgb(51 65 85 / 0.5);
+  box-shadow: 0 2px 15px -3px rgba(0, 0, 0, 0.4);
+}
 .dark .card-interactive:hover,
 .dark .card-hover:hover {
   background: rgb(51 65 85 / 0.7);
   border-color: rgb(71 85 105 / 0.7);
+}
+.dark .progress-bar {
+  background: rgb(51 65 85 / 0.6);
 }
 .dark .card-shine {
   background: rgb(30 41 59 / 0.9);
@@ -995,3 +1032,28 @@ body {
 .dark .strength-fair { background: #fbbf24; }
 .dark .strength-good { background: #34d399; }
 .dark .strength-strong { background: #6ee7b7; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .animate-float-slow,
+  .animate-breathe,
+  .animate-morph,
+  .animate-drift,
+  .animate-spin-slow,
+  .animate-notification-pulse,
+  .animate-pulse-ring,
+  .animate-thinking-icon {
+    animation: none !important;
+  }
+  .page-enter,
+  .animate-slide-in-up,
+  .animate-slide-in-down,
+  .animate-slide-in-right,
+  .animate-slide-in-left,
+  .animate-slide-up-spring,
+  .animate-scale-in,
+  .animate-pop-in,
+  .animate-msg-in {
+    animation-duration: 0.01ms !important;
+  }
+}

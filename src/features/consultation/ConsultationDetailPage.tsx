@@ -485,11 +485,11 @@ export const ConsultationDetailPage: React.FC = () => {
                 <React.Fragment key={step.key}>
                   <div className="flex flex-col items-center min-w-[76px] text-center">
                     <div
-                      className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
+                      className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${
                         reached
                           ? 'bg-brand-600 text-white shadow-sm'
-                          : 'bg-gray-100 text-gray-400'
-                      } ${isCurrent ? 'ring-4 ring-brand-100' : ''}`}
+                          : 'bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-500'
+                      } ${isCurrent ? 'ring-4 ring-brand-100 dark:ring-brand-900/50 animate-breathe' : ''}`}
                     >
                       {idx < activeStepIndex || consultation.status === 'COMPLETED' ? (
                         <CheckCircle2 className="w-4 h-4" />
@@ -499,7 +499,7 @@ export const ConsultationDetailPage: React.FC = () => {
                     </div>
                     <span
                       className={`text-[11px] mt-1.5 font-medium whitespace-nowrap ${
-                        reached ? 'text-gray-900' : 'text-gray-400'
+                        reached ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-slate-500'
                       }`}
                     >
                       {step.label}
@@ -507,8 +507,8 @@ export const ConsultationDetailPage: React.FC = () => {
                   </div>
                   {idx < steps.length - 1 && (
                     <div
-                      className={`flex-1 h-0.5 min-w-[18px] -mt-5 rounded-full ${
-                        idx < activeStepIndex ? 'bg-brand-500' : 'bg-gray-200'
+                      className={`flex-1 h-0.5 min-w-[18px] -mt-5 rounded-full transition-colors duration-300 ${
+                        idx < activeStepIndex ? 'bg-brand-500' : 'bg-gray-200 dark:bg-slate-700'
                       }`}
                     />
                   )}
@@ -533,13 +533,13 @@ export const ConsultationDetailPage: React.FC = () => {
             className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-500 to-indigo-500 text-white font-bold flex-shrink-0"
           />
           <div className="min-w-0 flex-1">
-            <span className="text-xs font-medium uppercase tracking-wider text-gray-400">
+            <span className="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-slate-500">
               Patient
             </span>
-            <p className="font-semibold text-gray-900 group-hover:text-brand-600 transition-colors truncate">
+            <p className="font-semibold text-gray-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors truncate">
               {patientName}
             </p>
-            <p className="text-xs text-gray-500 mt-0.5">View patient profile →</p>
+            <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">View patient profile →</p>
           </div>
         </Link>
 
@@ -556,13 +556,13 @@ export const ConsultationDetailPage: React.FC = () => {
             className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 text-white font-bold flex-shrink-0"
           />
           <div className="min-w-0 flex-1">
-            <span className="text-xs font-medium uppercase tracking-wider text-gray-400">
+            <span className="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-slate-500">
               Doctor
             </span>
-            <p className="font-semibold text-gray-900 group-hover:text-brand-600 transition-colors truncate">
+            <p className="font-semibold text-gray-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors truncate">
               {doctorName}
             </p>
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-gray-500 mt-0.5">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-gray-500 dark:text-slate-400 mt-0.5">
               {consultation.doctor?.specialty && (
                 <span>{formatSpecialty(consultation.doctor.specialty)}</span>
               )}
@@ -574,7 +574,7 @@ export const ConsultationDetailPage: React.FC = () => {
               )}
             </div>
             {consultation.doctor?.languages && consultation.doctor.languages.length > 0 && (
-              <p className="text-[11px] text-gray-400 mt-0.5 truncate">
+              <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-0.5 truncate">
                 Languages: {consultation.doctor.languages.join(', ')}
               </p>
             )}
@@ -584,32 +584,32 @@ export const ConsultationDetailPage: React.FC = () => {
 
       {/* Overview, Decision, Diagnosis & Actions */}
       <div className="card p-6 space-y-5 animate-slide-in-up" style={{ animationDelay: '100ms' }}>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm pb-4 border-b border-gray-100">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm pb-4 border-b border-gray-100 dark:border-slate-800">
           <div>
-            <span className="text-xs uppercase tracking-wider text-gray-400 block mb-1">
+            <span className="text-xs uppercase tracking-wider text-gray-400 dark:text-slate-500 block mb-1">
               Created
             </span>
-            <p className="font-medium text-gray-800 flex items-center gap-1.5">
+            <p className="font-medium text-gray-800 dark:text-slate-200 flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5 text-gray-400" />
               {new Date(consultation.createdAt).toLocaleString()}
             </p>
           </div>
           {consultation.updatedAt && (
             <div>
-              <span className="text-xs uppercase tracking-wider text-gray-400 block mb-1">
+              <span className="text-xs uppercase tracking-wider text-gray-400 dark:text-slate-500 block mb-1">
                 Last Updated
               </span>
-              <p className="font-medium text-gray-800">
+              <p className="font-medium text-gray-800 dark:text-slate-200">
                 {new Date(consultation.updatedAt).toLocaleString()}
               </p>
             </div>
           )}
           {consultation.completedAt && (
             <div>
-              <span className="text-xs uppercase tracking-wider text-gray-400 block mb-1">
+              <span className="text-xs uppercase tracking-wider text-gray-400 dark:text-slate-500 block mb-1">
                 Completed At
               </span>
-              <p className="font-medium text-emerald-700">
+              <p className="font-medium text-emerald-700 dark:text-emerald-400">
                 {new Date(consultation.completedAt).toLocaleString()}
               </p>
             </div>
@@ -621,21 +621,21 @@ export const ConsultationDetailPage: React.FC = () => {
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {consultation.doctorDecision && (
-                <div className="p-4 rounded-xl bg-brand-50/50 border border-brand-100">
-                  <span className="text-xs uppercase tracking-wider text-brand-600/80 font-semibold block mb-1">
+                <div className="p-4 rounded-xl bg-brand-50/50 dark:bg-brand-950/30 border border-brand-100 dark:border-brand-800/40">
+                  <span className="text-xs uppercase tracking-wider text-brand-600/80 dark:text-brand-400 font-semibold block mb-1">
                     Doctor Decision
                   </span>
-                  <p className="font-semibold text-gray-900">
+                  <p className="font-semibold text-gray-900 dark:text-white">
                     {formatVisitType(consultation.doctorDecision)}
                   </p>
                 </div>
               )}
               {consultation.visitMethod && (
-                <div className="p-4 rounded-xl bg-purple-50/50 border border-purple-100">
-                  <span className="text-xs uppercase tracking-wider text-purple-600/80 font-semibold block mb-1">
+                <div className="p-4 rounded-xl bg-purple-50/50 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-800/40">
+                  <span className="text-xs uppercase tracking-wider text-purple-600/80 dark:text-purple-400 font-semibold block mb-1">
                     Visit Method
                   </span>
-                  <p className="font-semibold text-gray-900">
+                  <p className="font-semibold text-gray-900 dark:text-white">
                     {formatVisitMethod(consultation.visitMethod)}
                   </p>
                 </div>
@@ -643,14 +643,14 @@ export const ConsultationDetailPage: React.FC = () => {
             </div>
 
             {(chatAction.canOpen || canBookOnSite) && (
-              <div className="flex flex-wrap items-center gap-3 p-4 rounded-xl bg-emerald-50/60 border border-emerald-100">
+              <div className="flex flex-wrap items-center gap-3 p-4 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-800/40">
                 <div className="flex-1 min-w-[200px]">
-                  <p className="text-sm font-semibold text-emerald-950">
+                  <p className="text-sm font-semibold text-emerald-950 dark:text-emerald-200">
                     {chatAction.canOpen
                       ? 'Consultation Chat Ready'
                       : 'On-Site Clinic Visit Recommended'}
                   </p>
-                  <p className="text-xs text-emerald-700 mt-0.5">
+                  <p className="text-xs text-emerald-700 dark:text-emerald-300/80 mt-0.5">
                     {chatAction.canOpen
                       ? user?.role === 'NURSE'
                         ? 'Join the shared consultation room to message the patient with the care team.'
@@ -685,13 +685,13 @@ export const ConsultationDetailPage: React.FC = () => {
 
         {/* Direct Diagnosis Output */}
         {consultation.diagnosis && (
-          <div className="p-4 rounded-xl bg-indigo-50/70 border border-indigo-100 space-y-1.5">
-            <span className="text-xs uppercase tracking-wider font-semibold text-indigo-700 block">
+          <div className="p-4 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-800/40 space-y-1.5">
+            <span className="text-xs uppercase tracking-wider font-semibold text-indigo-700 dark:text-indigo-400 block">
               Final Diagnosis
             </span>
             <p
               dir={getMessageDirection(consultation.diagnosis)}
-              className="text-sm text-gray-900 whitespace-pre-wrap leading-relaxed"
+              className="text-sm text-gray-900 dark:text-slate-100 whitespace-pre-wrap leading-relaxed"
             >
               {consultation.diagnosis}
             </p>
@@ -699,13 +699,13 @@ export const ConsultationDetailPage: React.FC = () => {
         )}
 
         {consultation.suggestions && (
-          <div className="p-4 rounded-xl bg-teal-50/70 border border-teal-100 space-y-1.5">
-            <span className="text-xs uppercase tracking-wider font-semibold text-teal-700 block">
+          <div className="p-4 rounded-xl bg-teal-50/70 dark:bg-teal-950/30 border border-teal-100 dark:border-teal-800/40 space-y-1.5">
+            <span className="text-xs uppercase tracking-wider font-semibold text-teal-700 dark:text-teal-400 block">
               Suggestions & Care Plan
             </span>
             <p
               dir={getMessageDirection(consultation.suggestions)}
-              className="text-sm text-gray-900 whitespace-pre-wrap leading-relaxed"
+              className="text-sm text-gray-900 dark:text-slate-100 whitespace-pre-wrap leading-relaxed"
             >
               {consultation.suggestions}
             </p>
@@ -714,12 +714,12 @@ export const ConsultationDetailPage: React.FC = () => {
 
         {consultation.notes && (
           <div>
-            <span className="text-xs uppercase tracking-wider text-gray-400 block mb-1">
+            <span className="text-xs uppercase tracking-wider text-gray-400 dark:text-slate-500 block mb-1">
               Clinical Notes
             </span>
             <p
               dir={getMessageDirection(consultation.notes)}
-              className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed bg-gray-50/80 p-3.5 rounded-xl border border-gray-100"
+              className="text-sm text-gray-800 dark:text-slate-200 whitespace-pre-wrap leading-relaxed bg-gray-50/80 dark:bg-slate-800/60 p-3.5 rounded-xl border border-gray-100 dark:border-slate-700/60"
             >
               {consultation.notes}
             </p>
@@ -728,12 +728,12 @@ export const ConsultationDetailPage: React.FC = () => {
 
         {consultation.summary && (
           <div>
-            <span className="text-xs uppercase tracking-wider text-gray-400 block mb-1">
+            <span className="text-xs uppercase tracking-wider text-gray-400 dark:text-slate-500 block mb-1">
               Consultation Summary
             </span>
             <p
               dir={getMessageDirection(consultation.summary)}
-              className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed bg-gray-50/80 p-3.5 rounded-xl border border-gray-100"
+              className="text-sm text-gray-800 dark:text-slate-200 whitespace-pre-wrap leading-relaxed bg-gray-50/80 dark:bg-slate-800/60 p-3.5 rounded-xl border border-gray-100 dark:border-slate-700/60"
             >
               {consultation.summary}
             </p>
@@ -742,7 +742,7 @@ export const ConsultationDetailPage: React.FC = () => {
 
         {isDecidedOrDone && (
           <div className="flex items-center gap-2 text-sm">
-            <span className="text-gray-500">Follow-up Needed:</span>
+            <span className="text-gray-500 dark:text-slate-400">Follow-up Needed:</span>
             <span className={`badge ${consultation.followUpNeeded ? 'badge-yellow' : 'badge-gray'}`}>
               {consultation.followUpNeeded ? 'Yes' : 'No'}
             </span>
@@ -757,8 +757,8 @@ export const ConsultationDetailPage: React.FC = () => {
             <div className="card p-5 space-y-3 md:col-span-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-brand-600" />
-                  <h2 className="font-semibold text-gray-900">Linked SOAP Note</h2>
+                  <FileText className="w-4 h-4 text-brand-600 dark:text-brand-400" />
+                  <h2 className="font-semibold text-gray-900 dark:text-white">Linked SOAP Note</h2>
                   {consultation.soap?.triageLevel && (
                     <span className={`badge ${getTriageBadgeClass(consultation.soap.triageLevel)}`}>
                       {formatTriageLevel(consultation.soap.triageLevel)}
@@ -772,32 +772,32 @@ export const ConsultationDetailPage: React.FC = () => {
                 </div>
                 <Link
                   to={`/soap/${consultation.soapId}`}
-                  className="text-sm text-brand-600 hover:text-brand-700 font-medium underline"
+                  className="text-sm text-brand-600 dark:text-brand-400 hover:text-brand-700 font-medium underline"
                 >
                   View SOAP Note
                 </Link>
               </div>
               {consultation.soap?.subjective && (
-                <div className="text-sm bg-gray-50/70 rounded-xl p-3 border border-gray-100">
-                  <span className="text-xs font-semibold text-gray-400 uppercase block mb-1">
+                <div className="text-sm bg-gray-50/70 dark:bg-slate-800/60 rounded-xl p-3 border border-gray-100 dark:border-slate-700/60">
+                  <span className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase block mb-1">
                     Subjective Preview
                   </span>
                   <p
                     dir={getMessageDirection(consultation.soap.subjective)}
-                    className="text-gray-700 line-clamp-3 whitespace-pre-wrap"
+                    className="text-gray-700 dark:text-slate-300 line-clamp-3 whitespace-pre-wrap"
                   >
                     {consultation.soap.subjective}
                   </p>
                 </div>
               )}
               {consultation.soap?.assessment && (
-                <div className="text-sm bg-gray-50/70 rounded-xl p-3 border border-gray-100">
-                  <span className="text-xs font-semibold text-gray-400 uppercase block mb-1">
+                <div className="text-sm bg-gray-50/70 dark:bg-slate-800/60 rounded-xl p-3 border border-gray-100 dark:border-slate-700/60">
+                  <span className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase block mb-1">
                     Assessment Preview
                   </span>
                   <p
                     dir={getMessageDirection(consultation.soap.assessment)}
-                    className="text-gray-700 line-clamp-3 whitespace-pre-wrap"
+                    className="text-gray-700 dark:text-slate-300 line-clamp-3 whitespace-pre-wrap"
                   >
                     {consultation.soap.assessment}
                   </p>
@@ -810,26 +810,26 @@ export const ConsultationDetailPage: React.FC = () => {
             <div className="card p-5 space-y-2.5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-blue-600" />
-                  <h2 className="font-semibold text-gray-900">Appointment</h2>
+                  <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  <h2 className="font-semibold text-gray-900 dark:text-white">Appointment</h2>
                 </div>
                 <span className="badge badge-blue">
                   {formatStatus(consultation.appointment.status)}
                 </span>
               </div>
-              <div className="text-sm text-gray-600 space-y-1">
+              <div className="text-sm text-gray-600 dark:text-slate-300 space-y-1">
                 <p>
-                  <span className="text-gray-400">When:</span>{' '}
+                  <span className="text-gray-400 dark:text-slate-500">When:</span>{' '}
                   {new Date(consultation.appointment.dateTime).toLocaleString()}
                 </p>
                 <p>
-                  <span className="text-gray-400">Details:</span>{' '}
+                  <span className="text-gray-400 dark:text-slate-500">Details:</span>{' '}
                   {consultation.appointment.durationMinutes} min · {formatVisitMethod(consultation.appointment.method)} · ${consultation.appointment.price}
                 </p>
               </div>
               <Link
                 to={`/appointments/${consultation.appointment.id}`}
-                className="inline-block text-sm text-brand-600 hover:text-brand-700 font-medium underline pt-1"
+                className="inline-block text-sm text-brand-600 dark:text-brand-400 hover:text-brand-700 font-medium underline pt-1"
               >
                 View Appointment
               </Link>
@@ -840,23 +840,23 @@ export const ConsultationDetailPage: React.FC = () => {
             <div className="card p-5 space-y-2.5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <CreditCard className="w-4 h-4 text-emerald-600" />
-                  <h2 className="font-semibold text-gray-900">Payment</h2>
+                  <CreditCard className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <h2 className="font-semibold text-gray-900 dark:text-white">Payment</h2>
                 </div>
                 <span className="badge badge-green">
                   {formatStatus(consultation.payment.status)}
                 </span>
               </div>
-              <div className="text-sm text-gray-600 space-y-1">
+              <div className="text-sm text-gray-600 dark:text-slate-300 space-y-1">
                 <p>
-                  <span className="text-gray-400">Amount:</span>{' '}
-                  <span className="font-semibold text-gray-900">
+                  <span className="text-gray-400 dark:text-slate-500">Amount:</span>{' '}
+                  <span className="font-semibold text-gray-900 dark:text-white">
                     {consultation.payment.amount} {consultation.payment.currency}
                   </span>
                 </p>
                 {consultation.payment.paidAt && (
                   <p>
-                    <span className="text-gray-400">Paid:</span>{' '}
+                    <span className="text-gray-400 dark:text-slate-500">Paid:</span>{' '}
                     {new Date(consultation.payment.paidAt).toLocaleString()}
                   </p>
                 )}
@@ -869,14 +869,14 @@ export const ConsultationDetailPage: React.FC = () => {
       {/* Doctor Decision Panel */}
       {canDecide && (
         <div className="card p-6 animate-slide-in-up" style={{ animationDelay: '140ms' }}>
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Decision Panel</h2>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Decision Panel</h2>
 
           {showDecisionForm ? (
             <form onSubmit={handleDecide} className="space-y-5">
               <div>
                 <label
                   htmlFor="doctorDecision"
-                  className="block text-sm font-medium text-gray-700 mb-2"
+                  className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2"
                 >
                   Decision
                 </label>
@@ -911,9 +911,9 @@ export const ConsultationDetailPage: React.FC = () => {
               </div>
 
               {isDirectDiagnosis ? (
-                <div className="space-y-4 p-4 rounded-xl bg-indigo-50/50 border border-indigo-100">
-                  <div className="flex items-start gap-2.5 text-sm text-indigo-900">
-                    <Sparkles className="w-4 h-4 text-indigo-600 mt-0.5 flex-shrink-0" />
+                <div className="space-y-4 p-4 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-800/40">
+                  <div className="flex items-start gap-2.5 text-sm text-indigo-900 dark:text-indigo-200">
+                    <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400 mt-0.5 flex-shrink-0" />
                     <p>
                       Concludes this consultation immediately without further discussion and shares your final diagnosis and recommendations directly with the patient.
                     </p>
@@ -922,7 +922,7 @@ export const ConsultationDetailPage: React.FC = () => {
                   <div>
                     <label
                       htmlFor="diagnosis"
-                      className="block text-sm font-medium text-gray-700 mb-1.5"
+                      className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5"
                     >
                       Final Diagnosis *
                     </label>
@@ -942,7 +942,7 @@ export const ConsultationDetailPage: React.FC = () => {
                   <div>
                     <label
                       htmlFor="suggestions"
-                      className="block text-sm font-medium text-gray-700 mb-1.5"
+                      className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5"
                     >
                       Suggestions & Recommendations *
                     </label>
@@ -962,7 +962,7 @@ export const ConsultationDetailPage: React.FC = () => {
                   <div>
                     <label
                       htmlFor="directNotes"
-                      className="block text-sm font-medium text-gray-700 mb-1.5"
+                      className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5"
                     >
                       Additional Notes (Optional)
                     </label>
@@ -978,7 +978,7 @@ export const ConsultationDetailPage: React.FC = () => {
                     />
                   </div>
 
-                  <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                  <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={followUpNeeded}
@@ -991,7 +991,7 @@ export const ConsultationDetailPage: React.FC = () => {
               ) : (
                 <>
                   <div>
-                    <span className="block text-sm font-medium text-gray-700 mb-2">
+                    <span className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
                       Visit Method
                     </span>
                     <div
@@ -1012,41 +1012,41 @@ export const ConsultationDetailPage: React.FC = () => {
                             className={`text-left p-3.5 rounded-xl border transition-all duration-150 flex items-start gap-3 ${
                               active
                                 ? opt.soon
-                                  ? 'border-amber-400 bg-amber-50/60 ring-2 ring-amber-200'
-                                  : 'border-brand-500 bg-brand-50/60 ring-2 ring-brand-200'
-                                : 'border-gray-200 bg-white hover:border-gray-300'
+                                  ? 'border-amber-400 bg-amber-50/60 dark:bg-amber-950/30 ring-2 ring-amber-200 dark:ring-amber-800/50'
+                                  : 'border-brand-500 bg-brand-50/60 dark:bg-brand-950/30 ring-2 ring-brand-200 dark:ring-brand-800/50'
+                                : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 hover:border-gray-300 dark:hover:border-slate-600'
                             }`}
                           >
                             <div
                               className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${
                                 opt.soon
-                                  ? 'bg-amber-100 text-amber-700'
+                                  ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300'
                                   : active
                                     ? 'bg-brand-600 text-white'
-                                    : 'bg-gray-100 text-gray-600'
+                                    : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300'
                               }`}
                             >
                               <Icon className="w-4 h-4" />
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between gap-2">
-                                <span className="text-sm font-semibold text-gray-900">
+                                <span className="text-sm font-semibold text-gray-900 dark:text-white">
                                   {opt.label}
                                 </span>
                                 {opt.soon && (
-                                  <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                                  <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-700/50">
                                     Soon
                                   </span>
                                 )}
                               </div>
-                              <p className="text-xs text-gray-500 mt-0.5">{opt.description}</p>
+                              <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">{opt.description}</p>
                             </div>
                           </button>
                         );
                       })}
                     </div>
                     {methodIsSoon && (
-                      <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-2">
+                      <p className="text-xs text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 rounded-lg px-3 py-2 mt-2">
                         Voice and video calls are coming soon. Please select Chat or On-Site for now.
                       </p>
                     )}
@@ -1055,7 +1055,7 @@ export const ConsultationDetailPage: React.FC = () => {
                   <div>
                     <label
                       htmlFor="decisionNotes"
-                      className="block text-sm font-medium text-gray-700 mb-1.5"
+                      className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5"
                     >
                       Notes for Patient (Optional)
                     </label>
@@ -1114,8 +1114,8 @@ export const ConsultationDetailPage: React.FC = () => {
       {/* Advance to Payment */}
       {canAdvancePayment && (
         <div className="card p-6 animate-slide-in-up" style={{ animationDelay: '140ms' }}>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Proceed to Payment</h2>
-          <p className="text-sm text-gray-500 mb-4">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Proceed to Payment</h2>
+          <p className="text-sm text-gray-500 dark:text-slate-400 mb-4">
             The doctor has decided on the consultation plan. Advance this consultation to the payment step to continue.
           </p>
           <button
@@ -1132,8 +1132,8 @@ export const ConsultationDetailPage: React.FC = () => {
       {/* Confirm Payment */}
       {canConfirmPayment && (
         <div className="card p-6 animate-slide-in-up" style={{ animationDelay: '140ms' }}>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Payment Confirmation</h2>
-          <p className="text-sm text-gray-500 mb-4">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Payment Confirmation</h2>
+          <p className="text-sm text-gray-500 dark:text-slate-400 mb-4">
             Confirm payment for this consultation so the doctor can begin.
           </p>
           <button
@@ -1150,8 +1150,8 @@ export const ConsultationDetailPage: React.FC = () => {
       {/* Doctor Start Consultation */}
       {canStart && (
         <div className="card p-6 animate-slide-in-up" style={{ animationDelay: '160ms' }}>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Ready to Start</h2>
-          <p className="text-sm text-gray-500 mb-4">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Ready to Start</h2>
+          <p className="text-sm text-gray-500 dark:text-slate-400 mb-4">
             Payment is confirmed. Start the consultation when you are ready.
           </p>
           <button
@@ -1168,12 +1168,12 @@ export const ConsultationDetailPage: React.FC = () => {
       {/* Doctor Completion Panel */}
       {canComplete && (
         <div className="card p-6 animate-slide-in-up" style={{ animationDelay: '180ms' }}>
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Completion Panel</h2>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Completion Panel</h2>
 
           {showCompletionForm ? (
             <form onSubmit={handleComplete} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Notes</label>
                 <textarea
                   name="notes"
                   className="w-full px-4 py-2.5 border input-focus"
@@ -1182,7 +1182,7 @@ export const ConsultationDetailPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Summary</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Summary</label>
                 <textarea
                   name="summary"
                   className="w-full px-4 py-2.5 border input-focus"
@@ -1193,7 +1193,7 @@ export const ConsultationDetailPage: React.FC = () => {
               <div>
                 <label className="flex items-center space-x-2">
                   <input type="checkbox" name="followUpNeeded" className="rounded" defaultChecked={false} />
-                  <span className="text-gray-700 text-sm">Follow-up Needed</span>
+                  <span className="text-gray-700 dark:text-slate-300 text-sm">Follow-up Needed</span>
                 </label>
               </div>
 

@@ -43,22 +43,23 @@ export const DoctorListPage: React.FC = () => {
   const isFilterEmpty = !search && !specialty && !visitMethod && !location;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-full bg-gray-50 dark:bg-slate-900">
       {/* Header */}
-      <div className="bg-gradient-to-r from-brand-600 to-brand-700 text-white py-12">
-        <div className="max-w-6xl mx-auto px-6 animate-fade-in">
-          <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mb-4"><Search className="w-5 h-5" /></div>
+      <div className="bg-gradient-to-r from-brand-600 via-brand-500 to-purple-600 text-white py-12 relative overflow-hidden animate-gradient">
+        <div className="absolute top-0 right-0 w-72 h-72 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/4" />
+        <div className="max-w-6xl mx-auto px-6 relative animate-fade-in">
+          <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center mb-4"><Search className="w-5 h-5" /></div>
           <h1 className="text-4xl font-bold mb-4">Find a Doctor</h1>
-          <p className="text-blue-100 text-lg">Browse our network of verified healthcare professionals</p>
+          <p className="text-white/80 text-lg">Browse our network of verified healthcare professionals</p>
         </div>
       </div>
 
       <div className="max-w-6xl mx-auto px-6 py-8">
         {/* SOAP Context Banner */}
         {soapId && (
-          <div className="card border-brand-100 bg-brand-50/50 p-4 mb-6 flex items-center gap-3 animate-slide-in-up">
-            <FileText className="w-5 h-5 text-brand-600 flex-shrink-0" />
-            <p className="text-brand-800 text-sm font-medium">
+          <div className="card border-brand-100 dark:border-brand-800/40 bg-brand-50/50 dark:bg-brand-950/30 p-4 mb-6 flex items-center gap-3 animate-slide-in-up">
+            <FileText className="w-5 h-5 text-brand-600 dark:text-brand-400 flex-shrink-0" />
+            <p className="text-brand-800 dark:text-brand-200 text-sm font-medium">
               Based on your AI consultation{specialty ? `, we recommend a ${formatSpecialty(specialty)} specialist` : ', find a suitable doctor below'}.
             </p>
           </div>
@@ -68,9 +69,9 @@ export const DoctorListPage: React.FC = () => {
         <div className="card p-6 mb-8 animate-slide-in-up" style={{ animationDelay: '50ms' }}>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Search</label>
               <div className="relative">
-                <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400 dark:text-slate-500" />
                 <input
                   type="text"
                   value={search}
@@ -85,7 +86,7 @@ export const DoctorListPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Specialty</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Specialty</label>
               <select
                 value={specialty}
                 onChange={(e) => {
@@ -102,7 +103,7 @@ export const DoctorListPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Visit Method</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Visit Method</label>
               <select
                 value={visitMethod}
                 onChange={(e) => {
@@ -120,7 +121,7 @@ export const DoctorListPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Location</label>
               <input
                 type="text"
                 value={location}
@@ -157,13 +158,13 @@ export const DoctorListPage: React.FC = () => {
           </div>
         ) : (
           <>
-            <div className="mb-6 text-sm text-gray-600">
+            <div className="mb-6 text-sm text-gray-600 dark:text-slate-400">
               Found {data?.total || 0} doctor{data?.total !== 1 ? 's' : ''}
             </div>
 
             {data?.doctors.length === 0 ? (
-              <div className="text-center py-12 animate-fade-in">
-                <p className="text-gray-600 text-lg">No doctors found matching your criteria</p>
+              <div className="card text-center py-12 animate-fade-in">
+                <p className="text-gray-600 dark:text-slate-400 text-lg">No doctors found matching your criteria</p>
               </div>
             ) : (
               <>
@@ -186,7 +187,7 @@ export const DoctorListPage: React.FC = () => {
                               className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 text-white font-bold text-lg ring-2 ring-brand-200/50 flex-shrink-0"
                             />
                             <div>
-                              <h3 className="font-bold text-lg text-gray-900">
+                              <h3 className="font-bold text-lg text-gray-900 dark:text-white">
                                 Dr. {doctor.user ? `${doctor.user.firstname} ${doctor.user.lastname}` : doctor.specialty}
                               </h3>
                               <span className="badge-brand text-xs">
@@ -202,7 +203,7 @@ export const DoctorListPage: React.FC = () => {
                         </div>
 
                         {doctor.clinicLocation && (
-                          <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-400 mb-3">
                             <MapPin className="w-4 h-4" />
                             {doctor.clinicLocation}
                           </div>
@@ -217,22 +218,22 @@ export const DoctorListPage: React.FC = () => {
                                   className={`w-5 h-5 ${
                                     i < Math.round(doctor.averageRating || 0)
                                       ? 'fill-amber-400 text-amber-400'
-                                      : 'text-gray-300'
+                                      : 'text-gray-300 dark:text-slate-600'
                                   }`}
                                 />
                               ))}
                             </div>
-                            <span className="text-sm font-semibold text-gray-800">
+                            <span className="text-sm font-semibold text-gray-800 dark:text-slate-200">
                               {doctor.averageRating?.toFixed(1)}
                             </span>
-                            <span className="text-sm text-gray-500">
+                            <span className="text-sm text-gray-500 dark:text-slate-400">
                               ({doctor.totalReviews || 0})
                             </span>
                           </div>
                         )}
 
                         {doctor.bio && (
-                          <p className="text-sm text-gray-600 line-clamp-2 mb-4">{doctor.bio}</p>
+                          <p className="text-sm text-gray-600 dark:text-slate-400 line-clamp-2 mb-4">{doctor.bio}</p>
                         )}
 
                         {doctor.visitMethods && doctor.visitMethods.length > 0 && (
@@ -261,7 +262,7 @@ export const DoctorListPage: React.FC = () => {
                   >
                     Previous
                   </button>
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-600 dark:text-slate-400">
                     Page {page} of {totalPages}
                   </span>
                   <button

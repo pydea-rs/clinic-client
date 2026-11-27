@@ -246,9 +246,10 @@ export const MatchWaitingPage: React.FC = () => {
     <div className="max-w-lg mx-auto p-6 mt-8 animate-slide-in-up">
       <div className="card overflow-hidden shadow-soft-lg">
         {/* Header */}
-        <div className="bg-gradient-to-r from-brand-600 via-brand-500 to-purple-500 p-6 text-white text-center relative overflow-hidden">
+        <div className="bg-gradient-to-r from-brand-600 via-brand-500 to-purple-500 p-6 text-white text-center relative overflow-hidden animate-gradient">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/4" />
           <div className="relative w-16 h-16 mx-auto mb-3">
+            <div className="absolute -inset-2 rounded-full bg-white/15 animate-pulse-ring" />
             <div className="absolute inset-0 rounded-full border-4 border-white/30" />
             <div
               className="absolute inset-0 rounded-full border-4 border-white transition-all duration-1000"
@@ -272,12 +273,12 @@ export const MatchWaitingPage: React.FC = () => {
 
         {/* Timer */}
         {!isTerminal && (
-          <div className="px-6 py-4 border-b border-gray-100">
+          <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800">
             <div className="flex items-center justify-between text-sm mb-2">
-              <span className="text-gray-500">Time remaining</span>
-              <span className="font-mono font-semibold text-gray-700">{minutes}:{seconds.toString().padStart(2, '0')}</span>
+              <span className="text-gray-500 dark:text-slate-400">Time remaining</span>
+              <span className="font-mono font-semibold text-gray-700 dark:text-slate-200">{minutes}:{seconds.toString().padStart(2, '0')}</span>
             </div>
-            <div className="w-full bg-gray-100 rounded-full h-1.5">
+            <div className="w-full bg-gray-100 dark:bg-slate-800 rounded-full h-1.5">
               <div
                 className="bg-gradient-to-r from-brand-500 to-purple-500 h-1.5 rounded-full transition-all duration-1000"
                 style={{ width: `${100 - progress}%` }}
@@ -288,7 +289,7 @@ export const MatchWaitingPage: React.FC = () => {
 
         {/* Matched doctor info */}
         {matchRequest.status === 'MATCHED' && matchRequest.matchedDoctor && (
-          <div className="px-6 py-4 border-b border-gray-100 bg-brand-50/50">
+          <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800 bg-brand-50/50 dark:bg-brand-950/30">
             <div className="flex items-center gap-3">
               <UserAvatar
                 avatar={matchRequest.matchedDoctor.user.avatar}
@@ -299,10 +300,10 @@ export const MatchWaitingPage: React.FC = () => {
                 className="w-10 h-10 bg-gradient-to-br from-brand-100 to-brand-50 rounded-xl ring-1 ring-brand-200/50 flex-shrink-0"
               />
               <div>
-                <div className="font-semibold text-sm text-gray-900">
+                <div className="font-semibold text-sm text-gray-900 dark:text-white">
                   Dr. {matchRequest.matchedDoctor.user.firstname} {matchRequest.matchedDoctor.user.lastname}
                 </div>
-                <div className="text-xs text-gray-500">Reviewing your request...</div>
+                <div className="text-xs text-gray-500 dark:text-slate-400">Reviewing your request...</div>
               </div>
             </div>
           </div>
@@ -321,13 +322,13 @@ export const MatchWaitingPage: React.FC = () => {
             return null;
           }
           return (
-            <div className="px-6 py-4 border-b border-gray-100">
-              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+            <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800">
+              <div className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-3">
                 {matchRequest.status === 'MATCHED' ? 'Next in Queue' : 'Top Candidates'}
               </div>
               <div className="space-y-2">
                 {queuedDoctors.slice(0, 5).map((doc) => (
-                  <div key={doc.doctorId} className="flex items-center justify-between text-sm p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div key={doc.doctorId} className="flex items-center justify-between text-sm p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800/70 transition-colors">
                     <div className="flex items-center gap-2.5">
                       <UserAvatar
                         avatar={doc.avatar}
@@ -336,11 +337,11 @@ export const MatchWaitingPage: React.FC = () => {
                         alt={`Dr. ${doc.firstname} ${doc.lastname}`}
                         className="w-7 h-7 bg-brand-50 rounded-lg text-xs font-bold text-brand-600 ring-1 ring-brand-100 flex-shrink-0"
                       />
-                      <span className="text-gray-700 font-medium">Dr. {doc.firstname} {doc.lastname}</span>
+                      <span className="text-gray-700 dark:text-slate-200 font-medium">Dr. {doc.firstname} {doc.lastname}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-400">{formatSpecialty(doc.specialty)}</span>
-                      <span className="text-xs font-semibold text-brand-600">
+                      <span className="text-xs text-gray-400 dark:text-slate-500">{formatSpecialty(doc.specialty)}</span>
+                      <span className="text-xs font-semibold text-brand-600 dark:text-brand-400">
                         {Math.min(100, Math.round(doc.score))}%
                       </span>
                     </div>
@@ -353,7 +354,7 @@ export const MatchWaitingPage: React.FC = () => {
 
         {/* Info */}
         <div className="px-6 py-4 text-center">
-          <p className="text-xs text-gray-400 mb-4">
+          <p className="text-xs text-gray-400 dark:text-slate-500 mb-4">
             {matchRequest.status === 'SEARCHING'
               ? 'We\'re contacting the best-matched doctors for you.'
               : 'The doctor is reviewing your details.'}
@@ -361,7 +362,7 @@ export const MatchWaitingPage: React.FC = () => {
           {!isTerminal && (
             <button
               onClick={handleCancel}
-              className="text-sm text-gray-400 hover:text-red-600 inline-flex items-center gap-1.5 transition-colors btn-press"
+              className="text-sm text-gray-400 hover:text-red-600 dark:hover:text-red-400 inline-flex items-center gap-1.5 transition-colors btn-press"
             >
               <X className="w-3.5 h-3.5" /> Cancel Search
             </button>

@@ -287,7 +287,7 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
         </div>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Sidebar */}
         <aside className={`
           fixed lg:relative inset-y-0 left-0 z-50 w-[260px] border-r border-gray-200/60 dark:border-slate-700/60
@@ -300,18 +300,21 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
           <div className="relative flex flex-col h-full">
 
             {/* Logo */}
-            <div className="hidden lg:flex p-5 items-center gap-3">
-              <div className="relative">
-                {/* Decorative gradient mesh orb behind logo */}
-                <div className="absolute -inset-2 bg-gradient-to-br from-brand-200/40 via-brand-300/30 to-brand-100/20 dark:from-brand-800/30 dark:via-brand-700/20 dark:to-brand-900/10 rounded-3xl blur-lg" />
-                <div className="relative w-10 h-10 bg-gradient-to-br from-brand-600 via-brand-500 to-brand-400 rounded-2xl flex items-center justify-center shadow-lg shadow-brand-500/20 animate-gradient">
-                  <Stethoscope className="w-5 h-5 text-white" />
+            <div className="hidden lg:flex p-5 items-center justify-between gap-2">
+              <div className="flex items-center gap-3 group">
+                <div className="relative">
+                  {/* Decorative gradient mesh orb behind logo */}
+                  <div className="absolute -inset-2 bg-gradient-to-br from-brand-200/40 via-brand-300/30 to-brand-100/20 dark:from-brand-800/30 dark:via-brand-700/20 dark:to-brand-900/10 rounded-3xl blur-lg transition-opacity duration-300 group-hover:opacity-100 opacity-80" />
+                  <div className="relative w-10 h-10 bg-gradient-to-br from-brand-600 via-brand-500 to-brand-400 rounded-2xl flex items-center justify-center shadow-lg shadow-brand-500/20 animate-gradient transition-transform duration-300 ease-spring group-hover:scale-105">
+                    <Stethoscope className="w-5 h-5 text-white" />
+                  </div>
+                </div>
+                <div>
+                  <span className="font-bold text-[17px] text-gray-900 dark:text-white tracking-tight">AI-Clinic</span>
+                  <span className="block text-[10px] text-gray-400 dark:text-slate-500 font-medium tracking-wider uppercase">Telemedicine</span>
                 </div>
               </div>
-              <div>
-                <span className="font-bold text-[17px] text-gray-900 dark:text-white tracking-tight">AI-Clinic</span>
-                <span className="block text-[10px] text-gray-400 dark:text-slate-500 font-medium tracking-wider uppercase">Telemedicine</span>
-              </div>
+              {isAuthenticated && <NotificationBell />}
             </div>
 
             <div className="h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-slate-700 to-transparent mx-4 hidden lg:block" />
@@ -322,7 +325,7 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
                 <div key={group.label} className={groupIdx > 0 ? 'mt-4' : ''}>
                   {/* Section label */}
                   <div className="px-3 mb-1.5">
-                    <span className="text-[10px] font-semibold tracking-widest uppercase text-gray-300 dark:text-slate-600">
+                    <span className="text-[10px] font-semibold tracking-widest uppercase text-gray-400 dark:text-slate-500">
                       {group.label}
                     </span>
                   </div>
@@ -436,8 +439,8 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-auto bg-gray-50/50 dark:bg-slate-900">
-          <div className="page-enter min-h-full flex flex-col">
+        <main className="flex-1 min-h-0 overflow-y-auto bg-gray-50/50 dark:bg-slate-900 flex flex-col">
+          <div className="page-enter flex-1 flex flex-col">
             <NurseInvitationsBanner />
             {children}
           </div>

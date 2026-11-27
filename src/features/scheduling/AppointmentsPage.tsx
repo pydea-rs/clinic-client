@@ -116,8 +116,8 @@ export const AppointmentsPage: React.FC = () => {
               <div key={appointment.id} className="card card-hover p-6 animate-slide-in-up">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="font-semibold">Appointment #{appointment.id}</h3>
-                    <p className="text-sm text-gray-500">
+                    <h3 className="font-semibold text-gray-900 dark:text-white">Appointment #{appointment.id}</h3>
+                    <p className="text-sm text-gray-500 dark:text-slate-400">
                       {appointment.doctor?.user
                         ? `Dr. ${appointment.doctor.user.firstname} ${appointment.doctor.user.lastname}`
                         : `Doctor #${appointment.doctorId}`}
@@ -130,34 +130,34 @@ export const AppointmentsPage: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-gray-500">Date & Time:</span>
-                    <p className="font-medium">{new Date(appointment.dateTime).toLocaleString()}</p>
+                    <span className="text-gray-500 dark:text-slate-400">Date & Time:</span>
+                    <p className="font-medium text-gray-900 dark:text-slate-200">{new Date(appointment.dateTime).toLocaleString()}</p>
                   </div>
                   <div>
-                    <span className="text-gray-500">Duration:</span>
-                    <p className="font-medium">{appointment.durationMinutes} minutes</p>
+                    <span className="text-gray-500 dark:text-slate-400">Duration:</span>
+                    <p className="font-medium text-gray-900 dark:text-slate-200">{appointment.durationMinutes} minutes</p>
                   </div>
                   <div>
-                    <span className="text-gray-500">Price:</span>
-                    <p className="font-medium">${appointment.price}</p>
+                    <span className="text-gray-500 dark:text-slate-400">Price:</span>
+                    <p className="font-medium text-gray-900 dark:text-slate-200">${appointment.price}</p>
                   </div>
                   <div>
-                    <span className="text-gray-500">Method:</span>
-                    <p className="font-medium">{formatVisitMethod(appointment.method)}</p>
+                    <span className="text-gray-500 dark:text-slate-400">Method:</span>
+                    <p className="font-medium text-gray-900 dark:text-slate-200">{formatVisitMethod(appointment.method)}</p>
                   </div>
                 </div>
 
                 {user?.role === 'PATIENT' && appointment.status === 'PENDING' && (
-                  <div className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-4">
+                  <div className="mt-4 pt-4 border-t border-gray-100 dark:border-slate-800 flex items-center gap-4">
                     <Link
                       to={`/appointments/${appointment.id}`}
-                      className="text-brand-600 hover:text-brand-700 font-medium transition-colors"
+                      className="text-brand-600 dark:text-brand-400 hover:text-brand-700 font-medium transition-colors"
                     >
                       View Details
                     </Link>
                     <button
                       onClick={() => handleCancel(appointment.id)}
-                      className="text-red-600 hover:text-red-700 font-medium transition-colors"
+                      className="text-red-600 dark:text-red-400 hover:text-red-700 font-medium transition-colors"
                     >
                       Cancel Appointment
                     </button>
@@ -165,10 +165,10 @@ export const AppointmentsPage: React.FC = () => {
                 )}
 
                 {!(user?.role === 'PATIENT' && appointment.status === 'PENDING') && (
-                  <div className="mt-4 pt-4 border-t border-gray-100">
+                  <div className="mt-4 pt-4 border-t border-gray-100 dark:border-slate-800">
                     <Link
                       to={`/appointments/${appointment.id}`}
-                      className="text-brand-600 hover:text-brand-700 font-medium transition-colors"
+                      className="text-brand-600 dark:text-brand-400 hover:text-brand-700 font-medium transition-colors"
                     >
                       View Details
                     </Link>

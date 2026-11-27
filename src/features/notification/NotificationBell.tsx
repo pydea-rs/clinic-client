@@ -16,12 +16,13 @@ export const NotificationBell: React.FC = () => {
   return (
     <Link
       to="/notifications"
-      className="group relative p-2 hover:bg-brand-50 rounded-xl transition-colors"
+      className="group relative p-2 hover:bg-brand-50 dark:hover:bg-brand-950/40 rounded-xl transition-all duration-200"
       title="Notifications"
+      aria-label="Notifications"
     >
-      <Bell className={`w-5 h-5 text-gray-600 group-hover:text-brand-600 transition-colors ${count > 0 ? 'group-hover:animate-wiggle' : ''}`} />
+      <Bell className={`w-5 h-5 text-gray-500 dark:text-slate-400 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors ${count > 0 ? 'group-hover:animate-wiggle' : ''}`} />
       {count > 0 && (
-        <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-gradient-to-r from-red-500 to-rose-500 shadow-sm text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 animate-notification-pulse">
+        <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-gradient-to-r from-red-500 to-rose-500 shadow-sm ring-2 ring-white dark:ring-slate-900 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 animate-notification-pulse">
           {count > 99 ? '99+' : count}
         </span>
       )}

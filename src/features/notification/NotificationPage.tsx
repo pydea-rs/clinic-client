@@ -94,28 +94,28 @@ const NotificationItem: React.FC<{
     <div
       onClick={() => onClick(notification)}
       className={`flex items-start gap-3 p-4 cursor-pointer transition-colors ${
-        notification.isRead ? 'bg-white' : 'bg-brand-50/50'
-      } hover:bg-gray-50 border-b border-gray-100 last:border-b-0`}
+        notification.isRead ? 'bg-white dark:bg-slate-900/40' : 'bg-brand-50/50 dark:bg-brand-950/30'
+      } hover:bg-gray-50 dark:hover:bg-slate-800/60 border-b border-gray-100 dark:border-slate-800 last:border-b-0`}
     >
       <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${config.color}`}>
         <Icon className="w-4 h-4" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
-          <p className={`text-sm ${notification.isRead ? 'text-gray-700' : 'text-gray-900 font-medium'}`}>
+          <p className={`text-sm ${notification.isRead ? 'text-gray-700 dark:text-slate-300' : 'text-gray-900 dark:text-white font-medium'}`}>
             {notification.title}
           </p>
           {!notification.isRead && (
             <button
               onClick={(e) => { e.stopPropagation(); onRead(notification.id); }}
-              className="text-xs text-brand-600 hover:text-brand-700 whitespace-nowrap flex-shrink-0"
+              className="text-xs text-brand-600 dark:text-brand-400 hover:text-brand-700 whitespace-nowrap flex-shrink-0"
             >
               Mark read
             </button>
           )}
         </div>
-        <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{notification.body}</p>
-        <p className="text-[11px] text-gray-400 mt-1">{timeAgo}</p>
+        <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5 line-clamp-2">{notification.body}</p>
+        <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1">{timeAgo}</p>
       </div>
       {!notification.isRead && (
         <div className="w-2 h-2 bg-brand-500 animate-breathe rounded-full flex-shrink-0 mt-2" />
@@ -232,13 +232,13 @@ export const NotificationPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 animate-fade-in">
-      <div className="flex items-center justify-between mb-6">
+    <div className="max-w-4xl mx-auto w-full p-6 animate-fade-in">
+      <div className="flex items-center justify-between mb-6 animate-slide-in-up">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gradient-to-br from-brand-600 to-blue-500 rounded-xl flex items-center justify-center shadow-soft">
             <BellRing className="w-5 h-5 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Notifications</h1>
           {(unreadCount ?? 0) > 0 && (
             <span className="badge badge-blue">
               {unreadCount} unread
@@ -249,7 +249,7 @@ export const NotificationPage: React.FC = () => {
           <button
             onClick={() => markAllReadMutation.mutate()}
             disabled={markAllReadMutation.isPending}
-            className="flex items-center gap-1.5 text-sm text-brand-600 hover:text-brand-700 font-medium"
+            className="flex items-center gap-1.5 text-sm text-brand-600 dark:text-brand-400 hover:text-brand-700 font-medium"
           >
             <CheckCheck className="w-4 h-4" /> Mark all read
           </button>
@@ -259,9 +259,9 @@ export const NotificationPage: React.FC = () => {
       <div className="card overflow-hidden">
         {notifications.length === 0 ? (
           <div className="p-12 text-center">
-            <Bell className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <h3 className="font-medium text-gray-900 mb-1">No Notifications</h3>
-            <p className="text-gray-500 text-sm">You're all caught up!</p>
+            <Bell className="w-12 h-12 text-gray-300 dark:text-slate-600 mx-auto mb-3 animate-float" />
+            <h3 className="font-medium text-gray-900 dark:text-white mb-1">No Notifications</h3>
+            <p className="text-gray-500 dark:text-slate-400 text-sm">You're all caught up!</p>
           </div>
         ) : (
           notifications.map(notification => (
@@ -277,7 +277,7 @@ export const NotificationPage: React.FC = () => {
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between mt-4">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-slate-400">
             Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)} of {total}
           </p>
           <div className="flex gap-2">
@@ -288,7 +288,7 @@ export const NotificationPage: React.FC = () => {
             >
               Previous
             </button>
-            <span className="px-3 py-1.5 text-sm text-gray-600">Page {page} of {totalPages}</span>
+            <span className="px-3 py-1.5 text-sm text-gray-600 dark:text-slate-400">Page {page} of {totalPages}</span>
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
@@ -310,39 +310,39 @@ export const NotificationPage: React.FC = () => {
           onClick={() => setSelectedDecisionNotif(null)}
         >
           <div
-            className="bg-white rounded-2xl shadow-xl border border-gray-200/60 max-w-lg w-full p-6 space-y-4 animate-scale-in"
+            className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-gray-200/60 dark:border-slate-700/60 max-w-lg w-full p-6 space-y-4 animate-modal-in"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center flex-shrink-0">
                   <UserCheck className="w-5 h-5" />
                 </div>
                 <div>
-                  <h2 id="decision-modal-title" className="text-lg font-bold text-gray-900">
+                  <h2 id="decision-modal-title" className="text-lg font-bold text-gray-900 dark:text-white">
                     {selectedDecisionNotif.title}
                   </h2>
-                  <p className="text-xs text-gray-500">{modalDoctorName}</p>
+                  <p className="text-xs text-gray-500 dark:text-slate-400">{modalDoctorName}</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedDecisionNotif(null)}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800"
                 aria-label="Close modal"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <p className="text-sm text-gray-600">{selectedDecisionNotif.body}</p>
+            <p className="text-sm text-gray-600 dark:text-slate-300">{selectedDecisionNotif.body}</p>
 
             {modalLoading ? (
               <div className="flex items-center justify-center py-4">
                 <Loader2 className="w-5 h-5 animate-spin text-brand-600" />
               </div>
             ) : (
-              <div className="space-y-3 bg-gray-50/80 border border-gray-100 rounded-xl p-4">
+              <div className="space-y-3 bg-gray-50/80 dark:bg-slate-800/70 border border-gray-100 dark:border-slate-700/60 rounded-xl p-4">
                 <div className="flex flex-wrap items-center gap-2">
                   {modalDecision && (
                     <span className="badge badge-blue">
@@ -363,12 +363,12 @@ export const NotificationPage: React.FC = () => {
 
                 {modalDiagnosis && (
                   <div className="pt-1">
-                    <span className="text-[11px] font-semibold uppercase tracking-wider text-indigo-700 block mb-1">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-indigo-700 dark:text-indigo-400 block mb-1">
                       Final Diagnosis
                     </span>
                     <p
                       dir={getMessageDirection(modalDiagnosis)}
-                      className="text-sm text-gray-800 whitespace-pre-wrap"
+                      className="text-sm text-gray-800 dark:text-slate-200 whitespace-pre-wrap"
                     >
                       {modalDiagnosis}
                     </p>
@@ -377,12 +377,12 @@ export const NotificationPage: React.FC = () => {
 
                 {modalSuggestions && (
                   <div className="pt-1">
-                    <span className="text-[11px] font-semibold uppercase tracking-wider text-teal-700 block mb-1">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-teal-700 dark:text-teal-400 block mb-1">
                       Suggestions
                     </span>
                     <p
                       dir={getMessageDirection(modalSuggestions)}
-                      className="text-sm text-gray-800 whitespace-pre-wrap"
+                      className="text-sm text-gray-800 dark:text-slate-200 whitespace-pre-wrap"
                     >
                       {modalSuggestions}
                     </p>
@@ -391,12 +391,12 @@ export const NotificationPage: React.FC = () => {
 
                 {modalNotes && (
                   <div className="pt-1">
-                    <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 block mb-1">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400 block mb-1">
                       Doctor Notes
                     </span>
                     <p
                       dir={getMessageDirection(modalNotes)}
-                      className="text-sm text-gray-700 whitespace-pre-wrap"
+                      className="text-sm text-gray-700 dark:text-slate-300 whitespace-pre-wrap"
                     >
                       {modalNotes}
                     </p>

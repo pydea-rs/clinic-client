@@ -83,7 +83,7 @@ export const PatientConsultationsListPage: React.FC = () => {
           className={`px-4 py-2 rounded-full font-medium transition-all duration-200 ${
             statusFilter === ''
               ? 'btn-primary'
-              : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 shadow-sm'
+              : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-300 border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700 hover:border-gray-300 shadow-sm'
           }`}
         >
           All
@@ -95,7 +95,7 @@ export const PatientConsultationsListPage: React.FC = () => {
             className={`px-4 py-2 rounded-full font-medium transition-all duration-200 ${
               statusFilter === status
                 ? 'btn-primary'
-                : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 shadow-sm'
+                : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-300 border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700 hover:border-gray-300 shadow-sm'
             }`}
           >
             {formatStatus(status)}
@@ -107,7 +107,7 @@ export const PatientConsultationsListPage: React.FC = () => {
       <div className="space-y-0 animate-slide-in-up" style={{ animationDelay: '120ms' }}>
         {consultations.length === 0 ? (
           <div className="card p-12 text-center">
-            <p className="text-gray-500 text-lg">No consultations found</p>
+            <p className="text-gray-500 dark:text-slate-400 text-lg">No consultations found</p>
           </div>
         ) : (
           consultations.map((consultation, index) => {
@@ -119,12 +119,12 @@ export const PatientConsultationsListPage: React.FC = () => {
                   <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
                     <Link
                       to={`/consultation/${consultation.id}`}
-                      className="flex items-center gap-4 min-w-0 hover:text-brand-600 transition-colors"
+                      className="flex items-center gap-4 min-w-0 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
                     >
-                      <span className="text-sm font-mono text-gray-500">
+                      <span className="text-sm font-mono text-gray-500 dark:text-slate-400">
                         {consultation.id.substring(0, 8)}...
                       </span>
-                      <span className="text-sm font-medium text-gray-900">
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">
                         {consultation.doctor?.user
                           ? `Dr. ${consultation.doctor.user.firstname} ${consultation.doctor.user.lastname}`
                           : `Doctor #${consultation.doctorId}`}
@@ -144,7 +144,7 @@ export const PatientConsultationsListPage: React.FC = () => {
                       <span className={`badge ${getStatusBadgeColor(consultation.status)} text-sm font-semibold px-3 py-1`}>
                         {formatStatus(consultation.status)}
                       </span>
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-gray-500 dark:text-slate-400">
                         {new Date(consultation.createdAt).toLocaleDateString()}
                       </span>
                       {chatAction.canOpen && (

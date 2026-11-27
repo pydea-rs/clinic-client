@@ -33,7 +33,7 @@ export const SOAPReadyBanner: React.FC<SOAPReadyBannerProps> = ({
   const triage = triageLevel ? triageConfig[triageLevel] : null;
 
   return (
-    <div className="flex-shrink-0 border-t border-brand-100/50 bg-gradient-to-r from-brand-50/80 to-brand-100/40 glass px-4 py-3.5 animate-slide-in-up">
+    <div className="flex-shrink-0 border-t border-brand-100/50 dark:border-brand-800/40 bg-gradient-to-r from-brand-50/80 to-brand-100/40 dark:from-slate-800/95 dark:to-brand-950/60 glass px-4 py-3.5 animate-slide-in-up">
       <div className="max-w-3xl mx-auto">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -41,7 +41,7 @@ export const SOAPReadyBanner: React.FC<SOAPReadyBannerProps> = ({
               <FileText className="w-4.5 h-4.5 text-white" />
             </div>
             <div className="min-w-0">
-              <h4 className="font-semibold text-gray-900 text-sm">SOAP Note Generated</h4>
+              <h4 className="font-semibold text-gray-900 dark:text-white text-sm">SOAP Note Generated</h4>
               <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                 {triage && (
                   <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${triage.bg} ${triage.color} ring-1 ${triage.ring}`}>
@@ -58,7 +58,7 @@ export const SOAPReadyBanner: React.FC<SOAPReadyBannerProps> = ({
               {assessment && (
                 <div
                   dir={getMessageDirection(assessment)}
-                  className="text-xs text-gray-500 mt-1.5 line-clamp-2 [&_p]:mb-0 [&_strong]:font-semibold leading-relaxed text-start"
+                  className="text-xs text-gray-500 dark:text-slate-300 mt-1.5 line-clamp-2 [&_p]:mb-0 [&_strong]:font-semibold leading-relaxed text-start"
                 >
                   <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ p: ({ children }) => <span>{children}</span> } satisfies Components}>{assessment}</ReactMarkdown>
                 </div>
@@ -81,7 +81,7 @@ export const SOAPReadyBanner: React.FC<SOAPReadyBannerProps> = ({
               </div>
             </div>
           </div>
-          <button onClick={onDismiss} className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-white/60 rounded-lg flex-shrink-0 transition-all duration-200">
+          <button onClick={onDismiss} className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-700/60 rounded-lg flex-shrink-0 transition-all duration-200">
             <X className="w-4 h-4" />
           </button>
         </div>

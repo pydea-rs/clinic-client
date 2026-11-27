@@ -65,21 +65,27 @@ const MatchRequestCard: React.FC<{
   const seconds = remaining % 60;
 
   return (
-    <div className="card overflow-hidden animate-slide-in-up">
+    <div className="card card-hover overflow-hidden animate-slide-in-up">
       <div className="p-5">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-brand-100 to-brand-50 rounded-xl flex items-center justify-center ring-1 ring-brand-200/50">
-              <UserPlus className="w-5 h-5 text-brand-600" />
+            <div className="w-10 h-10 bg-gradient-to-br from-brand-100 to-brand-50 dark:from-brand-900/50 dark:to-brand-800/30 rounded-xl flex items-center justify-center ring-1 ring-brand-200/50 dark:ring-brand-700/40">
+              <UserPlus className="w-5 h-5 text-brand-600 dark:text-brand-400" />
             </div>
             <div>
-              <div className="font-semibold text-gray-900">New Patient Match</div>
-              <div className="text-xs text-gray-500">
+              <div className="font-semibold text-gray-900 dark:text-white">New Patient Match</div>
+              <div className="text-xs text-gray-500 dark:text-slate-400">
                 {new Date(request.createdAt).toLocaleString()}
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-gray-500 bg-gray-50 px-2.5 py-1 rounded-lg">
+          <div
+            className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg transition-colors ${
+              remaining <= 15
+                ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50 animate-pulse'
+                : 'text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-800'
+            }`}
+          >
             <Clock className="w-3.5 h-3.5" />
             <span className="font-mono font-medium">{minutes}:{seconds.toString().padStart(2, '0')}</span>
           </div>

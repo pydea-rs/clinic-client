@@ -15,14 +15,14 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
   onNewChat,
 }) => {
   return (
-    <div className="glass border-b border-gray-100/60 flex-shrink-0">
+    <div className="glass border-b border-gray-100/60 dark:border-slate-700/60 flex-shrink-0">
       <div className="px-4 py-2.5 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className={`w-9 h-9 bg-gradient-to-br from-brand-500 to-brand-700 rounded-xl flex items-center justify-center shadow-sm shadow-brand-500/25 transition-transform duration-200 ease-spring hover:scale-105 ${connectionStatus.connected ? 'animate-breathe' : ''}`}>
             <Bot className="w-4.5 h-4.5 text-white" />
           </div>
           <div className="leading-tight">
-            <h1 className="font-semibold text-gray-900 text-sm">AI Health Assistant</h1>
+            <h1 className="font-semibold text-gray-900 dark:text-white text-sm">AI Health Assistant</h1>
             <div className="flex items-center gap-1.5">
               {connectionStatus.connected ? (
                 <>
@@ -30,17 +30,17 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
                     <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-glow-green" />
                     <div className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-400 animate-ping opacity-75" />
                   </div>
-                  <span className="text-[11px] text-emerald-600 font-medium">Online</span>
+                  <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">Online</span>
                 </>
               ) : connectionStatus.reconnecting ? (
                 <>
                   <RotateCw className="w-3 h-3 text-amber-500 animate-spin" />
-                  <span className="text-[11px] text-amber-600 font-medium">Reconnecting</span>
+                  <span className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">Reconnecting</span>
                 </>
               ) : (
                 <>
                   <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
-                  <button onClick={onRetry} className="text-[11px] text-red-500 font-medium hover:underline transition-colors duration-200">
+                  <button onClick={onRetry} className="text-[11px] text-red-500 dark:text-red-400 font-medium hover:underline transition-colors duration-200">
                     Disconnected — retry
                   </button>
                 </>
@@ -58,7 +58,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
                 onNewChat();
               }
             }}
-            className="group flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-500 hover:text-brand-700 hover:bg-brand-50 rounded-xl transition-all duration-200 ease-spring"
+            className="group flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-slate-400 hover:text-brand-700 dark:hover:text-brand-300 hover:bg-brand-50 dark:hover:bg-brand-950/40 rounded-xl transition-all duration-200 ease-spring"
             title="New conversation"
           >
             <Plus className="w-3.5 h-3.5 transition-transform duration-200 group-hover:rotate-90" />
@@ -66,7 +66,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
           </Link>
           <Link
             to="/ai/history"
-            className="group flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-500 hover:text-brand-700 hover:bg-brand-50 rounded-xl transition-all duration-200 ease-spring"
+            className="group flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-slate-400 hover:text-brand-700 dark:hover:text-brand-300 hover:bg-brand-50 dark:hover:bg-brand-950/40 rounded-xl transition-all duration-200 ease-spring"
             title="Conversation history"
           >
             <History className="w-3.5 h-3.5 transition-transform duration-200 group-hover:-rotate-45" />

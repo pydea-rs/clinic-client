@@ -18,10 +18,24 @@ vi.mock('react-hot-toast', () => ({ default: { success: vi.fn(), error: vi.fn() 
 
 vi.mock('react-virtuoso', () => ({
   Virtuoso: React.forwardRef(function Virtuoso(
-    { data, itemContent }: { data: unknown[]; itemContent: (index: number, item: unknown) => React.ReactNode },
+    {
+      data,
+      itemContent,
+      style,
+      className,
+    }: {
+      data: unknown[];
+      itemContent: (index: number, item: unknown) => React.ReactNode;
+      style?: React.CSSProperties;
+      className?: string;
+    },
     _ref: React.Ref<unknown>,
   ) {
-    return <div>{data.map((item, i) => <div key={i}>{itemContent(i, item)}</div>)}</div>;
+    return (
+      <div data-testid="chat-virtuoso" style={style} className={className}>
+        {data.map((item, i) => <div key={i}>{itemContent(i, item)}</div>)}
+      </div>
+    );
   }),
 }));
 
@@ -198,5 +212,40 @@ describe('ChatRoomPage', () => {
 
     await screen.findByRole('heading', { name: fullName(second.other) });
     expect(shownMessages()).toEqual(second.history.map((m) => m.content));
+  });
+
+  it('should render messages inside a non-collapsed flex-1 Virtuoso container with 100% height', async () => {
+    const { chat, other } = setUp({ historyLength: 2 });
+
+    renderRoom(chat);
+    await screen.findByRole('heading', { name: fullName(other) });
+
+    const virtuoso = screen.getByTestId('chat-virtuoso');
+    expect(virtuoso).toHaveStyle({ height: '100%' });
+    expect(virtuoso.className).toContain('h-full');
+    expect(virtuoso.parentElement?.className).toContain('flex-1');
+    expect(virtuoso.parentElement?.className).toContain('min-h-0');
+
+    const root = virtuoso.closest('.animate-fade-in');
+    expect(root?.className).toContain('flex-1');
+    expect(root?.className).toContain('min-h-0');
+    expect(root?.className).toContain('overflow-hidden');
+  });
+
+  it('should show an empty prompt when there are no messages and display live typing indicator', async () => {
+    const { chat, other } = setUp({ historyLength: 0 });
+
+    renderRoom(chat);
+    await screen.findByRole('heading', { name: fullName(other) });
+
+    expect(screen.getByText('No messages yet')).toBeInTheDocument();
+
+    act(() => socketHandlers['chat:typing']({
+      chatId: chat.id,
+      userId: other.id,
+      firstname: other.firstname,
+      isTyping: true,
+    }));
+    expect(screen.getByText(new RegExp(`${other.firstname} is typing`))).toBeInTheDocument();
   });
 });

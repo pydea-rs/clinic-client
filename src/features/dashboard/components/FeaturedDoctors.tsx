@@ -32,12 +32,12 @@ export const FeaturedDoctors: React.FC = () => {
     <div className="card p-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-gradient-to-br from-violet-500 to-purple-500 rounded-lg flex items-center justify-center">
+          <div className="w-7 h-7 bg-gradient-to-br from-violet-500 to-purple-500 rounded-lg flex items-center justify-center shadow-sm">
             <Users className="w-3.5 h-3.5 text-white" />
           </div>
-          <h3 className="font-semibold text-sm text-gray-900">Featured Doctors</h3>
+          <h3 className="font-semibold text-sm text-gray-900 dark:text-white">Featured Doctors</h3>
         </div>
-        <Link to="/doctors" className="text-xs text-brand-600 hover:text-brand-700 font-semibold transition-colors">
+        <Link to="/doctors" className="text-xs text-brand-600 dark:text-brand-400 hover:text-brand-700 font-semibold transition-colors">
           See all
         </Link>
       </div>
@@ -47,7 +47,7 @@ export const FeaturedDoctors: React.FC = () => {
           <Link
             key={doctor.id}
             to={`/doctor/${doctor.id}`}
-            className="card-shine border border-gray-100 rounded-xl p-4 hover:border-brand-200 hover:shadow-soft transition-all duration-300 ease-spring group hover:-translate-y-0.5"
+            className="card-shine border border-gray-100 dark:border-slate-700/60 dark:bg-slate-800/50 rounded-xl p-4 hover:border-brand-200 dark:hover:border-brand-700 hover:shadow-soft transition-all duration-300 ease-spring group hover:-translate-y-0.5"
           >
             <div className="flex items-center gap-2.5 mb-2">
               <UserAvatar
@@ -56,23 +56,23 @@ export const FeaturedDoctors: React.FC = () => {
                 lastname={doctor.user?.lastname}
                 alt={doctor.user ? `Dr. ${doctor.user.firstname} ${doctor.user.lastname}` : doctor.specialty}
                 fallback={<Stethoscope className="w-4 h-4 text-brand-600" />}
-                className="w-9 h-9 bg-gradient-to-br from-brand-50 to-blue-50 rounded-xl flex-shrink-0 ring-2 ring-brand-200/50 group-hover:ring-brand-300/60 transition-all duration-200"
+                className="w-9 h-9 bg-gradient-to-br from-brand-50 to-blue-50 dark:from-brand-950/60 dark:to-blue-950/60 rounded-xl flex-shrink-0 ring-2 ring-brand-200/50 dark:ring-brand-800/50 group-hover:ring-brand-300/60 transition-all duration-200"
               />
-              <span className="text-sm font-semibold text-gray-900 truncate group-hover:text-brand-700 transition-colors">
+              <span className="text-sm font-semibold text-gray-900 dark:text-white truncate group-hover:text-brand-700 dark:group-hover:text-brand-300 transition-colors">
                 {doctor.user?.firstname} {doctor.user?.lastname}
               </span>
             </div>
-            <p className="text-xs text-brand-600 font-semibold mb-2">{formatSpecialty(doctor.specialty || '')}</p>
+            <p className="text-xs text-brand-600 dark:text-brand-400 font-semibold mb-2">{formatSpecialty(doctor.specialty || '')}</p>
             {doctor.clinicLocation && (
-              <div className="flex items-center gap-1 text-[11px] text-gray-400 mb-1.5">
+              <div className="flex items-center gap-1 text-[11px] text-gray-400 dark:text-slate-400 mb-1.5">
                 <MapPin className="w-3 h-3 flex-shrink-0" />
                 <span className="truncate">{doctor.clinicLocation}</span>
               </div>
             )}
             {doctor.averageRating != null && doctor.averageRating > 0 && (
-              <div className="flex items-center gap-1 bg-amber-50 rounded-md px-1.5 py-0.5 w-fit">
+              <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-950/40 rounded-md px-1.5 py-0.5 w-fit">
                 <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                <span className="text-[11px] font-semibold text-amber-700">{doctor.averageRating.toFixed(1)}</span>
+                <span className="text-[11px] font-semibold text-amber-700 dark:text-amber-300">{doctor.averageRating.toFixed(1)}</span>
               </div>
             )}
           </Link>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { chatApi } from '../../api';
 import { Link } from 'react-router-dom';
+import { MessageSquare, Plus, ChevronRight, X } from 'lucide-react';
 import { socketService } from '../../lib/socket/socket.service';
 import { useAuthStore } from '../../lib/stores/auth.store';
 import toast from 'react-hot-toast';
@@ -126,30 +127,37 @@ export const ChatListPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto animate-fade-in min-h-full">
+    <div className="p-6 max-w-5xl mx-auto w-full animate-fade-in">
       {/* Gradient header */}
-      <div className="flex items-center gap-3 mb-8">
-        <div className="w-10 h-10 bg-gradient-to-br from-brand-600 to-brand-400 rounded-xl flex items-center justify-center shadow-glow-blue">
-          <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-          </svg>
+      <div className="flex items-center justify-between gap-3 mb-8 animate-slide-in-up">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-brand-600 to-brand-400 rounded-xl flex items-center justify-center shadow-glow-blue">
+            <MessageSquare className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold gradient-text">Chats</h1>
+            <p className="text-xs text-gray-500 dark:text-slate-400">Your direct & consultation conversations</p>
+          </div>
         </div>
-        <h1 className="text-2xl font-bold gradient-text">Chats</h1>
+        {chats.length > 0 && (
+          <span className="badge badge-brand">
+            {chats.length} conversation{chats.length !== 1 ? 's' : ''}
+          </span>
+        )}
       </div>
 
       {chats.length === 0 ? (
-        <div className="text-center py-16">
-          <div className="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
+        <div className="card text-center py-16 px-6 animate-scale-in">
+          <div className="w-16 h-16 bg-brand-50 dark:bg-brand-950/40 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-float">
+            <MessageSquare className="w-8 h-8 text-brand-500 dark:text-brand-400" />
           </div>
-          <p className="text-gray-500 mb-1">No conversations yet</p>
-          <p className="text-sm text-gray-400 mb-6">Start chatting with a participant</p>
+          <p className="text-gray-700 dark:text-slate-200 font-semibold mb-1">No conversations yet</p>
+          <p className="text-sm text-gray-400 dark:text-slate-500 mb-6">Start chatting with a participant</p>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="btn-primary px-5 py-2.5"
+            className="btn-primary px-5 py-2.5 inline-flex items-center gap-2"
           >
+            <Plus className="w-4 h-4" />
             Start a Chat
           </button>
         </div>
@@ -169,7 +177,7 @@ export const ChatListPage: React.FC = () => {
               <Link
                 key={chat.id}
                 to={`/chat/${chat.id}`}
-                className="block card-interactive p-5 animate-slide-in-up"
+                className="block card-interactive card-shine p-5 animate-slide-in-up group"
               >
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -180,45 +188,53 @@ export const ChatListPage: React.FC = () => {
                         lastname={otherParticipant?.lastname}
                         alt={participantName}
                         fallback={<span className="text-sm font-bold text-white">{initials}</span>}
-                        className="w-11 h-11 bg-gradient-to-br from-brand-500 to-purple-500 rounded-full"
+                        className={`w-11 h-11 bg-gradient-to-br from-brand-500 to-purple-500 rounded-full transition-transform duration-300 group-hover:scale-105 ${
+                          isOnline ? 'ring-2 ring-emerald-400/60 ring-offset-2 dark:ring-offset-slate-800' : ''
+                        }`}
                       />
                       {isOnline && (
-                        <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
+                        <>
+                          <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 rounded-full animate-pulse-ring" />
+                          <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white dark:border-slate-800 rounded-full" />
+                        </>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-gray-900 truncate">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors truncate">
                           {chat.topic || (otherParticipant
                             ? `${otherParticipant.firstname} ${otherParticipant.lastname}`
                             : 'Chat')}
                         </h3>
                         {isOnline && (
-                          <span className="flex items-center gap-1.5 text-xs text-green-600 font-medium">
+                          <span className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
                             <span className="status-dot status-dot-online"></span>
                             Online
                           </span>
                         )}
                         {(chat.unreadCount ?? 0) > 0 && (
-                          <span className="px-2 py-0.5 bg-gradient-to-r from-brand-600 to-brand-500 text-white text-xs font-semibold rounded-full shadow-sm">
+                          <span className="px-2 py-0.5 bg-gradient-to-r from-brand-600 to-brand-500 text-white text-xs font-semibold rounded-full shadow-sm animate-pop-in">
                             {chat.unreadCount}
                           </span>
                         )}
                       </div>
                       {chat.lastMessage && (
-                        <p className="text-sm text-gray-500 mt-1 truncate">
+                        <p className="text-sm text-gray-500 dark:text-slate-400 mt-1 truncate">
                           {chat.lastMessage.content}
                         </p>
                       )}
                     </div>
                   </div>
-                  <div className="text-right flex-shrink-0">
-                    <span className="text-sm text-gray-400">
-                      {new Date(chat.updatedAt).toLocaleDateString()}
-                    </span>
-                    {chat.closedAt && (
-                      <p className="mt-1"><span className="badge badge-red">Closed</span></p>
-                    )}
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    <div className="text-right">
+                      <span className="text-xs text-gray-400 dark:text-slate-500">
+                        {new Date(chat.updatedAt).toLocaleDateString()}
+                      </span>
+                      {chat.closedAt && (
+                        <p className="mt-1"><span className="badge badge-red">Closed</span></p>
+                      )}
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-gray-300 dark:text-slate-600 group-hover:text-brand-500 group-hover:translate-x-1 transition-all duration-200" />
                   </div>
                 </div>
               </Link>
@@ -230,7 +246,7 @@ export const ChatListPage: React.FC = () => {
       {/* Create Chat Modal */}
       {showCreateModal && (
         <div
-          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 animate-fade-in"
+          className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in"
           onClick={() => {
             if (!creating) {
               setShowCreateModal(false);
@@ -240,34 +256,50 @@ export const ChatListPage: React.FC = () => {
           }}
         >
           <div
-            className="bg-white rounded-2xl shadow-xl border border-gray-200/60 p-6 max-w-md w-full mx-4 animate-scale-in"
+            className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200/60 dark:border-slate-700/60 p-6 max-w-md w-full mx-4 animate-modal-in"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-lg font-bold text-gray-900 mb-5">Create New Chat</h2>
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Create New Chat</h2>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!creating) {
+                    setShowCreateModal(false);
+                    setNewChatParticipantId('');
+                    setNewChatTopic('');
+                  }
+                }}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+                aria-label="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">
                   Participant ID (User ID)
                 </label>
                 <input
                   type="text"
                   value={newChatParticipantId}
                   onChange={(e) => setNewChatParticipantId(e.target.value)}
-                  className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl bg-gray-50/50 text-sm input-focus"
+                  className="w-full px-3.5 py-2.5 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50/50 dark:bg-slate-800 text-sm text-gray-900 dark:text-white input-focus"
                   placeholder="Enter user ID"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">
                   Topic (Optional)
                 </label>
                 <input
                   type="text"
                   value={newChatTopic}
                   onChange={(e) => setNewChatTopic(e.target.value)}
-                  className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl bg-gray-50/50 text-sm input-focus"
+                  className="w-full px-3.5 py-2.5 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50/50 dark:bg-slate-800 text-sm text-gray-900 dark:text-white input-focus"
                   placeholder="Enter chat topic"
                 />
               </div>

@@ -5,44 +5,34 @@ export const ToastProvider: React.FC = () => {
   return (
     <Toaster
       position="top-right"
+      gutter={10}
       toastOptions={{
         duration: 4000,
-        style: {
-          background: '#fff',
-          color: '#374151',
-          borderRadius: '16px',
-          border: '1px solid #e5e7eb',
-          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-          padding: '16px',
-          fontSize: '14px',
-          fontWeight: '500',
-        },
+        className:
+          '!bg-white/95 dark:!bg-slate-800/95 !text-gray-800 dark:!text-slate-100 !rounded-2xl !border !border-gray-200/80 dark:!border-slate-700/80 !shadow-soft-xl !backdrop-blur-md !px-4 !py-3.5 !text-sm !font-medium',
         success: {
           iconTheme: {
             primary: '#10b981',
             secondary: '#fff',
           },
-          style: {
-            border: '1px solid #10b981',
-          },
+          className:
+            '!bg-white/95 dark:!bg-slate-800/95 !text-gray-800 dark:!text-slate-100 !rounded-2xl !border !border-emerald-500/50 dark:!border-emerald-500/40 !shadow-soft-xl !backdrop-blur-md !px-4 !py-3.5 !text-sm !font-medium',
         },
         error: {
           iconTheme: {
             primary: '#ef4444',
             secondary: '#fff',
           },
-          style: {
-            border: '1px solid #ef4444',
-          },
+          className:
+            '!bg-white/95 dark:!bg-slate-800/95 !text-gray-800 dark:!text-slate-100 !rounded-2xl !border !border-red-500/50 dark:!border-red-500/40 !shadow-soft-xl !backdrop-blur-md !px-4 !py-3.5 !text-sm !font-medium',
         },
         loading: {
           iconTheme: {
             primary: '#3b82f6',
             secondary: '#fff',
           },
-          style: {
-            border: '1px solid #3b82f6',
-          },
+          className:
+            '!bg-white/95 dark:!bg-slate-800/95 !text-gray-800 dark:!text-slate-100 !rounded-2xl !border !border-blue-500/50 dark:!border-blue-500/40 !shadow-soft-xl !backdrop-blur-md !px-4 !py-3.5 !text-sm !font-medium',
         },
       }}
     />

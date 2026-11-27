@@ -54,18 +54,18 @@ export const TypingIndicator: React.FC = () => {
   return (
     <div className="flex justify-start mb-5 animate-msg-in">
       <div className="flex items-end gap-2.5">
-        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center flex-shrink-0 mb-5 shadow-sm shadow-brand-500/20 ring-2 ring-white animate-breathe">
+        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center flex-shrink-0 mb-5 shadow-sm shadow-brand-500/20 ring-2 ring-white dark:ring-slate-900 animate-breathe">
           <Bot className="w-3.5 h-3.5 text-white" />
         </div>
         <div>
-          <div className="bg-gradient-to-br from-white to-brand-50/40 border border-gray-100 border-l-2 border-l-brand-200 px-5 py-3.5 rounded-2xl rounded-bl-sm shadow-soft">
+          <div className="bg-gradient-to-br from-white to-brand-50/40 dark:from-slate-800 dark:to-slate-800/90 border border-gray-100 dark:border-slate-700/70 border-l-2 border-l-brand-200 dark:border-l-brand-600/60 px-5 py-3.5 rounded-2xl rounded-bl-sm shadow-soft">
             <div
               className={`flex items-center gap-2.5 transition-opacity duration-250 ease-spring ${isFading ? 'opacity-0' : 'opacity-100'}`}
             >
               <div className="relative w-4 h-4 flex-shrink-0">
                 <PhaseIcon className={`w-4 h-4 ${phase.color} animate-thinking-icon`} />
               </div>
-              <span className="text-sm text-gray-500 font-medium">{phase.text}</span>
+              <span className="text-sm text-gray-500 dark:text-slate-300 font-medium">{phase.text}</span>
               <span className="flex items-center gap-1 ml-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-brand-400 to-brand-600 typing-dot" />
                 <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-brand-500 to-purple-500 typing-dot" />
@@ -73,7 +73,7 @@ export const TypingIndicator: React.FC = () => {
               </span>
             </div>
           </div>
-          <p className="text-[10px] text-gray-400 mt-1 pl-1 animate-fade-in">AI is thinking...</p>
+          <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-1 pl-1 animate-fade-in">AI is thinking...</p>
         </div>
       </div>
     </div>

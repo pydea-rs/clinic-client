@@ -34,28 +34,28 @@ export const NurseChatPage: React.FC = () => {
       <div className="flex items-center justify-center min-h-[60vh] animate-fade-in">
         <div className="text-center">
           <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <h2 className="text-lg font-bold text-gray-900">No Permission</h2>
-          <p className="text-sm text-gray-500 mt-1">You don't have the Chat with Patients permission.</p>
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">No Permission</h2>
+          <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">You don't have the Chat with Patients permission.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 w-full">
       {chatConsultations.length > 0 && (
         <div className="px-6 pt-6 max-w-5xl mx-auto animate-fade-in">
           <div className="card p-5 space-y-3">
             <div className="flex items-center justify-between gap-2">
               <div>
-                <h2 className="text-base font-bold text-gray-900">Active Consultation Chats</h2>
-                <p className="text-xs text-gray-500">
+                <h2 className="text-base font-bold text-gray-900 dark:text-white">Active Consultation Chats</h2>
+                <p className="text-xs text-gray-500 dark:text-slate-400">
                   Join shared patient consultations on behalf of your assigned doctor(s).
                 </p>
               </div>
               <span className="badge badge-blue">{chatConsultations.length}</span>
             </div>
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-gray-100 dark:divide-slate-800">
               {chatConsultations.map((c) => {
                 const patientName = `${c.patient.firstname} ${c.patient.lastname}`;
                 const doctorName = `Dr. ${c.doctor.user.firstname} ${c.doctor.user.lastname}`;
@@ -73,8 +73,8 @@ export const NurseChatPage: React.FC = () => {
                         className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-purple-500 text-white text-xs font-bold flex-shrink-0"
                       />
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-gray-900 truncate">{patientName}</p>
-                        <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{patientName}</p>
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-slate-400">
                           <span>Assigned to {doctorName}</span>
                           {c.doctorDecision && (
                             <span className="badge badge-gray">{formatVisitType(c.doctorDecision)}</span>

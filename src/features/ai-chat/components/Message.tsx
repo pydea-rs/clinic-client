@@ -66,13 +66,13 @@ const MarkdownContent: React.FC<{ text: string }> = ({ text }) => {
       <h3 className="text-sm font-bold mb-1 mt-2 first:mt-0">{children}</h3>
     ),
     blockquote: ({ children }) => (
-      <blockquote className="border-s-2 border-brand-300 ps-3 my-2 text-gray-600 italic">{children}</blockquote>
+      <blockquote className="border-s-2 border-brand-300 dark:border-brand-600 ps-3 my-2 text-gray-600 dark:text-slate-300 italic">{children}</blockquote>
     ),
     code: ({ className, children }) => {
       const isBlock = /^language-/.test(className || '');
       if (!isBlock) {
         return (
-          <code className="px-1 py-0.5 bg-gray-100 text-gray-800 rounded text-[13px] font-mono">
+          <code className="px-1.5 py-0.5 bg-gray-100 dark:bg-slate-900 text-gray-800 dark:text-slate-200 rounded text-[13px] font-mono">
             {children}
           </code>
         );
@@ -88,21 +88,21 @@ const MarkdownContent: React.FC<{ text: string }> = ({ text }) => {
       );
     },
     a: ({ href, children }) => (
-      <a href={href} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:text-brand-700 hover:underline transition-colors duration-200">
+      <a href={href} target="_blank" rel="noopener noreferrer" className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 hover:underline transition-colors duration-200">
         {children}
       </a>
     ),
-    hr: () => <hr className="my-3 border-gray-200" />,
+    hr: () => <hr className="my-3 border-gray-200 dark:border-slate-700" />,
     table: ({ children }) => (
       <div className="overflow-x-auto my-2">
-        <table className="min-w-full text-sm border border-gray-200 rounded">{children}</table>
+        <table className="min-w-full text-sm border border-gray-200 dark:border-slate-700 rounded">{children}</table>
       </div>
     ),
     th: ({ children }) => (
-      <th className="px-3 py-1.5 bg-gray-50 text-start font-medium border-b border-gray-200">{children}</th>
+      <th className="px-3 py-1.5 bg-gray-50 dark:bg-slate-800 text-start font-medium border-b border-gray-200 dark:border-slate-700">{children}</th>
     ),
     td: ({ children }) => (
-      <td className="px-3 py-1.5 border-b border-gray-100">{children}</td>
+      <td className="px-3 py-1.5 border-b border-gray-100 dark:border-slate-800">{children}</td>
     ),
   }), []);
 
@@ -155,24 +155,24 @@ export const Message: React.FC<MessageProps> = ({ message, onChoiceSelect }) => 
   }
 
   const botAccentBorder =
-    direction === 'rtl' ? 'border-r-2 border-r-brand-200' : 'border-l-2 border-l-brand-200';
+    direction === 'rtl' ? 'border-r-2 border-r-brand-200 dark:border-r-brand-600/60' : 'border-l-2 border-l-brand-200 dark:border-l-brand-600/60';
 
   return (
     <div className="group flex justify-start mb-5 animate-msg-in">
       <div className="flex items-end gap-2.5 max-w-[90%] sm:max-w-[80%] lg:max-w-[75%]">
-        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center flex-shrink-0 mb-5 shadow-sm shadow-brand-500/20 ring-2 ring-white">
+        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center flex-shrink-0 mb-5 shadow-sm shadow-brand-500/20 ring-2 ring-white dark:ring-slate-900">
           <Bot className="w-3.5 h-3.5 text-white" />
         </div>
         <div>
           <div
             dir={direction}
-            className={`bg-gradient-to-br from-white to-brand-50/40 border border-gray-100 ${botAccentBorder} text-start px-4 py-3 rounded-2xl rounded-bl-sm shadow-soft`}
+            className={`bg-gradient-to-br from-white to-brand-50/40 dark:from-slate-800 dark:to-slate-800/90 border border-gray-100 dark:border-slate-700/70 ${botAccentBorder} text-start px-4 py-3 rounded-2xl rounded-bl-sm shadow-soft`}
           >
-            <div className="text-[14px] text-gray-800 prose-sm">
+            <div className="text-[14px] text-gray-800 dark:text-slate-100 prose-sm">
               <MarkdownContent text={message.text} />
             </div>
             {message.choices && message.choices.length > 0 && !message.isStreaming && (
-              <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-100/80">
+              <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-100/80 dark:border-slate-700/80">
                 {message.choices.map((c) => {
                   const isSelected = message.selectedChoice === c.value;
                   const isClosed = message.selectedChoice === '__closed__';
@@ -184,10 +184,10 @@ export const Message: React.FC<MessageProps> = ({ message, onChoiceSelect }) => 
                         key={c.value}
                         className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[13px] font-medium rounded-full border transition-all duration-200 ${
                           isSelected
-                            ? 'text-emerald-700 bg-emerald-50 border-emerald-300 ring-1 ring-emerald-600/10'
+                            ? 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 border-emerald-300 dark:border-emerald-700/60 ring-1 ring-emerald-600/10'
                             : isClosed
-                              ? 'text-gray-400 bg-gray-50 border-gray-200'
-                              : 'text-gray-400 bg-gray-50 border-gray-200 line-through opacity-60'
+                              ? 'text-gray-400 dark:text-slate-500 bg-gray-50 dark:bg-slate-900/40 border-gray-200 dark:border-slate-700'
+                              : 'text-gray-400 dark:text-slate-500 bg-gray-50 dark:bg-slate-900/40 border-gray-200 dark:border-slate-700 line-through opacity-60'
                         }`}
                       >
                         {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />}
@@ -200,7 +200,7 @@ export const Message: React.FC<MessageProps> = ({ message, onChoiceSelect }) => 
                     <button
                       key={c.value}
                       onClick={() => onChoiceSelect?.(c.value, c.label)}
-                      className="px-3.5 py-1.5 text-[13px] font-medium text-brand-600 bg-brand-50 border border-brand-200 rounded-full hover:bg-brand-100 hover:border-brand-300 hover:shadow-sm transition-all duration-200 ease-spring btn-press"
+                      className="px-3.5 py-1.5 text-[13px] font-medium text-brand-600 dark:text-brand-300 bg-brand-50 dark:bg-brand-950/50 border border-brand-200 dark:border-brand-700/60 rounded-full hover:bg-brand-100 dark:hover:bg-brand-900/50 hover:border-brand-300 hover:-translate-y-0.5 hover:shadow-sm transition-all duration-200 ease-spring btn-press"
                     >
                       {c.label}
                     </button>
@@ -209,7 +209,7 @@ export const Message: React.FC<MessageProps> = ({ message, onChoiceSelect }) => 
               </div>
             )}
           </div>
-          <p className="text-[10px] text-gray-400 mt-1 pl-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">{formatTime(message.timestamp)}</p>
+          <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-1 pl-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">{formatTime(message.timestamp)}</p>
         </div>
       </div>
     </div>

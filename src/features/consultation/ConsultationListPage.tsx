@@ -67,7 +67,7 @@ export const ConsultationListPage: React.FC = () => {
   const totalPages = Math.ceil(total / 10);
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-6 max-w-6xl mx-auto w-full">
       <div className="flex items-center gap-3 mb-8 animate-slide-in-up">
         <div className="w-10 h-10 bg-gradient-to-br from-brand-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-soft">
           <ClipboardList className="w-5 h-5 text-white" />
@@ -76,9 +76,9 @@ export const ConsultationListPage: React.FC = () => {
       </div>
       
       {consultations.length === 0 ? (
-        <div className="text-center py-12 animate-fade-in">
-          <ClipboardList className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500">No consultations found</p>
+        <div className="card text-center py-12 animate-fade-in">
+          <ClipboardList className="w-12 h-12 text-gray-300 dark:text-slate-600 mx-auto mb-4" />
+          <p className="text-gray-500 dark:text-slate-400">No consultations found</p>
         </div>
       ) : (
         <>
@@ -89,8 +89,8 @@ export const ConsultationListPage: React.FC = () => {
                 <div key={consultation.id} className="card card-hover p-6 animate-slide-in-up">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h3 className="font-medium">Consultation #{consultation.id.substring(0, 8)}...</h3>
-                      <p className="text-sm text-gray-500">
+                      <h3 className="font-medium text-gray-900 dark:text-white">Consultation #{consultation.id.substring(0, 8)}...</h3>
+                      <p className="text-sm text-gray-500 dark:text-slate-400">
                         {user?.role === 'PATIENT'
                           ? (consultation.doctor?.user
                               ? `Dr. ${consultation.doctor.user.firstname} ${consultation.doctor.user.lastname}`
@@ -107,42 +107,42 @@ export const ConsultationListPage: React.FC = () => {
 
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="text-gray-500">Created:</span>
-                      <p className="font-medium">{new Date(consultation.createdAt).toLocaleDateString()}</p>
+                      <span className="text-gray-500 dark:text-slate-400">Created:</span>
+                      <p className="font-medium text-gray-900 dark:text-slate-200">{new Date(consultation.createdAt).toLocaleDateString()}</p>
                     </div>
                     {consultation.doctorDecision && (
                       <div>
-                        <span className="text-gray-500">Decision:</span>
-                        <p className="font-medium">{formatVisitType(consultation.doctorDecision)}</p>
+                        <span className="text-gray-500 dark:text-slate-400">Decision:</span>
+                        <p className="font-medium text-gray-900 dark:text-slate-200">{formatVisitType(consultation.doctorDecision)}</p>
                       </div>
                     )}
                     {consultation.visitMethod && (
                       <div>
-                        <span className="text-gray-500">Method:</span>
-                        <p className="font-medium">{formatVisitMethod(consultation.visitMethod)}</p>
+                        <span className="text-gray-500 dark:text-slate-400">Method:</span>
+                        <p className="font-medium text-gray-900 dark:text-slate-200">{formatVisitMethod(consultation.visitMethod)}</p>
                       </div>
                     )}
                     <div>
-                      <span className="text-gray-500">Follow-up:</span>
-                      <p className="font-medium">{consultation.followUpNeeded ? 'Yes' : 'No'}</p>
+                      <span className="text-gray-500 dark:text-slate-400">Follow-up:</span>
+                      <p className="font-medium text-gray-900 dark:text-slate-200">{consultation.followUpNeeded ? 'Yes' : 'No'}</p>
                     </div>
                   </div>
 
                   {(canViewDetail(consultation) || chatAction.canOpen) && (
-                    <div className="mt-4 pt-4 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3">
+                    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
                       <div className="flex items-center gap-3">
                         {canViewDetail(consultation) && (
                           <Link
                             to={`/consultation/${consultation.id}`}
-                            className="text-brand-600 hover:text-brand-700 font-medium transition-colors"
+                            className="text-brand-600 dark:text-brand-400 hover:text-brand-700 font-medium transition-colors"
                           >
                             View Details
                           </Link>
                         )}
                         {canViewDetail(consultation) && consultation.soapId && (
                           <>
-                            <span className="text-gray-300">|</span>
-                            <Link to={`/soap/${consultation.soapId}`} className="text-brand-600 hover:text-brand-700 font-medium transition-colors">
+                            <span className="text-gray-300 dark:text-slate-600">|</span>
+                            <Link to={`/soap/${consultation.soapId}`} className="text-brand-600 dark:text-brand-400 hover:text-brand-700 font-medium transition-colors">
                               View SOAP Note
                             </Link>
                           </>

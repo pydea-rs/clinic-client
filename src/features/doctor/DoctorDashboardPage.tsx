@@ -170,19 +170,19 @@ export const DoctorDashboardPage: React.FC = () => {
           return (
             <div
               key={card.label}
-              className="card p-6 animate-slide-in-up"
+              className="card card-hover card-shine p-6 animate-slide-in-up group"
               style={{ animationDelay: `${index * 50}ms` }}
             >
               <div className="flex items-start justify-between mb-4">
-                <div className={`w-12 h-12 bg-gradient-to-br ${card.gradient} rounded-xl shadow-soft flex items-center justify-center`}>
+                <div className={`w-12 h-12 bg-gradient-to-br ${card.gradient} rounded-xl shadow-soft flex items-center justify-center group-hover:scale-105 transition-transform duration-300 ease-spring`}>
                   <Icon className="w-6 h-6 text-white" />
                 </div>
                 <span className={`badge ${card.badgeClass} text-xs`}>
                   {card.value}
                 </span>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900">{card.value}</h3>
-              <p className="text-sm text-gray-500 mt-1">{card.label}</p>
+              <h3 className="counter-value text-2xl font-bold text-gray-900 dark:text-white">{card.value}</h3>
+              <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">{card.label}</p>
             </div>
           );
         })}
@@ -190,7 +190,7 @@ export const DoctorDashboardPage: React.FC = () => {
 
       {/* Quick Actions */}
       <div className="animate-slide-up-spring" style={{ animationDelay: '200ms' }}>
-        <h2 className="text-lg font-bold text-gray-900 mb-4">Quick Actions</h2>
+        <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-children">
           {quickActions.map((action, index) => {
             const Icon = action.icon;
@@ -198,17 +198,17 @@ export const DoctorDashboardPage: React.FC = () => {
               <Link
                 key={action.label}
                 to={action.to}
-                className="card-interactive p-5 animate-slide-in-up group"
+                className="card-interactive card-shine p-5 animate-slide-in-up group"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <div className={`w-10 h-10 bg-gradient-to-br ${action.gradient} rounded-xl shadow-soft flex items-center justify-center mb-3`}>
+                <div className={`w-10 h-10 bg-gradient-to-br ${action.gradient} rounded-xl shadow-soft flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 ease-spring`}>
                   <Icon className="w-5 h-5 text-white" />
                 </div>
-                <h3 className="font-bold text-gray-900 mb-1 flex items-center gap-1">
+                <h3 className="font-bold text-gray-900 dark:text-white mb-1 flex items-center gap-1">
                   {action.label}
                   <ArrowRight className="w-4 h-4 text-gray-400 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
                 </h3>
-                <p className="text-sm text-gray-500">{action.description}</p>
+                <p className="text-sm text-gray-500 dark:text-slate-400">{action.description}</p>
               </Link>
             );
           })}

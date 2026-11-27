@@ -53,46 +53,46 @@ export const NurseDashboardPage: React.FC = () => {
 
   return (
     <div className="max-w-5xl mx-auto p-6 animate-fade-in">
-      <div className="flex items-center gap-3 mb-8">
+      <div className="flex items-center gap-3 mb-8 animate-slide-in-up">
         <div className="w-10 h-10 bg-gradient-to-br from-teal-500 to-emerald-500 rounded-xl flex items-center justify-center shadow-soft">
           <Home className="w-5 h-5 text-white" />
         </div>
-        <h1 className="text-3xl font-bold text-gray-900">Nurse Dashboard</h1>
+        <h1 className="text-3xl font-bold gradient-text">Nurse Dashboard</h1>
       </div>
 
       {/* Stats */}
       {stats && (
-        <div className="grid gap-4 sm:grid-cols-3 mb-8">
-          <div className="card p-5 animate-slide-in-up">
+        <div className="grid gap-4 sm:grid-cols-3 mb-8 stagger-children">
+          <div className="card card-hover p-5 animate-slide-in-up">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
-                <Users className="w-5 h-5 text-blue-600" />
+              <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center">
+                <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">{stats.assignedDoctors}</p>
-                <p className="text-xs text-gray-500">Assigned Doctors</p>
+                <p className="counter-value text-2xl font-bold text-gray-900 dark:text-white">{stats.assignedDoctors}</p>
+                <p className="text-xs text-gray-500 dark:text-slate-400">Assigned Doctors</p>
               </div>
             </div>
           </div>
-          <div className="card p-5 animate-slide-in-up" style={{ animationDelay: '30ms' }}>
+          <div className="card card-hover p-5 animate-slide-in-up" style={{ animationDelay: '30ms' }}>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-emerald-600" />
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">{stats.upcomingAppointments}</p>
-                <p className="text-xs text-gray-500">Upcoming Appointments</p>
+                <p className="counter-value text-2xl font-bold text-gray-900 dark:text-white">{stats.upcomingAppointments}</p>
+                <p className="text-xs text-gray-500 dark:text-slate-400">Upcoming Appointments</p>
               </div>
             </div>
           </div>
-          <div className="card p-5 animate-slide-in-up" style={{ animationDelay: '60ms' }}>
+          <div className="card card-hover p-5 animate-slide-in-up" style={{ animationDelay: '60ms' }}>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
-                <ClipboardList className="w-5 h-5 text-purple-600" />
+              <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/40 flex items-center justify-center">
+                <ClipboardList className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">{stats.activeConsultations}</p>
-                <p className="text-xs text-gray-500">Active Consultations</p>
+                <p className="counter-value text-2xl font-bold text-gray-900 dark:text-white">{stats.activeConsultations}</p>
+                <p className="text-xs text-gray-500 dark:text-slate-400">Active Consultations</p>
               </div>
             </div>
           </div>
@@ -100,13 +100,13 @@ export const NurseDashboardPage: React.FC = () => {
       )}
 
       {/* Assigned Doctors */}
-      <h2 className="text-lg font-bold text-gray-900 mb-3">Assigned Doctors</h2>
+      <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-3">Assigned Doctors</h2>
       <div className="grid gap-4 md:grid-cols-2 mb-8">
         {assignments.map((a) => {
           const doc = a.doctor;
           const docUser = doc?.user;
           return (
-            <div key={a.id} className="card p-5 animate-slide-in-up">
+            <div key={a.id} className="card card-hover p-5 animate-slide-in-up">
               <div className="flex items-center gap-3">
                 <UserAvatar
                   avatar={docUser?.avatar}
@@ -117,17 +117,17 @@ export const NurseDashboardPage: React.FC = () => {
                   className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-100 to-brand-50 flex-shrink-0"
                 />
                 <div>
-                  <h3 className="font-semibold text-gray-900">
+                  <h3 className="font-semibold text-gray-900 dark:text-white">
                     Dr. {docUser?.firstname} {docUser?.lastname}
                   </h3>
                   {doc?.specialty && (
-                    <p className="text-sm text-gray-500">{formatSpecialty(doc.specialty)}</p>
+                    <p className="text-sm text-gray-500 dark:text-slate-400">{formatSpecialty(doc.specialty)}</p>
                   )}
                 </div>
               </div>
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {a.permissions.map((p) => (
-                  <span key={p} className="px-2 py-0.5 text-xs rounded-md bg-emerald-50 text-emerald-700 font-medium">
+                  <span key={p} className="badge badge-green text-xs">
                     {PERMISSION_META[p]?.label || p}
                   </span>
                 ))}
@@ -138,7 +138,7 @@ export const NurseDashboardPage: React.FC = () => {
       </div>
 
       {/* Quick Actions */}
-      <h2 className="text-lg font-bold text-gray-900 mb-3">Quick Actions</h2>
+      <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-3">Quick Actions</h2>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {(Object.keys(PERMISSION_META) as NursePermission[]).map((perm) => {
           const granted = allPerms.includes(perm);
@@ -150,7 +150,7 @@ export const NurseDashboardPage: React.FC = () => {
               to={granted ? meta.path : '#'}
               className={`card p-4 flex items-center gap-3 transition-all duration-200 ${
                 granted
-                  ? 'hover:shadow-md cursor-pointer'
+                  ? 'card-hover cursor-pointer'
                   : 'opacity-50 cursor-not-allowed pointer-events-none'
               }`}
             >
@@ -159,7 +159,7 @@ export const NurseDashboardPage: React.FC = () => {
               ) : (
                 <Lock className="w-5 h-5 text-gray-400 flex-shrink-0" />
               )}
-              <span className={`text-sm font-medium ${granted ? 'text-gray-900' : 'text-gray-400'}`}>
+              <span className={`text-sm font-medium ${granted ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-slate-500'}`}>
                 {meta.label}
               </span>
             </Link>

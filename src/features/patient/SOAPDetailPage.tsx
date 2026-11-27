@@ -99,23 +99,23 @@ export const SOAPDetailPage: React.FC = () => {
 
       {/* Overall Container with glow */}
       <div className="card-glow rounded-2xl p-1">
-        <div className="bg-white rounded-2xl">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl">
           {/* SOAP Sections */}
           <div className="space-y-6 p-6">
             {/* Subjective */}
             <div className="card p-6 border-l-4 border-blue-400 animate-slide-in-up" style={{ animationDelay: '80ms' }}>
               <div className="flex items-center gap-2 mb-4">
                 <Tag className="w-5 h-5 text-blue-500" />
-                <h2 className="text-xl font-bold text-gray-900">Subjective</h2>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Subjective</h2>
               </div>
               <div
                 dir={soap.subjective ? getMessageDirection(soap.subjective) : 'ltr'}
-                className="text-gray-700 leading-relaxed prose prose-sm max-w-none text-start"
+                className="text-gray-700 dark:text-slate-300 leading-relaxed prose prose-sm max-w-none text-start"
               >
                 {soap.subjective ? (
                   <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{soap.subjective}</ReactMarkdown>
                 ) : (
-                  <p className="text-gray-400 italic">No data available</p>
+                  <p className="text-gray-400 dark:text-slate-500 italic">No data available</p>
                 )}
               </div>
             </div>
@@ -124,16 +124,16 @@ export const SOAPDetailPage: React.FC = () => {
             <div className="card p-6 border-l-4 border-emerald-400 animate-slide-in-up" style={{ animationDelay: '160ms' }}>
               <div className="flex items-center gap-2 mb-4">
                 <Tag className="w-5 h-5 text-emerald-500" />
-                <h2 className="text-xl font-bold text-gray-900">Objective</h2>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Objective</h2>
               </div>
               <div
                 dir={soap.objective ? getMessageDirection(soap.objective) : 'ltr'}
-                className="text-gray-700 leading-relaxed prose prose-sm max-w-none text-start"
+                className="text-gray-700 dark:text-slate-300 leading-relaxed prose prose-sm max-w-none text-start"
               >
                 {soap.objective ? (
                   <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{soap.objective}</ReactMarkdown>
                 ) : (
-                  <p className="text-gray-400 italic">No data available</p>
+                  <p className="text-gray-400 dark:text-slate-500 italic">No data available</p>
                 )}
               </div>
             </div>
@@ -142,16 +142,16 @@ export const SOAPDetailPage: React.FC = () => {
             <div className="card p-6 border-l-4 border-amber-400 animate-slide-in-up" style={{ animationDelay: '240ms' }}>
               <div className="flex items-center gap-2 mb-4">
                 <Tag className="w-5 h-5 text-amber-500" />
-                <h2 className="text-xl font-bold text-gray-900">Assessment</h2>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Assessment</h2>
               </div>
               <div
                 dir={soap.assessment ? getMessageDirection(soap.assessment) : 'ltr'}
-                className="text-gray-700 leading-relaxed prose prose-sm max-w-none text-start"
+                className="text-gray-700 dark:text-slate-300 leading-relaxed prose prose-sm max-w-none text-start"
               >
                 {soap.assessment ? (
                   <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{soap.assessment}</ReactMarkdown>
                 ) : (
-                  <p className="text-gray-400 italic">No data available</p>
+                  <p className="text-gray-400 dark:text-slate-500 italic">No data available</p>
                 )}
               </div>
             </div>
@@ -160,16 +160,16 @@ export const SOAPDetailPage: React.FC = () => {
             <div className="card p-6 border-l-4 border-purple-400 animate-slide-in-up" style={{ animationDelay: '320ms' }}>
               <div className="flex items-center gap-2 mb-4">
                 <Tag className="w-5 h-5 text-purple-500" />
-                <h2 className="text-xl font-bold text-gray-900">Plan</h2>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Plan</h2>
               </div>
               <div
                 dir={soap.plan ? getMessageDirection(soap.plan) : 'ltr'}
-                className="text-gray-700 leading-relaxed prose prose-sm max-w-none text-start"
+                className="text-gray-700 dark:text-slate-300 leading-relaxed prose prose-sm max-w-none text-start"
               >
                 {soap.plan ? (
                   <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{soap.plan}</ReactMarkdown>
                 ) : (
-                  <p className="text-gray-400 italic">No data available</p>
+                  <p className="text-gray-400 dark:text-slate-500 italic">No data available</p>
                 )}
               </div>
             </div>
@@ -179,7 +179,7 @@ export const SOAPDetailPage: React.FC = () => {
               <div className="card p-6 border-l-4 border-red-500 animate-slide-in-up" style={{ animationDelay: '400ms' }}>
                 <div className="flex items-center gap-3 mb-4">
                   <AlertTriangle className="w-6 h-6 text-red-500" />
-                  <h2 className="text-2xl font-bold text-gray-900">Triage</h2>
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Triage</h2>
                   <span className="badge badge-red text-base font-semibold px-4 py-1.5">{formatTriageLevel(soap.triageLevel)}</span>
                 </div>
               </div>
@@ -187,11 +187,11 @@ export const SOAPDetailPage: React.FC = () => {
 
             {/* Raw Note */}
             {soap.rawNote && (
-              <div className="card bg-gray-50 p-6 border-l-4 border-gray-400 animate-slide-in-up" style={{ animationDelay: '480ms' }}>
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Raw Note</h2>
+              <div className="card bg-gray-50 dark:bg-slate-800/60 p-6 border-l-4 border-gray-400 animate-slide-in-up" style={{ animationDelay: '480ms' }}>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Raw Note</h2>
                 <pre
                   dir={getMessageDirection(soap.rawNote)}
-                  className="text-sm text-gray-700 overflow-x-auto bg-white p-4 rounded border whitespace-pre-wrap text-start"
+                  className="text-sm text-gray-700 dark:text-slate-300 overflow-x-auto bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-200 dark:border-slate-700 whitespace-pre-wrap text-start"
                 >
                   {soap.rawNote}
                 </pre>
@@ -202,7 +202,7 @@ export const SOAPDetailPage: React.FC = () => {
       </div>
 
       {/* Metadata */}
-      <div className="mt-8 card bg-gray-50/50 p-6 text-sm text-gray-600 animate-fade-in" style={{ animationDelay: '500ms' }}>
+      <div className="mt-8 card bg-gray-50/50 dark:bg-slate-800/40 p-6 text-sm text-gray-600 dark:text-slate-400 animate-fade-in" style={{ animationDelay: '500ms' }}>
         <p>
           <span className="font-medium">Conversation ID:</span> {soap.conversationId}
         </p>

@@ -66,22 +66,22 @@ export const ActiveConsultations: React.FC = () => {
     <div className="card p-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-gradient-to-br from-brand-500 to-purple-500 rounded-lg flex items-center justify-center">
+          <div className="w-7 h-7 bg-gradient-to-br from-brand-500 to-purple-500 rounded-lg flex items-center justify-center shadow-sm">
             <Activity className="w-3.5 h-3.5 text-white" />
           </div>
-          <h3 className="font-semibold text-sm text-gray-900">Active Consultations</h3>
+          <h3 className="font-semibold text-sm text-gray-900 dark:text-white">Active Consultations</h3>
         </div>
-        <Link to="/consultations" className="text-xs text-brand-600 hover:text-brand-700 font-semibold transition-colors">
+        <Link to="/consultations" className="text-xs text-brand-600 dark:text-brand-400 hover:text-brand-700 font-semibold transition-colors">
           View all
         </Link>
       </div>
 
       {active.length === 0 ? (
         <div className="text-center py-8">
-          <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
-            <ClipboardList className="w-6 h-6 text-gray-300" />
+          <div className="w-12 h-12 bg-gray-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-3">
+            <ClipboardList className="w-6 h-6 text-gray-300 dark:text-slate-600" />
           </div>
-          <p className="text-sm text-gray-400">No active consultations</p>
+          <p className="text-sm text-gray-400 dark:text-slate-500">No active consultations</p>
         </div>
       ) : (
         <div className="space-y-1.5">
@@ -103,7 +103,7 @@ export const ActiveConsultations: React.FC = () => {
                         {formatStatus(consultation.status)}
                       </span>
                       {consultation.visitMethod && (
-                        <span className="text-[11px] text-gray-400 font-medium">{formatVisitMethod(consultation.visitMethod)}</span>
+                        <span className="text-[11px] text-gray-400 dark:text-slate-400 font-medium">{formatVisitMethod(consultation.visitMethod)}</span>
                       )}
                     </div>
                     {/* Progress bar */}
@@ -113,11 +113,11 @@ export const ActiveConsultations: React.FC = () => {
                         style={{ width: `${progress}%` }}
                       />
                     </div>
-                    <p className="text-xs text-gray-400 mt-1.5">
+                    <p className="text-xs text-gray-400 dark:text-slate-500 mt-1.5">
                       Created {new Date(consultation.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                     </p>
                   </div>
-                  <ChevronRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-brand-500 group-hover:translate-x-0.5 flex-shrink-0 transition-all duration-200" />
+                  <ChevronRight className="w-3.5 h-3.5 text-gray-300 dark:text-slate-600 group-hover:text-brand-500 group-hover:translate-x-0.5 flex-shrink-0 transition-all duration-200" />
                 </div>
               </Link>
             );

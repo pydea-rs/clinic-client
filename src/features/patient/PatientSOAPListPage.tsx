@@ -42,12 +42,12 @@ export const PatientSOAPListPage: React.FC = () => {
           <Link
             key={soap.id}
             to={`/soap/${soap.id}`}
-            className="card-interactive group p-6 border-l-4 border-brand-500 hover:border-brand-600 animate-slide-in-up"
+            className="card-interactive card-shine group p-6 border-l-4 border-brand-500 hover:border-brand-600 animate-slide-in-up"
           >
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h3 className="font-semibold text-gray-900 mb-1">SOAP Note</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-1">SOAP Note</h3>
+                <p className="text-sm text-gray-600 dark:text-slate-400">
                   {new Date(soap.createdAt).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'long',
@@ -55,7 +55,7 @@ export const PatientSOAPListPage: React.FC = () => {
                   })}
                 </p>
               </div>
-              <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-brand-500 transition-colors" />
+              <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-brand-500 group-hover:translate-x-0.5 transition-all duration-200" />
             </div>
 
             {soap.suggestedSpecialty && (
@@ -69,14 +69,14 @@ export const PatientSOAPListPage: React.FC = () => {
             <div className="space-y-2 text-sm">
               {soap.subjective && (
                 <div>
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 dark:text-slate-300">
                     <span className="font-medium">Subjective:</span> {stripMarkdown(soap.subjective).substring(0, 100)}{stripMarkdown(soap.subjective).length > 100 ? '...' : ''}
                   </p>
                 </div>
               )}
               {soap.assessment && (
                 <div>
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 dark:text-slate-300">
                     <span className="font-medium">Assessment:</span> {stripMarkdown(soap.assessment).substring(0, 100)}{stripMarkdown(soap.assessment).length > 100 ? '...' : ''}
                   </p>
                 </div>
