@@ -1,5 +1,5 @@
 import type { AxiosInstance } from 'axios';
-import type { Consultation } from '../lib/types/api';
+import type { Consultation, VisitMethod, VisitType } from '../lib/types/api';
 
 export interface CreateConsultationPayload {
   doctorId: number;
@@ -7,8 +7,12 @@ export interface CreateConsultationPayload {
 }
 
 export interface DecideConsultationPayload {
-  doctorDecision: 'ASYNC' | 'ONLINE' | 'IN_PERSON';
-  visitMethod?: 'CHAT' | 'VOICE_CALL' | 'VIDEO_CALL' | 'ON_SITE';
+  doctorDecision: VisitType;
+  visitMethod?: VisitMethod;
+  diagnosis?: string;
+  suggestions?: string;
+  notes?: string;
+  followUpNeeded?: boolean;
 }
 
 export interface CompleteConsultationPayload {

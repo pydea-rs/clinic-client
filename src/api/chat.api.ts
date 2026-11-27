@@ -1,5 +1,5 @@
 import type { AxiosInstance } from 'axios';
-import type { Chat, Message, MessageType } from '../lib/types/api';
+import type { Chat, Message, MessageType, NurseChatConsultation } from '../lib/types/api';
 
 export function createChatApi(client: AxiosInstance) {
   return {
@@ -10,6 +10,16 @@ export function createChatApi(client: AxiosInstance) {
     }): Promise<Chat> => {
       const response = await client.post('/chat', payload);
       return response.data;
+    },
+
+    openConsultationChat: async (consultationId: string): Promise<Chat> => {
+      const response = await client.post(`/chat/consultation/${consultationId}`);
+      return response.data;
+    },
+
+    getNurseConsultations: async (): Promise<NurseChatConsultation[]> => {
+      const response = await client.get('/chat/nurse-consultations');
+      return Array.isArray(response.data) ? response.data : [];
     },
 
     list: async (): Promise<{ chats: Chat[]; total: number }> => {

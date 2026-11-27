@@ -73,7 +73,24 @@ export const ChatListPage: React.FC = () => {
   };
 
   const getOtherParticipant = (chat: Chat) => {
-    if (!chat.participants || !user) return null;
+    if (!user) return null;
+    if (chat.consultation) {
+      if (user.role === 'PATIENT' && chat.consultation.doctor?.user) {
+        return {
+          ...chat.consultation.doctor.user,
+          role: 'DOCTOR' as const,
+          joinedAt: chat.createdAt,
+        };
+      }
+      if ((user.role === 'DOCTOR' || user.role === 'NURSE') && chat.consultation.patient) {
+        return {
+          ...chat.consultation.patient,
+          role: 'PATIENT' as const,
+          joinedAt: chat.createdAt,
+        };
+      }
+    }
+    if (!chat.participants) return null;
     return chat.participants.find(p => p.id !== user.id);
   };
 

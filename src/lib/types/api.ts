@@ -12,8 +12,6 @@ export type ConsultationStatus =
   | 'COMPLETED'
   | 'CANCELLED';
 
-export type ConsultationMode = 'ASYNC' | 'ONLINE' | 'IN_PERSON';
-
 export type VisitMethod = 'CHAT' | 'VOICE_CALL' | 'VIDEO_CALL' | 'ON_SITE';
 
 export type MessageType = 'TEXT' | 'IMAGE' | 'FILE' | 'AUDIO' | 'VIDEO' | 'SYSTEM';
@@ -30,7 +28,7 @@ export type NotificationChannel = 'EMAIL' | 'PUSH' | 'BOTH';
 
 export type PaymentStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'REFUNDED';
 
-export type VisitType = 'CONSULTATION' | 'EXAMINATION' | 'SURGERY' | 'LABORATORY' | 'RADIOLOGY' | 'PHARMACY' | 'DENTISTRY' | 'THERAPY' | 'NUTRITION' | 'OTHER';
+export type VisitType = 'CONSULTATION' | 'EXAMINATION' | 'SURGERY' | 'LABORATORY' | 'RADIOLOGY' | 'PHARMACY' | 'DENTISTRY' | 'THERAPY' | 'NUTRITION' | 'DIRECT_DIAGNOSIS' | 'OTHER';
 
 export type DoctorSpecialty =
   | 'CARDIOLOGY' | 'DERMATOLOGY' | 'ENT' | 'GASTROENTEROLOGY'
@@ -95,8 +93,10 @@ export interface Consultation {
   doctorId: number;
   soapId?: string;
   status: ConsultationStatus;
-  doctorDecision?: ConsultationMode;
+  doctorDecision?: VisitType;
   visitMethod?: VisitMethod;
+  diagnosis?: string | null;
+  suggestions?: string | null;
   notes?: string;
   summary?: string;
   followUpNeeded: boolean;
@@ -106,7 +106,9 @@ export interface Consultation {
   patient?: Pick<User, 'id' | 'firstname' | 'lastname' | 'avatar'>;
   doctor?: DoctorProfile;
   soap?: PatientSOAP;
-  chat?: Chat;
+  appointment?: Appointment | null;
+  payment?: Pick<Payment, 'id' | 'amount' | 'currency' | 'status' | 'method' | 'paidAt' | 'createdAt'> | null;
+  chat?: Pick<Chat, 'id' | 'topic' | 'closedAt' | 'updatedAt'> | null;
 }
 
 // ─── SOAP ───────────────────────────────────────────────────────────────────
@@ -209,10 +211,27 @@ export interface ChatParticipant extends Pick<User, 'id' | 'firstname' | 'lastna
   isOnline?: boolean;
 }
 
+export interface ChatConsultationSummary {
+  id: string;
+  status: ConsultationStatus;
+  doctorDecision?: VisitType | null;
+  visitMethod?: VisitMethod | null;
+  patientId: string;
+  doctorId: number;
+  patient?: Pick<User, 'id' | 'firstname' | 'lastname' | 'avatar'>;
+  doctor?: {
+    id: number;
+    userId: string;
+    specialty: DoctorSpecialty | string;
+    user?: Pick<User, 'id' | 'firstname' | 'lastname' | 'avatar'>;
+  };
+}
+
 export interface Chat {
   id: string;
   topic?: string;
   consultationId?: string;
+  consultation?: ChatConsultationSummary | null;
   createdAt: string;
   updatedAt: string;
   closedAt?: string;
@@ -225,10 +244,30 @@ export interface Chat {
   unreadCount?: number;
 }
 
+export interface NurseChatConsultation {
+  id: string;
+  status: ConsultationStatus;
+  doctorDecision?: VisitType | null;
+  visitMethod?: VisitMethod | null;
+  createdAt: string;
+  updatedAt: string;
+  patient: Pick<User, 'id' | 'firstname' | 'lastname' | 'avatar'>;
+  doctor: {
+    id: number;
+    specialty: DoctorSpecialty | string;
+    user: Pick<User, 'id' | 'firstname' | 'lastname' | 'avatar'>;
+  };
+  chat?: {
+    id: string;
+    closedAt?: string | null;
+  } | null;
+}
+
 export interface Message {
   id: string;
   chatId: string;
   senderId: string;
+  sender?: Pick<User, 'id' | 'firstname' | 'lastname' | 'avatar' | 'role'>;
   content: string;
   type: MessageType;
   fileUrl?: string;

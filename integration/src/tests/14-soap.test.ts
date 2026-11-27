@@ -131,7 +131,7 @@ describe('SOAP Notes', () => {
 
     const doctorConsultation = createConsultationApi(doctorTc.axios);
     await doctorConsultation.decide(consultation.id, {
-      doctorDecision: 'ONLINE',
+      doctorDecision: 'CONSULTATION',
       visitMethod: 'CHAT',
     });
 

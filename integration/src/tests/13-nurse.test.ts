@@ -130,7 +130,7 @@ describe('Nurse Module', () => {
     // ── Doctor decides on consultation ──
     const doctorConsultation = createConsultationApi(doctorTc.axios);
     await doctorConsultation.decide(consultation.id, {
-      doctorDecision: 'ONLINE',
+      doctorDecision: 'CONSULTATION',
       visitMethod: 'CHAT',
     });
 
@@ -575,6 +575,23 @@ describe('Nurse Module', () => {
 
       expect(response.status).toBe(400);
       expect((await nurseNurseApi.getAssignment(assignmentId)).permissions).toContain('VIEW_SOAPS');
+    });
+
+    it('should share the same consultation chat room across doctor, patient, and permitted nurse', async () => {
+      const doctorChat = await createChatApi(doctorTc.axios).openConsultationChat(consultationId);
+      const patientChat = await createChatApi(patientTc.axios).openConsultationChat(consultationId);
+      const nurseChat = await createChatApi(nurseTc.axios).openConsultationChat(consultationId);
+
+      expect(patientChat.id).toBe(doctorChat.id);
+      expect(nurseChat.id).toBe(doctorChat.id);
+
+      const nurseConsultations = await createChatApi(nurseTc.axios).getNurseConsultations();
+      expect(nurseConsultations.some((c) => c.id === consultationId)).toBe(true);
+
+      // Revoking CHAT_WITH_PATIENTS blocks the nurse from accessing the shared room
+      await doctorNurseApi.updatePermissions(assignmentId, ['VIEW_PATIENTS', 'VIEW_CONSULTATION_NOTES']);
+      expect((await nurseTc.axios.post(`/chat/consultation/${consultationId}`)).status).toBe(403);
+      expect((await nurseTc.axios.get(`/chat/${doctorChat.id}`)).status).toBe(403);
     });
   });
 });

@@ -13,19 +13,25 @@ const {
   mockCreateDoctorProfile,
   mockGetDoctors,
   mockGetConsultation,
+  mockDecideConsultation,
   mockAdvancePayment,
   mockConfirmPayment,
   mockStartConsultation,
   mockCancelConsultation,
+  mockOpenConsultationChat,
+  mockGetNurseAssignments,
 } = vi.hoisted(() => ({
   mockUpdateDoctorProfile: vi.fn(),
   mockCreateDoctorProfile: vi.fn(),
   mockGetDoctors: vi.fn(),
   mockGetConsultation: vi.fn(),
+  mockDecideConsultation: vi.fn(),
   mockAdvancePayment: vi.fn(),
   mockConfirmPayment: vi.fn(),
   mockStartConsultation: vi.fn(),
   mockCancelConsultation: vi.fn(),
+  mockOpenConsultationChat: vi.fn(),
+  mockGetNurseAssignments: vi.fn(),
 }));
 
 vi.mock('../api', () => ({
@@ -36,12 +42,18 @@ vi.mock('../api', () => ({
   },
   consultationApi: {
     getConsultationById: (...args: unknown[]) => mockGetConsultation(...args),
-    decide: vi.fn(),
+    decide: (...args: unknown[]) => mockDecideConsultation(...args),
     advancePayment: (...args: unknown[]) => mockAdvancePayment(...args),
     confirmPayment: (...args: unknown[]) => mockConfirmPayment(...args),
     start: (...args: unknown[]) => mockStartConsultation(...args),
     complete: vi.fn(),
     cancel: (...args: unknown[]) => mockCancelConsultation(...args),
+  },
+  chatApi: {
+    openConsultationChat: (...args: unknown[]) => mockOpenConsultationChat(...args),
+  },
+  nurseApi: {
+    getAssignments: (...args: unknown[]) => mockGetNurseAssignments(...args),
   },
 }));
 
@@ -161,8 +173,8 @@ describe('Client audit bugfix regressions', () => {
         doctorId: 10,
         soapId: 'soap-12345678',
         status: 'DOCTOR_DECIDED',
-        doctorDecision: 'ONLINE',
-        visitMethod: 'VIDEO_CALL',
+        doctorDecision: 'CONSULTATION',
+        visitMethod: 'CHAT',
         followUpNeeded: false,
         createdAt: '2026-01-01T00:00:00.000Z',
         updatedAt: '2026-01-01T00:00:00.000Z',
@@ -214,6 +226,112 @@ describe('Client audit bugfix regressions', () => {
 
       await waitFor(() => {
         expect(mockStartConsultation).toHaveBeenCalledWith('cons-2');
+      });
+    });
+
+    it('disables Decision submit with "Soon..." when Video Call or Voice Call is chosen and supports DIRECT_DIAGNOSIS', async () => {
+      useAuthStore.setState({
+        user: mockDoctorUser,
+        isAuthenticated: true,
+        initializing: false,
+      });
+      mockGetConsultation.mockResolvedValue({
+        id: 'cons-3',
+        patientId: mockPatientUser.id,
+        doctorId: 10,
+        status: 'PENDING_DOCTOR_REVIEW',
+        followUpNeeded: false,
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      });
+      mockDecideConsultation.mockResolvedValue({ id: 'cons-3', status: 'COMPLETED' });
+
+      render(
+        <Routes>
+          <Route path="/consultation/:id" element={<ConsultationDetailPage />} />
+        </Routes>,
+        { initialEntries: ['/consultation/cons-3'] }
+      );
+
+      fireEvent.click(await screen.findByRole('button', { name: /make decision/i }));
+
+      const decisionSelect = screen.getByLabelText(/decision/i);
+      fireEvent.change(decisionSelect, { target: { value: 'CONSULTATION' } });
+
+      fireEvent.click(screen.getByRole('radio', { name: /video call/i }));
+      const soonBtn = screen.getByRole('button', { name: 'Soon...' });
+      expect(soonBtn).toBeDisabled();
+
+      fireEvent.change(decisionSelect, { target: { value: 'DIRECT_DIAGNOSIS' } });
+      fireEvent.change(screen.getByLabelText(/final diagnosis/i), {
+        target: { value: 'Mild dehydration' },
+      });
+      fireEvent.change(screen.getByLabelText(/suggestions/i), {
+        target: { value: 'Oral fluids and rest' },
+      });
+      fireEvent.click(screen.getByRole('button', { name: /submit diagnosis & complete/i }));
+
+      await waitFor(() => {
+        expect(mockDecideConsultation).toHaveBeenCalledWith(
+          'cons-3',
+          expect.objectContaining({
+            doctorDecision: 'DIRECT_DIAGNOSIS',
+            diagnosis: 'Mild dehydration',
+            suggestions: 'Oral fluids and rest',
+          }),
+        );
+      });
+    });
+
+    it('shows "Chat as Doctor" on CHAT consultation for permitted nurse and opens shared room', async () => {
+      useAuthStore.setState({
+        user: {
+          ...mockPatientUser,
+          id: 'nurse-user-1',
+          role: 'NURSE',
+        },
+        isAuthenticated: true,
+        initializing: false,
+      });
+      mockGetNurseAssignments.mockResolvedValue([
+        {
+          id: 1,
+          doctorId: 10,
+          nurseId: 'nurse-user-1',
+          permissions: ['VIEW_CONSULTATION_NOTES', 'CHAT_WITH_PATIENTS'],
+          isActive: true,
+          status: 'ACCEPTED',
+          createdAt: '2026-01-01T00:00:00.000Z',
+          updatedAt: '2026-01-01T00:00:00.000Z',
+        },
+      ]);
+      mockGetConsultation.mockResolvedValue({
+        id: 'cons-4',
+        patientId: mockPatientUser.id,
+        doctorId: 10,
+        status: 'DOCTOR_DECIDED',
+        doctorDecision: 'CONSULTATION',
+        visitMethod: 'CHAT',
+        followUpNeeded: false,
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      });
+      mockOpenConsultationChat.mockResolvedValue({ id: 'shared-chat-4' });
+
+      render(
+        <Routes>
+          <Route path="/consultation/:id" element={<ConsultationDetailPage />} />
+          <Route path="/chat/:id" element={<div>Shared Chat Room</div>} />
+        </Routes>,
+        { initialEntries: ['/consultation/cons-4'] }
+      );
+
+      const chatButtons = await screen.findAllByRole('button', { name: /chat as doctor/i });
+      fireEvent.click(chatButtons[0]);
+
+      await waitFor(() => {
+        expect(mockOpenConsultationChat).toHaveBeenCalledWith('cons-4');
+        expect(screen.getByText('Shared Chat Room')).toBeInTheDocument();
       });
     });
   });

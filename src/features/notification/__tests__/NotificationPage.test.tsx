@@ -11,11 +11,20 @@ vi.mock('react-router-dom', async () => {
 
 vi.mock('react-hot-toast', () => ({ default: { success: vi.fn(), error: vi.fn() } }));
 
-const { mockList, mockGetUnreadCount, mockMarkAsRead, mockMarkAllAsRead } = vi.hoisted(() => ({
+const {
+  mockList,
+  mockGetUnreadCount,
+  mockMarkAsRead,
+  mockMarkAllAsRead,
+  mockGetConsultationById,
+  mockOpenConsultationChat,
+} = vi.hoisted(() => ({
   mockList: vi.fn(),
   mockGetUnreadCount: vi.fn(),
   mockMarkAsRead: vi.fn(),
   mockMarkAllAsRead: vi.fn(),
+  mockGetConsultationById: vi.fn(),
+  mockOpenConsultationChat: vi.fn(),
 }));
 
 vi.mock('../../../api', () => ({
@@ -26,6 +35,12 @@ vi.mock('../../../api', () => ({
     markAllAsRead: (...args: unknown[]) => mockMarkAllAsRead(...args),
     subscribePush: vi.fn(),
     unsubscribePush: vi.fn(),
+  },
+  consultationApi: {
+    getConsultationById: (...args: unknown[]) => mockGetConsultationById(...args),
+  },
+  chatApi: {
+    openConsultationChat: (...args: unknown[]) => mockOpenConsultationChat(...args),
   },
 }));
 
@@ -168,15 +183,55 @@ describe('NotificationPage', () => {
       expect(mockNavigate).toHaveBeenCalledWith('/consultation/c-123');
     });
 
-    it('should navigate to /consultation/:id for DOCTOR_DECISION', async () => {
+    it('should navigate to /consultation/:id for match-accepted DOCTOR_DECISION without decision metadata', async () => {
       await renderAndClick(
         makeNotification({
           type: 'DOCTOR_DECISION',
-          title: 'Decision Made',
+          title: 'Doctor Match Accepted',
           data: { consultationId: 'c-456' },
         }),
       );
       expect(mockNavigate).toHaveBeenCalledWith('/consultation/c-456');
+    });
+
+    it('should open decision modal and launch shared chat on Open Chat for CHAT DOCTOR_DECISION', async () => {
+      mockGetConsultationById.mockResolvedValue({
+        id: 'c-chat-1',
+        patientId: 'pat-1',
+        doctorId: 10,
+        status: 'DOCTOR_DECIDED',
+        doctorDecision: 'CONSULTATION',
+        visitMethod: 'CHAT',
+        followUpNeeded: false,
+        createdAt: new Date(NOW).toISOString(),
+        updatedAt: new Date(NOW).toISOString(),
+      });
+      mockOpenConsultationChat.mockResolvedValue({ id: 'shared-chat-99' });
+
+      await renderAndClick(
+        makeNotification({
+          type: 'DOCTOR_DECISION',
+          title: 'Doctor Consultation Decision',
+          body: 'Dr. Jane Doe decided on Consultation via Chat.',
+          data: {
+            consultationId: 'c-chat-1',
+            accepted: true,
+            isConsultationDecision: true,
+            doctorName: 'Jane Doe',
+            doctorDecision: 'CONSULTATION',
+            visitMethod: 'CHAT',
+          },
+        }),
+      );
+
+      expect(mockNavigate).not.toHaveBeenCalled();
+      const openChatBtn = await screen.findByRole('button', { name: /open chat/i });
+      fireEvent.click(openChatBtn);
+
+      await waitFor(() => {
+        expect(mockOpenConsultationChat).toHaveBeenCalledWith('c-chat-1');
+        expect(mockNavigate).toHaveBeenCalledWith('/chat/shared-chat-99');
+      });
     });
 
     it('should not navigate when CONSULTATION_REQUEST has no consultationId', async () => {

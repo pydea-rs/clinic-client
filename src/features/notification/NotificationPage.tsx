@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { notificationApi } from '../../api';
+import { consultationApi, notificationApi } from '../../api';
 import { useNavigate } from 'react-router-dom';
 import {
   Loader2, Bell, BellRing, CheckCheck, MessageSquare, Calendar, FileText,
-  Star, Shield, UserCheck, CreditCard, AlertCircle, Info, UserPlus, Users,
+  Star, Shield, UserCheck, CreditCard, AlertCircle, Info, UserPlus, Users, X, ExternalLink,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Notification, NotificationType } from '../../lib/types/api';
+import { formatStatus, formatVisitMethod, formatVisitType } from '../../lib/format';
+import { getMessageDirection } from '../../lib/text-direction';
+import { useOpenConsultationChat } from '../consultation/useConsultationChat';
 
 const typeConfig: Record<string, { icon: React.ElementType; color: string }> = {
   CONSULTATION_REQUEST: { icon: UserCheck, color: 'text-blue-600 bg-blue-100' },
@@ -29,6 +32,16 @@ const isDoctorRejection = (notification: Notification) =>
   notification.type === 'DOCTOR_VERIFIED' && notification.data?.approved === false;
 
 const rejectionConfig = { icon: AlertCircle, color: 'text-red-600 bg-red-100' };
+
+// Match-acceptance notifications only carry `{ consultationId }`; actual doctor decisions carry decision metadata.
+const isConsultationDecisionNotification = (notification: Notification): boolean => {
+  if (notification.type !== 'DOCTOR_DECISION') return false;
+  const data = notification.data as Record<string, unknown> | undefined;
+  return Boolean(
+    data?.consultationId &&
+    (data?.isConsultationDecision || data?.doctorDecision || data?.accepted !== undefined),
+  );
+};
 
 function getNotificationLink(notification: Notification): string | null {
   const data = notification.data as Record<string, string | number> | undefined;
@@ -126,8 +139,18 @@ function getTimeAgo(dateStr: string): string {
 export const NotificationPage: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { openingId, openChat } = useOpenConsultationChat();
   const [page, setPage] = useState(1);
+  const [selectedDecisionNotif, setSelectedDecisionNotif] = useState<Notification | null>(null);
   const limit = 20;
+
+  const modalConsultationId = selectedDecisionNotif?.data?.consultationId as string | undefined;
+
+  const { data: modalConsultation, isLoading: modalLoading } = useQuery({
+    queryKey: ['consultation', modalConsultationId],
+    queryFn: () => consultationApi.getConsultationById(modalConsultationId!),
+    enabled: Boolean(modalConsultationId),
+  });
 
   const { data, isLoading } = useQuery({
     queryKey: ['notifications', page],
@@ -164,9 +187,37 @@ export const NotificationPage: React.FC = () => {
     if (!notification.isRead) {
       markReadMutation.mutate(notification.id);
     }
+    if (isConsultationDecisionNotification(notification)) {
+      setSelectedDecisionNotif(notification);
+      return;
+    }
     const link = getNotificationLink(notification);
     if (link) navigate(link);
   };
+
+  const notifData = (selectedDecisionNotif?.data || {}) as {
+    consultationId?: string;
+    doctorName?: string;
+    doctorDecision?: string;
+    visitMethod?: string | null;
+    diagnosis?: string | null;
+    suggestions?: string | null;
+    notes?: string | null;
+  };
+  const modalDecision = modalConsultation?.doctorDecision || notifData.doctorDecision;
+  const modalMethod = modalConsultation?.visitMethod ?? notifData.visitMethod;
+  const modalDiagnosis = modalConsultation?.diagnosis ?? notifData.diagnosis;
+  const modalSuggestions = modalConsultation?.suggestions ?? notifData.suggestions;
+  const modalNotes = modalConsultation?.notes ?? notifData.notes;
+  const modalDoctorName = modalConsultation?.doctor?.user
+    ? `Dr. ${modalConsultation.doctor.user.firstname} ${modalConsultation.doctor.user.lastname}`
+    : notifData.doctorName
+      ? `Dr. ${notifData.doctorName}`
+      : 'Your Doctor';
+  const modalCanOpenChat =
+    Boolean(modalConsultationId) &&
+    modalMethod === 'CHAT' &&
+    modalConsultation?.status !== 'CANCELLED';
 
   const notifications = data?.data || [];
   const total = data?.total || 0;
@@ -245,6 +296,151 @@ export const NotificationPage: React.FC = () => {
             >
               Next
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Doctor Decision Modal */}
+      {selectedDecisionNotif && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="decision-modal-title"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in"
+          onClick={() => setSelectedDecisionNotif(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-xl border border-gray-200/60 max-w-lg w-full p-6 space-y-4 animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center flex-shrink-0">
+                  <UserCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 id="decision-modal-title" className="text-lg font-bold text-gray-900">
+                    {selectedDecisionNotif.title}
+                  </h2>
+                  <p className="text-xs text-gray-500">{modalDoctorName}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedDecisionNotif(null)}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                aria-label="Close modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-sm text-gray-600">{selectedDecisionNotif.body}</p>
+
+            {modalLoading ? (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="w-5 h-5 animate-spin text-brand-600" />
+              </div>
+            ) : (
+              <div className="space-y-3 bg-gray-50/80 border border-gray-100 rounded-xl p-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  {modalDecision && (
+                    <span className="badge badge-blue">
+                      Decision: {formatVisitType(modalDecision)}
+                    </span>
+                  )}
+                  {modalMethod && (
+                    <span className="badge badge-purple">
+                      Method: {formatVisitMethod(modalMethod)}
+                    </span>
+                  )}
+                  {modalConsultation?.status && (
+                    <span className="badge badge-gray">
+                      {formatStatus(modalConsultation.status)}
+                    </span>
+                  )}
+                </div>
+
+                {modalDiagnosis && (
+                  <div className="pt-1">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-indigo-700 block mb-1">
+                      Final Diagnosis
+                    </span>
+                    <p
+                      dir={getMessageDirection(modalDiagnosis)}
+                      className="text-sm text-gray-800 whitespace-pre-wrap"
+                    >
+                      {modalDiagnosis}
+                    </p>
+                  </div>
+                )}
+
+                {modalSuggestions && (
+                  <div className="pt-1">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-teal-700 block mb-1">
+                      Suggestions
+                    </span>
+                    <p
+                      dir={getMessageDirection(modalSuggestions)}
+                      className="text-sm text-gray-800 whitespace-pre-wrap"
+                    >
+                      {modalSuggestions}
+                    </p>
+                  </div>
+                )}
+
+                {modalNotes && (
+                  <div className="pt-1">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 block mb-1">
+                      Doctor Notes
+                    </span>
+                    <p
+                      dir={getMessageDirection(modalNotes)}
+                      className="text-sm text-gray-700 whitespace-pre-wrap"
+                    >
+                      {modalNotes}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="flex flex-wrap items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setSelectedDecisionNotif(null)}
+                className="btn-secondary px-4 py-2 text-sm"
+              >
+                Close
+              </button>
+              {modalConsultationId && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedDecisionNotif(null);
+                    navigate(`/consultation/${modalConsultationId}`);
+                  }}
+                  className="btn-primary px-4 py-2 text-sm inline-flex items-center gap-1.5"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  View Consultation
+                </button>
+              )}
+              {modalCanOpenChat && modalConsultationId && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await openChat(modalConsultationId);
+                    setSelectedDecisionNotif(null);
+                  }}
+                  disabled={openingId === modalConsultationId}
+                  className="btn-success px-4 py-2 text-sm inline-flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  {openingId === modalConsultationId ? 'Opening...' : 'Open Chat'}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}

@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { chatApi } from '../../api';
 import { socketService } from '../../lib/socket/socket.service';
 import { useAuthStore } from '../../lib/stores/auth.store';
 import { Chat, ChatParticipant, Message } from '../../lib/types/api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../lib/api/error.utils';
+import { getMessageDirection } from '../../lib/text-direction';
 import { UserAvatar } from '../../components/UserAvatar';
 
 interface TypingUser {
@@ -268,6 +269,13 @@ export const ChatRoomPage: React.FC = () => {
       id: tempId,
       chatId: id,
       senderId: user.id,
+      sender: {
+        id: user.id,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        avatar: user.avatar,
+        role: user.role,
+      },
       content: trimmed,
       type: 'TEXT',
       createdAt: new Date().toISOString(),
@@ -337,7 +345,37 @@ export const ChatRoomPage: React.FC = () => {
   };
 
   const getOtherParticipant = () => {
-    if (!chatInfo?.participants || !user) return null;
+    if (!user) return null;
+    if (chatInfo?.consultation) {
+      if (user.role === 'PATIENT' && chatInfo.consultation.doctor?.user) {
+        const docParticipant = chatInfo.participants?.find(
+          (p) => p.id === chatInfo.consultation?.doctor?.userId,
+        );
+        return (
+          docParticipant || {
+            ...chatInfo.consultation.doctor.user,
+            role: 'DOCTOR' as const,
+            joinedAt: chatInfo.createdAt,
+          }
+        );
+      }
+      if (
+        (user.role === 'DOCTOR' || user.role === 'NURSE') &&
+        chatInfo.consultation.patient
+      ) {
+        const patientParticipant = chatInfo.participants?.find(
+          (p) => p.id === chatInfo.consultation?.patientId,
+        );
+        return (
+          patientParticipant || {
+            ...chatInfo.consultation.patient,
+            role: 'PATIENT' as const,
+            joinedAt: chatInfo.createdAt,
+          }
+        );
+      }
+    }
+    if (!chatInfo?.participants) return null;
     return chatInfo.participants.find((p) => p.id !== user.id);
   };
 
@@ -434,11 +472,26 @@ export const ChatRoomPage: React.FC = () => {
             />
           )}
           <div>
-            <h1 className="text-xl font-bold text-gray-900">
-              {chatInfo?.topic || (otherParticipant
-                ? `${otherParticipant.firstname} ${otherParticipant.lastname}`
-                : 'Chat')}
-            </h1>
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-xl font-bold text-gray-900">
+                {chatInfo?.topic || (otherParticipant
+                  ? `${otherParticipant.firstname} ${otherParticipant.lastname}`
+                  : 'Chat')}
+              </h1>
+              {user?.role === 'NURSE' && chatInfo?.consultation?.doctor?.user && (
+                <span className="badge badge-purple text-[11px]">
+                  Dr. {chatInfo.consultation.doctor.user.lastname}'s team
+                </span>
+              )}
+              {chatInfo?.consultationId && (
+                <Link
+                  to={`/consultation/${chatInfo.consultationId}`}
+                  className="text-xs font-medium text-brand-600 hover:text-brand-700 underline"
+                >
+                  View Consultation
+                </Link>
+              )}
+            </div>
             {isOnline && (
               <p className="text-sm text-green-600 flex items-center gap-1.5 font-medium">
                 <span className="status-dot status-dot-online"></span>
@@ -486,10 +539,38 @@ export const ChatRoomPage: React.FC = () => {
             const isOwn = msg.senderId === user?.id;
             const isEditing = editingMessageId === msg.id;
             const isDeleted = !!msg.deletedAt;
+            const senderInfo =
+              msg.sender || chatInfo?.participants?.find((p) => p.id === msg.senderId);
+            const consultationDoctorLastname = chatInfo?.consultation?.doctor?.user?.lastname;
+            const isSharedConsultationChat =
+              Boolean(chatInfo?.consultationId) || (chatInfo?.participants?.length ?? 0) > 2;
+            const showSenderHeader =
+              !isOwn && (senderInfo?.role === 'NURSE' || isSharedConsultationChat);
+            const direction = getMessageDirection(msg.content);
 
             return (
               <div className={`flex mb-4 animate-msg-in ${isOwn ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-md ${isOwn ? 'items-end' : 'items-start'} flex flex-col`}>
+                  {showSenderHeader && senderInfo && (
+                    <div className="flex items-center gap-1.5 mb-1 px-1">
+                      <span className="text-xs font-semibold text-gray-600">
+                        {senderInfo.role === 'DOCTOR' ? 'Dr. ' : ''}
+                        {senderInfo.firstname} {senderInfo.lastname}
+                      </span>
+                      {senderInfo.role === 'NURSE' && (
+                        <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-purple-50 text-purple-700 border border-purple-100">
+                          {consultationDoctorLastname
+                            ? `Nurse · Dr. ${consultationDoctorLastname}'s team`
+                            : 'Nurse'}
+                        </span>
+                      )}
+                      {senderInfo.role === 'DOCTOR' && (
+                        <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+                          Doctor
+                        </span>
+                      )}
+                    </div>
+                  )}
                   {isEditing ? (
                     <div className="w-full">
                       <input
@@ -525,11 +606,14 @@ export const ChatRoomPage: React.FC = () => {
                     </div>
                   ) : (
                     <>
-                      <div className={`px-4 py-2.5 ${
-                        isOwn
-                          ? 'bg-gradient-to-r from-brand-600 to-brand-500 text-white rounded-2xl rounded-br-md shadow-sm'
-                          : 'bg-white text-gray-800 border border-gray-100 shadow-soft rounded-2xl rounded-bl-md'
-                      } ${isDeleted ? 'opacity-50 italic' : ''} transition-all duration-200 ease-spring`}>
+                      <div
+                        dir={direction}
+                        className={`px-4 py-2.5 ${
+                          isOwn
+                            ? 'bg-gradient-to-r from-brand-600 to-brand-500 text-white rounded-2xl rounded-br-md shadow-sm'
+                            : 'bg-white text-gray-800 border border-gray-100 shadow-soft rounded-2xl rounded-bl-md'
+                        } ${isDeleted ? 'opacity-50 italic' : ''} transition-all duration-200 ease-spring`}
+                      >
                         <p>{msg.content}</p>
                         {msg.editedAt && !isDeleted && (
                           <p className="text-xs opacity-70 mt-1">(edited)</p>

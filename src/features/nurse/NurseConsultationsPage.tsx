@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { ClipboardList, Loader2, Eye, Filter } from 'lucide-react';
+import { ClipboardList, Loader2, Eye, Filter, MessageSquare } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { consultationApi } from '../../api';
 import { useNurseAssignments } from './useNurseAssignments';
-import { formatStatus, formatEnum } from '../../lib/format';
+import { useAuthStore } from '../../lib/stores/auth.store';
+import { formatStatus, formatVisitMethod, formatVisitType } from '../../lib/format';
+import { getConsultationChatAction, useOpenConsultationChat } from '../consultation/useConsultationChat';
 import { Link } from 'react-router-dom';
 import { Consultation } from '../../lib/types/api';
 
@@ -20,7 +22,9 @@ const STATUS_OPTIONS = [
 ];
 
 export const NurseConsultationsPage: React.FC = () => {
+  const { user } = useAuthStore();
   const { assignments, isLoading: assignLoading } = useNurseAssignments();
+  const { openingId, openChat } = useOpenConsultationChat();
   const hasPermission = assignments.some((a) => a.permissions.includes('VIEW_CONSULTATION_NOTES'));
   const [statusFilter, setStatusFilter] = useState('');
 
@@ -94,48 +98,69 @@ export const NurseConsultationsPage: React.FC = () => {
               <tr>
                 <th className="text-left px-4 py-3 font-medium text-gray-500">Patient</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-500">Doctor</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-500">Mode</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-500">Decision</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-500">Method</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-500">Date</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-500">Status</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-500"></th>
+                <th className="text-left px-4 py-3 font-medium text-gray-500">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y">
-              {consultations.map((c: Consultation) => (
-                <tr key={c.id} className="hover:bg-gray-50/80 transition-colors">
-                  <td className="px-4 py-3 font-medium text-gray-900">
-                    {c.patient?.firstname || 'Patient'} {c.patient?.lastname || ''}
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">
-                    {c.doctor?.user
-                      ? `Dr. ${c.doctor.user.firstname} ${c.doctor.user.lastname}`
-                      : '—'}
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">
-                    {c.doctorDecision ? formatEnum(c.doctorDecision) : 'N/A'}
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">
-                    {new Date(c.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`badge text-xs ${
-                      c.status === 'COMPLETED' ? 'badge-green' :
-                      c.status === 'IN_PROGRESS' ? 'badge-blue' :
-                      c.status === 'CANCELLED' ? 'badge-red' : 'badge-yellow'
-                    }`}>
-                      {formatStatus(c.status)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <Link
-                      to={`/consultation/${c.id}`}
-                      className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors inline-flex"
-                    >
-                      <Eye className="w-4 h-4 text-gray-400" />
-                    </Link>
-                  </td>
-                </tr>
-              ))}
+              {consultations.map((c: Consultation) => {
+                const chatAction = getConsultationChatAction(c, user, assignments);
+                return (
+                  <tr key={c.id} className="hover:bg-gray-50/80 transition-colors">
+                    <td className="px-4 py-3 font-medium text-gray-900">
+                      {c.patient?.firstname || 'Patient'} {c.patient?.lastname || ''}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {c.doctor?.user
+                        ? `Dr. ${c.doctor.user.firstname} ${c.doctor.user.lastname}`
+                        : '—'}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {c.doctorDecision ? formatVisitType(c.doctorDecision) : 'N/A'}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {c.visitMethod ? formatVisitMethod(c.visitMethod) : '—'}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {new Date(c.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`badge text-xs ${
+                        c.status === 'COMPLETED' ? 'badge-green' :
+                        c.status === 'IN_PROGRESS' ? 'badge-blue' :
+                        c.status === 'CANCELLED' ? 'badge-red' : 'badge-yellow'
+                      }`}>
+                        {formatStatus(c.status)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        {chatAction.canOpen && (
+                          <button
+                            type="button"
+                            onClick={() => openChat(c.id)}
+                            disabled={openingId === c.id}
+                            className="btn-success px-2.5 py-1 text-xs inline-flex items-center gap-1 disabled:opacity-50"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5" />
+                            {openingId === c.id ? 'Opening...' : chatAction.label}
+                          </button>
+                        )}
+                        <Link
+                          to={`/consultation/${c.id}`}
+                          className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors inline-flex"
+                          title="View Consultation"
+                        >
+                          <Eye className="w-4 h-4 text-gray-400" />
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

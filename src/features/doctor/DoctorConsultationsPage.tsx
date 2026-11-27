@@ -3,8 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { consultationApi } from '../../api';
 import { ConsultationStatus } from '../../lib/types/api';
-import { formatStatus, formatVisitMethod, formatEnum } from '../../lib/format';
-import { ClipboardList, ChevronRight, FileText, Calendar, User } from 'lucide-react';
+import { formatStatus, formatVisitMethod, formatVisitType } from '../../lib/format';
+import { useAuthStore } from '../../lib/stores/auth.store';
+import { getConsultationChatAction, useOpenConsultationChat } from '../consultation/useConsultationChat';
+import { ClipboardList, ChevronRight, FileText, Calendar, User, MessageSquare } from 'lucide-react';
 
 type StatusTab = 'ALL' | ConsultationStatus;
 
@@ -31,6 +33,8 @@ const statusBadgeClass = (status: string): string => {
 };
 
 export const DoctorConsultationsPage: React.FC = () => {
+  const { user } = useAuthStore();
+  const { openingId, openChat } = useOpenConsultationChat();
   const [page, setPage] = useState(1);
   const [activeTab, setActiveTab] = useState<StatusTab>('ALL');
   const limit = 10;
@@ -125,6 +129,7 @@ export const DoctorConsultationsPage: React.FC = () => {
             const patientName = consultation.patient
               ? `${consultation.patient.firstname} ${consultation.patient.lastname}`
               : 'Patient';
+            const chatAction = getConsultationChatAction(consultation, user);
 
             return (
               <div
@@ -153,7 +158,7 @@ export const DoctorConsultationsPage: React.FC = () => {
                       </span>
                       {consultation.doctorDecision && (
                         <span className="badge badge-blue">
-                          {formatEnum(consultation.doctorDecision)}
+                          {formatVisitType(consultation.doctorDecision)}
                         </span>
                       )}
                       {consultation.visitMethod && (
@@ -177,6 +182,17 @@ export const DoctorConsultationsPage: React.FC = () => {
 
                   {/* Actions */}
                   <div className="flex items-center gap-2 flex-shrink-0">
+                    {chatAction.canOpen && (
+                      <button
+                        type="button"
+                        onClick={() => openChat(consultation.id)}
+                        disabled={openingId === consultation.id}
+                        className="btn-success px-3 py-1.5 text-sm flex items-center gap-1.5 disabled:opacity-50"
+                      >
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        {openingId === consultation.id ? 'Opening...' : chatAction.label}
+                      </button>
+                    )}
                     {consultation.soapId && (
                       <Link
                         to={`/soap/${consultation.soapId}`}

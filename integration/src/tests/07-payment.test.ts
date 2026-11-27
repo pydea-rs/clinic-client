@@ -114,7 +114,7 @@ describe('Payment', () => {
     const c1 = await patientConsultation.create({ doctorId: doctorProfileId });
     consultationId = c1.id;
     await doctorConsultation.decide(consultationId, {
-      doctorDecision: 'ONLINE',
+      doctorDecision: 'CONSULTATION',
       visitMethod: 'CHAT',
     });
     await patientConsultation.advancePayment(consultationId);
@@ -123,7 +123,7 @@ describe('Payment', () => {
     const c2 = await patientConsultation.create({ doctorId: doctorProfileId });
     consultationId2 = c2.id;
     await doctorConsultation.decide(consultationId2, {
-      doctorDecision: 'ONLINE',
+      doctorDecision: 'CONSULTATION',
       visitMethod: 'CHAT',
     });
     await patientConsultation.advancePayment(consultationId2);
@@ -201,7 +201,7 @@ describe('Payment', () => {
     it('should notify the doctor and the patient', async () => {
       const { id } = await patientConsultation.create({ doctorId: doctorProfileId });
       await doctorConsultation.decide(id, {
-        doctorDecision: 'ONLINE',
+        doctorDecision: 'CONSULTATION',
         visitMethod: 'CHAT',
       });
       await patientConsultation.advancePayment(id);
@@ -219,7 +219,7 @@ describe('Payment', () => {
 
     it('should not notify again when the payment is confirmed after its consultation was', async () => {
       const { id } = await patientConsultation.create({ doctorId: doctorProfileId });
-      await doctorConsultation.decide(id, { doctorDecision: 'ONLINE', visitMethod: 'CHAT' });
+      await doctorConsultation.decide(id, { doctorDecision: 'CONSULTATION', visitMethod: 'CHAT' });
       await patientConsultation.advancePayment(id);
       const payment = await patientPayment.create({ consultationId: id, amount: 40 + Math.floor(Math.random() * 60) });
 
@@ -238,7 +238,7 @@ describe('Payment', () => {
   describe('Confirm Payment by an admin', () => {
     it("should confirm a patient's payment and notify both sides once", async () => {
       const { id } = await patientConsultation.create({ doctorId: doctorProfileId });
-      await doctorConsultation.decide(id, { doctorDecision: 'ONLINE', visitMethod: 'CHAT' });
+      await doctorConsultation.decide(id, { doctorDecision: 'CONSULTATION', visitMethod: 'CHAT' });
       await patientConsultation.advancePayment(id);
       const payment = await patientPayment.create({ consultationId: id, amount: 40 + Math.floor(Math.random() * 60) });
 
@@ -256,7 +256,7 @@ describe('Payment', () => {
 
     it("should not let the doctor confirm the patient's payment (403)", async () => {
       const { id } = await patientConsultation.create({ doctorId: doctorProfileId });
-      await doctorConsultation.decide(id, { doctorDecision: 'ONLINE', visitMethod: 'CHAT' });
+      await doctorConsultation.decide(id, { doctorDecision: 'CONSULTATION', visitMethod: 'CHAT' });
       await patientConsultation.advancePayment(id);
       const payment = await patientPayment.create({ consultationId: id, amount: 50 });
 

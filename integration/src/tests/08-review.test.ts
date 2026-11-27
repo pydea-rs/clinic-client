@@ -89,7 +89,7 @@ describe('Reviews', () => {
     // Complete a consultation so the patient can leave a review
     const c = await patientConsultation.create({ doctorId: doctorProfileId });
     await doctorConsultation.decide(c.id, {
-      doctorDecision: 'ONLINE',
+      doctorDecision: 'CONSULTATION',
       visitMethod: 'CHAT',
     });
     await patientConsultation.advancePayment(c.id);

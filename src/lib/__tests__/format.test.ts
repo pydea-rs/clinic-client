@@ -4,6 +4,8 @@ import {
   formatSpecialty,
   formatTriageLevel,
   formatVisitMethod,
+  formatVisitType,
+  isVisitMethodSoon,
   formatDocType,
   formatNotificationType,
   formatEnum,
@@ -73,6 +75,23 @@ describe('format utilities', () => {
 
     it('should fall back to title case for unknown methods', () => {
       expect(formatVisitMethod('EMAIL')).toBe('Email');
+    });
+  });
+
+  describe('formatVisitType & isVisitMethodSoon', () => {
+    it('should return readable labels for visit types including DIRECT_DIAGNOSIS', () => {
+      expect(formatVisitType('CONSULTATION')).toBe('Consultation');
+      expect(formatVisitType('EXAMINATION')).toBe('Clinical Examination');
+      expect(formatVisitType('DIRECT_DIAGNOSIS')).toBe('Direct Diagnosis');
+      expect(formatVisitType('LABORATORY')).toBe('Laboratory');
+    });
+
+    it('should detect unimplemented call visit methods as soon', () => {
+      expect(isVisitMethodSoon('VOICE_CALL')).toBe(true);
+      expect(isVisitMethodSoon('VIDEO_CALL')).toBe(true);
+      expect(isVisitMethodSoon('CHAT')).toBe(false);
+      expect(isVisitMethodSoon('ON_SITE')).toBe(false);
+      expect(isVisitMethodSoon(undefined)).toBe(false);
     });
   });
 

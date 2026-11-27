@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { patientApi } from '../../api';
 import { Link } from 'react-router-dom';
-import { Loader2, ChevronRight, Plus, Stethoscope } from 'lucide-react';
-import { formatStatus } from '../../lib/format';
+import { Loader2, ChevronRight, Plus, Stethoscope, MessageSquare } from 'lucide-react';
+import { formatStatus, formatVisitMethod, formatVisitType } from '../../lib/format';
+import { useAuthStore } from '../../lib/stores/auth.store';
+import { getConsultationChatAction, useOpenConsultationChat } from '../consultation/useConsultationChat';
 
 const statusProgress: Record<string, number> = {
   CREATED: 10,
@@ -19,6 +21,8 @@ const statusProgress: Record<string, number> = {
 };
 
 export const PatientConsultationsListPage: React.FC = () => {
+  const { user } = useAuthStore();
+  const { openingId, openChat } = useOpenConsultationChat();
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>('');
   const limit = 10;
@@ -106,45 +110,77 @@ export const PatientConsultationsListPage: React.FC = () => {
             <p className="text-gray-500 text-lg">No consultations found</p>
           </div>
         ) : (
-          consultations.map((consultation, index) => (
-            <React.Fragment key={consultation.id}>
-              {index > 0 && <div className="divider-gradient my-1" />}
-              <Link
-                to={`/consultation/${consultation.id}`}
-                className="card-interactive hover-lift block p-6 rounded-xl"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-4">
-                    <span className="text-sm font-mono text-gray-500">
-                      {consultation.id.substring(0, 8)}...
-                    </span>
-                    <span className="text-sm font-medium text-gray-900">
-                      {consultation.doctor?.user
-                        ? `Dr. ${consultation.doctor.user.firstname} ${consultation.doctor.user.lastname}`
-                        : `Doctor #${consultation.doctorId}`}
-                    </span>
+          consultations.map((consultation, index) => {
+            const chatAction = getConsultationChatAction(consultation, user);
+            return (
+              <React.Fragment key={consultation.id}>
+                {index > 0 && <div className="divider-gradient my-1" />}
+                <div className="card-interactive hover-lift p-6 rounded-xl">
+                  <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+                    <Link
+                      to={`/consultation/${consultation.id}`}
+                      className="flex items-center gap-4 min-w-0 hover:text-brand-600 transition-colors"
+                    >
+                      <span className="text-sm font-mono text-gray-500">
+                        {consultation.id.substring(0, 8)}...
+                      </span>
+                      <span className="text-sm font-medium text-gray-900">
+                        {consultation.doctor?.user
+                          ? `Dr. ${consultation.doctor.user.firstname} ${consultation.doctor.user.lastname}`
+                          : `Doctor #${consultation.doctorId}`}
+                      </span>
+                    </Link>
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      {consultation.doctorDecision && (
+                        <span className="badge badge-blue">
+                          {formatVisitType(consultation.doctorDecision)}
+                        </span>
+                      )}
+                      {consultation.visitMethod && (
+                        <span className="badge badge-purple">
+                          {formatVisitMethod(consultation.visitMethod)}
+                        </span>
+                      )}
+                      <span className={`badge ${getStatusBadgeColor(consultation.status)} text-sm font-semibold px-3 py-1`}>
+                        {formatStatus(consultation.status)}
+                      </span>
+                      <span className="text-sm text-gray-500">
+                        {new Date(consultation.createdAt).toLocaleDateString()}
+                      </span>
+                      {chatAction.canOpen && (
+                        <button
+                          type="button"
+                          onClick={() => openChat(consultation.id)}
+                          disabled={openingId === consultation.id}
+                          className="btn-success px-3 py-1.5 text-xs flex items-center gap-1.5 disabled:opacity-50"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          {openingId === consultation.id ? 'Opening...' : chatAction.label}
+                        </button>
+                      )}
+                      <Link
+                        to={`/consultation/${consultation.id}`}
+                        className="text-gray-400 hover:text-brand-600 transition-colors"
+                        aria-label="View consultation"
+                      >
+                        <ChevronRight className="w-5 h-5" />
+                      </Link>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className={`badge ${getStatusBadgeColor(consultation.status)} text-sm font-semibold px-3 py-1`}>
-                      {formatStatus(consultation.status)}
-                    </span>
-                    <span className="text-sm text-gray-500">
-                      {new Date(consultation.createdAt).toLocaleDateString()}
-                    </span>
-                    <ChevronRight className="w-5 h-5 text-gray-400" />
-                  </div>
-                </div>
 
-                {/* Progress Bar */}
-                <div className="progress-bar">
-                  <div
-                    className="progress-bar-fill"
-                    style={{ width: `${statusProgress[consultation.status] ?? 0}%` }}
-                  />
+                  {/* Progress Bar */}
+                  <Link to={`/consultation/${consultation.id}`} className="block">
+                    <div className="progress-bar">
+                      <div
+                        className="progress-bar-fill"
+                        style={{ width: `${statusProgress[consultation.status] ?? 0}%` }}
+                      />
+                    </div>
+                  </Link>
                 </div>
-              </Link>
-            </React.Fragment>
-          ))
+              </React.Fragment>
+            );
+          })
         )}
       </div>
 

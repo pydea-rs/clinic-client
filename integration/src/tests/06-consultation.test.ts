@@ -149,12 +149,12 @@ describe('Consultation Flow', () => {
 
     it('should allow doctor to decide (accept) → DOCTOR_DECIDED', async () => {
       const decided = await doctorConsultation.decide(mainConsultationId, {
-        doctorDecision: 'ONLINE',
+        doctorDecision: 'CONSULTATION',
         visitMethod: 'CHAT',
       });
 
       expect(decided.status).toBe('DOCTOR_DECIDED');
-      expect(decided.doctorDecision).toBe('ONLINE');
+      expect(decided.doctorDecision).toBe('CONSULTATION');
       expect(decided.visitMethod).toBe('CHAT');
     });
 
@@ -220,12 +220,32 @@ describe('Consultation Flow', () => {
       cancelAfterDecisionId = consultation.id;
 
       await doctorConsultation.decide(cancelAfterDecisionId, {
-        doctorDecision: 'ONLINE',
-        visitMethod: 'VIDEO_CALL',
+        doctorDecision: 'EXAMINATION',
+        visitMethod: 'ON_SITE',
       });
 
       const cancelled = await patientConsultation.cancel(cancelAfterDecisionId);
       expect(cancelled.status).toBe('CANCELLED');
+    });
+  });
+
+  describe('Direct Diagnosis Decision', () => {
+    it('should complete consultation immediately with diagnosis and suggestions', async () => {
+      const consultation = await patientConsultation.create({ doctorId: doctorProfileId });
+
+      const completed = await doctorConsultation.decide(consultation.id, {
+        doctorDecision: 'DIRECT_DIAGNOSIS',
+        diagnosis: 'Mild seasonal allergy',
+        suggestions: 'Rest and antihistamines as needed',
+        followUpNeeded: false,
+      });
+
+      expect(completed.status).toBe('COMPLETED');
+      expect(completed.doctorDecision).toBe('DIRECT_DIAGNOSIS');
+      expect(completed.visitMethod).toBeNull();
+      expect(completed.diagnosis).toBe('Mild seasonal allergy');
+      expect(completed.suggestions).toBe('Rest and antihistamines as needed');
+      expect(completed.completedAt).toBeTruthy();
     });
   });
 
@@ -271,16 +291,28 @@ describe('Consultation Flow', () => {
 
       const response = await extraDoctorTc.axios.patch(
         `/consultation/${consultation.id}/decide`,
-        { doctorDecision: 'ONLINE', visitMethod: 'CHAT' },
+        { doctorDecision: 'CONSULTATION', visitMethod: 'CHAT' },
       );
       expect(response.status).toBe(403);
+    });
+
+    it('should reject unimplemented VOICE_CALL / VIDEO_CALL visit methods (400)', async () => {
+      const consultation = await patientConsultation.create({ doctorId: doctorProfileId });
+
+      for (const visitMethod of ['VOICE_CALL', 'VIDEO_CALL'] as const) {
+        const response = await doctorTc.axios.patch(
+          `/consultation/${consultation.id}/decide`,
+          { doctorDecision: 'CONSULTATION', visitMethod },
+        );
+        expect(response.status).toBe(400);
+      }
     });
 
     it('should reject patient trying to start consultation', async () => {
       // Create and advance to PAYMENT_CONFIRMED
       const consultation = await patientConsultation.create({ doctorId: doctorProfileId });
       await doctorConsultation.decide(consultation.id, {
-        doctorDecision: 'ONLINE',
+        doctorDecision: 'CONSULTATION',
         visitMethod: 'CHAT',
       });
       await patientConsultation.advancePayment(consultation.id);
