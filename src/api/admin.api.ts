@@ -4,7 +4,7 @@ import type { User, PlatformStats, PendingDoctor, DoctorDocument } from '../lib/
 export function createAdminApi(client: AxiosInstance) {
   return {
     users: {
-      list: async (params?: { skip?: number; take?: number; role?: string; search?: string; isActive?: boolean; isAdmin?: boolean; isBanned?: boolean }): Promise<{ data: User[]; total: number }> => {
+      list: async (params?: { skip?: number; take?: number; role?: string; search?: string; isActive?: boolean; isAdmin?: boolean; isBanned?: boolean }): Promise<{ data: User[]; total: number; skip?: number; take?: number }> => {
         const response = await client.get('/admin/users', { params });
         return response.data;
       },

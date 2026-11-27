@@ -1,12 +1,13 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { patientApi } from '../../api';
-import { Loader2, FileText, Calendar, Tag, AlertTriangle } from 'lucide-react';
+import { Loader2, FileText, Calendar, Tag, AlertTriangle, Zap } from 'lucide-react';
 import { formatSpecialty, formatTriageLevel } from '../../lib/format';
 import { getMessageDirection } from '../../lib/text-direction';
+import { useAuthStore } from '../../lib/stores/auth.store';
 
 const mdComponents: Components = {
   p: ({ children }) => <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>,
@@ -19,6 +20,7 @@ const mdComponents: Components = {
 
 export const SOAPDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const user = useAuthStore((s) => s.user);
 
   const { data: soap, isLoading, error } = useQuery({
     queryKey: ['soap', id],
@@ -75,12 +77,23 @@ export const SOAPDetailPage: React.FC = () => {
               {formatDate(soap.createdAt)}
             </p>
           </div>
-          {soap.suggestedSpecialty && (
-            <div className="text-right">
-              <p className="text-white/70 text-sm mb-2">Specialty</p>
-              <p className="text-xl font-semibold">{formatSpecialty(soap.suggestedSpecialty)}</p>
-            </div>
-          )}
+          <div className="flex flex-col items-end gap-3">
+            {soap.suggestedSpecialty && (
+              <div className="text-right">
+                <p className="text-white/70 text-sm mb-1">Specialty</p>
+                <p className="text-xl font-semibold">{formatSpecialty(soap.suggestedSpecialty)}</p>
+              </div>
+            )}
+            {user?.role === 'PATIENT' && (
+              <Link
+                to={`/matching/request?soapId=${soap.id}`}
+                className="inline-flex items-center gap-2 bg-white text-brand-700 hover:bg-brand-50 font-semibold text-sm px-4 py-2 rounded-xl shadow-sm transition-colors"
+              >
+                <Zap className="w-4 h-4" />
+                Find a Doctor
+              </Link>
+            )}
+          </div>
         </div>
       </div>
 

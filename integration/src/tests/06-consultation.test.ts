@@ -142,9 +142,9 @@ describe('Consultation Flow', () => {
     it('should show consultation in doctor list', async () => {
       const { consultations } = await doctorConsultation.getConsultations();
 
-      const found = consultations.find((c: any) => c.id === mainConsultationId);
+      const found = consultations.find((c) => c.id === mainConsultationId);
       expect(found).toBeDefined();
-      expect(found.status).toBe('PENDING_DOCTOR_REVIEW');
+      expect(found!.status).toBe('PENDING_DOCTOR_REVIEW');
     });
 
     it('should allow doctor to decide (accept) → DOCTOR_DECIDED', async () => {

@@ -14,6 +14,26 @@ export interface AiConversation {
   agentType: string;
   createdAt: string;
   soap: AiConversationSoap | null;
+  guest?: boolean;
+}
+
+export interface AiPolledMessage {
+  id: string;
+  userId?: string;
+  payload?: {
+    type?: string;
+    text?: string;
+    [key: string]: unknown;
+  };
+  createdAt?: string;
+  soapId?: string;
+}
+
+export interface AiHistoryMessage {
+  id?: string;
+  role: string;
+  text: string;
+  createdAt?: string;
 }
 
 export interface AiConversationList {
@@ -73,12 +93,12 @@ export function createAiAgentsApi(client: AxiosInstance) {
       return response.data;
     },
 
-    getMessages: async (conversationId: string, dateOffset?: string): Promise<unknown> => {
+    getMessages: async (conversationId: string, dateOffset?: string): Promise<AiPolledMessage[]> => {
       const response = await client.get(`/ai-agents/messages/${conversationId}`, { params: { dateOffset } });
       return response.data;
     },
 
-    getHistory: async (conversationId: string): Promise<unknown> => {
+    getHistory: async (conversationId: string): Promise<AiHistoryMessage[]> => {
       const response = await client.get(`/ai-agents/history/${conversationId}`);
       return response.data;
     },
@@ -88,7 +108,7 @@ export function createAiAgentsApi(client: AxiosInstance) {
       return response.data;
     },
 
-    openaiChat: async (message: string): Promise<unknown> => {
+    openaiChat: async (message: string): Promise<string> => {
       const response = await client.post('/ai-agents/openai', { message });
       return response.data;
     },

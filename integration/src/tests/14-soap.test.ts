@@ -191,7 +191,7 @@ describe('SOAP Notes', () => {
 
       const soap = result.data.find((s: any) => s.id === soapNoteId);
       expect(soap).toBeDefined();
-      expect(soap.userId).toBe(patient1UserId);
+      expect(soap?.userId).toBe(patient1UserId);
     });
 
     it('should include SOAP data in consultation detail for doctor', async () => {
@@ -202,9 +202,9 @@ describe('SOAP Notes', () => {
 
       expect(consultation).toBeDefined();
       expect(consultation.soap).toBeDefined();
-      expect(consultation.soap.id).toBe(soapNoteId);
-      expect(consultation.soap.subjective).toContain('headache');
-      expect(consultation.soap.assessment).toContain('Tension headache');
+      expect(consultation?.soap?.id).toBe(soapNoteId);
+      expect(consultation?.soap?.subjective).toContain('headache');
+      expect(consultation?.soap?.assessment).toContain('Tension headache');
     });
 
     it('should get SOAP by ID with all fields', async () => {
@@ -263,7 +263,7 @@ describe('SOAP Notes', () => {
       const messages = await aiApi.getMessages(aiConvId);
 
       expect(Array.isArray(messages)).toBe(true);
-      expect(messages.length).toBe(1);
+      expect((messages as Array<unknown>).length).toBe(1);
 
       // Verify the SOAP was created
       const createdSoap = await prisma.patientSOAP.findUnique({

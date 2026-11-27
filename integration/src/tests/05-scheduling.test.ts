@@ -191,9 +191,9 @@ describe('Scheduling', () => {
 
       expect(Array.isArray(durations)).toBe(true);
       expect(durations.length).toBeGreaterThanOrEqual(1);
-      const found = durations.find((d: any) => d.id === slotDurationId);
+      const found = durations.find((d) => d.id === slotDurationId);
       expect(found).toBeDefined();
-      expect(found.minutes).toBe(30);
+      expect(found!.minutes).toBe(30);
     });
   });
 
@@ -349,9 +349,9 @@ describe('Scheduling', () => {
       const { appointments } = await patientScheduling.getAppointments();
 
       expect(appointments.length).toBeGreaterThanOrEqual(1);
-      const found = appointments.find((a: any) => a.id === appointmentId);
+      const found = appointments.find((a) => a.id === appointmentId);
       expect(found).toBeDefined();
-      expect(found.status).toBe('PENDING');
+      expect(found!.status).toBe('PENDING');
     });
 
     it('should list doctor appointments', async () => {

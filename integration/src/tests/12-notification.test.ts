@@ -152,10 +152,10 @@ describe('Notifications', () => {
     it('should mark a single notification as read', async () => {
       const countBefore = await doctorNotif.getUnreadCount();
       const list = await doctorNotif.list();
-      const unread = list.data.find((n: any) => !n.isRead);
+      const unread = list.data.find((n) => !n.isRead);
       expect(unread).toBeDefined();
 
-      const updated = await doctorNotif.markAsRead(unread.id);
+      const updated = await doctorNotif.markAsRead(unread!.id);
 
       expect(updated.isRead).toBe(true);
       expect(updated.readAt).toBeDefined();

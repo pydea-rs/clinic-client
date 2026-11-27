@@ -169,11 +169,11 @@ describe('Doctor Module', () => {
       expect(Array.isArray(docs)).toBe(true);
       expect(docs.length).toBeGreaterThanOrEqual(2);
 
-      const licenseDoc = docs.find((d: any) => d.type === 'LICENSE');
+      const licenseDoc = docs.find((d) => d.type === 'LICENSE');
       expect(licenseDoc).toBeDefined();
-      expect(licenseDoc.mimeType).toBe('application/pdf');
+      expect(licenseDoc!.mimeType).toBe('application/pdf');
 
-      const idDoc = docs.find((d: any) => d.type === 'ID_CARD');
+      const idDoc = docs.find((d) => d.type === 'ID_CARD');
       expect(idDoc).toBeDefined();
     });
   });
@@ -189,9 +189,9 @@ describe('Doctor Module', () => {
       expect(profile.specialty).toBe('CARDIOLOGY');
       expect(profile.bio).toBe('Senior cardiologist with 10+ years experience');
       expect(profile.user).toBeDefined();
-      expect(profile.user.firstname).toBe('DocMod');
-      expect(profile.user.lastname).toBe('Test');
-      expect(profile.user.email).toBe(doctorEmail);
+      expect(profile.user!.firstname).toBe('DocMod');
+      expect(profile.user!.lastname).toBe('Test');
+      expect(profile.user!.email).toBe(doctorEmail);
     });
   });
 

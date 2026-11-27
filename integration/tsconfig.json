@@ -12,10 +12,10 @@
     "outDir": "./dist",
     "baseUrl": ".",
     "skipLibCheck": true,
-    "strictNullChecks": true,
-    "noImplicitAny": true,
-    "strictBindCallApply": true,
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
+    "types": ["node", "vitest/globals", "../node_modules/vite/client"],
     "paths": {
       "@server/*": ["../../server/dist/*"],
       "@client/*": ["../src/*"]

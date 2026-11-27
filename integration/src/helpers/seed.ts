@@ -94,10 +94,11 @@ export async function setupDoctor(
 
   // Create doctor profile
   const doctorProfile = await doctorApi.createProfile({
-    specialty: 'GENERAL_PRACTICE',
+    startedAt: '2018-01-01',
+    specialty: 'GENERAL',
     visitMethods: ['CHAT', 'VIDEO_CALL'],
     bio: 'Integration test doctor',
-    location: 'Test City',
+    clinicLocation: 'Test City',
   });
 
   // Upload a document for verification
@@ -153,7 +154,7 @@ export async function setupNurse(
   const doctorNurseApi = createNurseApi(doctor.client.axios);
   const invitation = await doctorNurseApi.assign(testUser.user.id, [
     'VIEW_PATIENTS',
-    'VIEW_APPOINTMENTS',
+    'MANAGE_APPOINTMENTS',
     'VIEW_SOAPS',
     'MANAGE_SCHEDULE',
     'CHAT_WITH_PATIENTS',

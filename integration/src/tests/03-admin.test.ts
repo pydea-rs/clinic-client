@@ -172,9 +172,9 @@ describe('Admin & Verification', () => {
       const unauthDoctorApi = createDoctorApi(unauthTc.axios);
       const { doctors } = await unauthDoctorApi.getDoctors();
 
-      const found = doctors.find((d: any) => d.id === doctorProfileId);
+      const found = doctors.find((d) => d.id === doctorProfileId);
       expect(found).toBeDefined();
-      expect(found.specialty).toBe('DERMATOLOGY');
+      expect(found!.specialty).toBe('DERMATOLOGY');
     });
 
     it('should remove doctor from pending list after approval', async () => {

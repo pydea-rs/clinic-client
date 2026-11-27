@@ -110,7 +110,7 @@ describe('Auth & User Management', () => {
       expect(user.firstname).toBe('Alice');
       expect(user.lastname).toBe('Patient');
       expect(user.role).toBe('PATIENT');
-      expect(user.password).toBeUndefined();
+      expect((user as unknown as Record<string, unknown>).password).toBeUndefined();
     });
 
     it('should persist session across multiple requests', async () => {
@@ -181,7 +181,7 @@ describe('Auth & User Management', () => {
 
       expect(otherUser).toBeDefined();
       expect(otherUser.id).toBe(doctorUserId);
-      expect(otherUser.password).toBeUndefined();
+      expect((otherUser as unknown as Record<string, unknown>).password).toBeUndefined();
     });
   });
 
@@ -412,11 +412,11 @@ describe('Auth & User Management', () => {
     });
 
     it('should never expose password in user responses', async () => {
-      const user = await patientUserApi.getCurrentUser();
+      const user = (await patientUserApi.getCurrentUser()) as unknown as Record<string, unknown>;
       expect(user.password).toBeUndefined();
       expect(user.passwordHash).toBeUndefined();
 
-      const otherUser = await patientUserApi.getUserById(doctorUserId);
+      const otherUser = (await patientUserApi.getUserById(doctorUserId)) as unknown as Record<string, unknown>;
       expect(otherUser.password).toBeUndefined();
       expect(otherUser.passwordHash).toBeUndefined();
     });

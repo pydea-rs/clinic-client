@@ -128,9 +128,9 @@ describe('Reviews', () => {
       const { reviews } = await unauthReview.getDoctorReviews(doctorProfileId);
 
       expect(reviews.length).toBeGreaterThanOrEqual(1);
-      const found = reviews.find((r: any) => r.id === reviewId);
+      const found = reviews.find((r) => r.id === reviewId);
       expect(found).toBeDefined();
-      expect(found.rating).toBe(5);
+      expect(found!.rating).toBe(5);
     });
   });
 

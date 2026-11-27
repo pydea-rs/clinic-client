@@ -57,7 +57,7 @@ export function createDoctorApi(client: AxiosInstance) {
     },
 
     uploadDocument: async (
-      file: File | Blob,
+      file: File | Blob | Uint8Array,
       documentTypeOrFilename: string,
       contentType?: string,
       documentType?: string,
@@ -70,7 +70,8 @@ export function createDoctorApi(client: AxiosInstance) {
         const blob = file instanceof Blob ? file : new Blob([file as unknown as BlobPart], { type: contentType });
         formData.append('file', blob, documentTypeOrFilename);
       } else {
-        formData.append('file', file as File);
+        const value = file instanceof Blob ? file : new Blob([file as unknown as BlobPart], { type: contentType });
+        formData.append('file', value);
       }
       const response = await client.post('/doctor/documents', formData, {
         headers: { 'Content-Type': undefined },

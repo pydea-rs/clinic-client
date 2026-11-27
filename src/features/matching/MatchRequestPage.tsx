@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { matchingApi, patientApi } from '../../api';
@@ -41,6 +41,13 @@ export const MatchRequestPage: React.FC = () => {
   const [manualSpecialty, setManualSpecialty] = useState<DoctorSpecialty | ''>('');
   const [mode, setMode] = useState<'soap' | 'manual'>(soapIdParam ? 'soap' : 'manual');
 
+  useEffect(() => {
+    if (soapIdParam) {
+      setSelectedSoapId(soapIdParam);
+      setMode('soap');
+    }
+  }, [soapIdParam]);
+
   const { data: activeMatch, isLoading: checkingActive } = useQuery({
     queryKey: ['matching', 'active'],
     queryFn: matchingApi.getActive,
@@ -49,6 +56,14 @@ export const MatchRequestPage: React.FC = () => {
   const { data: soapsData, isLoading: loadingSoaps } = useQuery({
     queryKey: ['patient', 'soaps', 'matching'],
     queryFn: () => patientApi.getSOAPs(1, 50),
+  });
+
+  const soaps = soapsData?.soaps || [];
+
+  const { data: fallbackSoap } = useQuery({
+    queryKey: ['soap', selectedSoapId],
+    queryFn: () => patientApi.getSOAPDetail(selectedSoapId),
+    enabled: !!selectedSoapId && !loadingSoaps && !soaps.some(s => s.id === selectedSoapId),
   });
 
   const createMutation = useMutation({
@@ -88,8 +103,7 @@ export const MatchRequestPage: React.FC = () => {
     );
   }
 
-  const soaps = soapsData?.soaps || [];
-  const selectedSoap = soaps.find(s => s.id === selectedSoapId);
+  const selectedSoap = soaps.find(s => s.id === selectedSoapId) ?? fallbackSoap;
 
   const handleSubmit = () => {
     if (mode === 'soap' && selectedSoapId) {
@@ -182,7 +196,9 @@ export const MatchRequestPage: React.FC = () => {
                   <span className="text-brand-600">Specialty: {formatSpecialty(selectedSoap.suggestedSpecialty)}</span>
                 )}
                 {triageBadge(selectedSoap.triageLevel)}
-                {!selectedSoap.suggestedSpecialty && <span className="text-gray-500">General practitioner</span>}
+                {!selectedSoap.suggestedSpecialty && (
+                  <span className="text-gray-500">Best available doctor (any specialty)</span>
+                )}
               </div>
             </div>
           )}

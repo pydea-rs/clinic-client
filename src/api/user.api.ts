@@ -26,7 +26,7 @@ export function createUserApi(client: AxiosInstance) {
     },
 
     uploadAvatar: async (
-      file: File | Blob,
+      file: File | Blob | Uint8Array,
       filename?: string,
       contentType?: string,
     ): Promise<{ id: string; avatar: string }> => {
@@ -35,7 +35,8 @@ export function createUserApi(client: AxiosInstance) {
         const blob = file instanceof Blob ? file : new Blob([file as unknown as BlobPart], { type: contentType });
         formData.append('file', blob, filename);
       } else {
-        formData.append('file', file);
+        const value = file instanceof Blob ? file : new Blob([file as unknown as BlobPart], { type: contentType });
+        formData.append('file', value);
       }
       const response = await client.post('/user/avatar', formData, {
         headers: { 'Content-Type': undefined },
@@ -48,7 +49,7 @@ export function createUserApi(client: AxiosInstance) {
       return response.data;
     },
 
-    getAllUsers: async (params?: { skip?: number; take?: number }): Promise<{ data: User[]; total: number }> => {
+    getAllUsers: async (params?: { skip?: number; take?: number }): Promise<{ data: User[]; total: number; skip?: number; take?: number }> => {
       const response = await client.get('/user/all', { params });
       return response.data;
     },

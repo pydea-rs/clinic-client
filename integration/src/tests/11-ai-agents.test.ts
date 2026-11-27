@@ -120,7 +120,7 @@ describe('AI Agents', () => {
       expect(messages.length).toBeGreaterThanOrEqual(1);
       expect(messages[0].userId).toBe('bot');
       expect(messages[0].payload).toBeDefined();
-      expect(messages[0].payload.text).toBeDefined();
+      expect(messages[0].payload?.text).toBeDefined();
     });
 
     it('should get conversation history', async () => {

@@ -127,11 +127,13 @@ export const DoctorMatchRequestsPage: React.FC = () => {
     matchingSocket.on('match:request', handleWsEvent);
     matchingSocket.on('match:cancelled', handleWsEvent);
     matchingSocket.on('match:timeout', handleWsEvent);
+    matchingSocket.on('match:offer_expired', handleWsEvent);
 
     return () => {
       matchingSocket.off('match:request', handleWsEvent);
       matchingSocket.off('match:cancelled', handleWsEvent);
       matchingSocket.off('match:timeout', handleWsEvent);
+      matchingSocket.off('match:offer_expired', handleWsEvent);
       matchingSocket.disconnect();
     };
   }, [handleWsEvent]);

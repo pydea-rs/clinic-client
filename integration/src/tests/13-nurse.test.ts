@@ -176,7 +176,8 @@ describe('Nurse Module', () => {
       expect(result.permissions).toEqual(
         expect.arrayContaining(['VIEW_PATIENTS', 'VIEW_SOAPS', 'CHAT_WITH_PATIENTS', 'VIEW_CONSULTATION_NOTES']),
       );
-      expect(result.nurse.id).toBe(nurseUserId);
+      expect(result.nurse).toBeDefined();
+      expect(result.nurse!.id).toBe(nurseUserId);
       assignmentId = result.id;
 
       expect((await nurseTc.axios.get('/user')).data.role).toBe('PATIENT');
@@ -221,10 +222,11 @@ describe('Nurse Module', () => {
       expect(Array.isArray(assignments)).toBe(true);
       expect(assignments.length).toBeGreaterThanOrEqual(1);
 
-      const found = assignments.find((a: any) => a.id === assignmentId);
+      const found = assignments.find((a) => a.id === assignmentId);
       expect(found).toBeDefined();
-      expect(found.nurse.id).toBe(nurseUserId);
-      expect(found.isActive).toBe(true);
+      expect(found!.nurse).toBeDefined();
+      expect(found!.nurse!.id).toBe(nurseUserId);
+      expect(found!.isActive).toBe(true);
     });
 
     it('should list assignments from nurse view', async () => {
@@ -233,9 +235,9 @@ describe('Nurse Module', () => {
       expect(Array.isArray(assignments)).toBe(true);
       expect(assignments.length).toBeGreaterThanOrEqual(1);
 
-      const found = assignments.find((a: any) => a.id === assignmentId);
+      const found = assignments.find((a) => a.id === assignmentId);
       expect(found).toBeDefined();
-      expect(found.doctor).toBeDefined();
+      expect(found!.doctor).toBeDefined();
     });
 
     it('should update nurse permissions', async () => {
@@ -511,9 +513,9 @@ describe('Nurse Module', () => {
       expect(Array.isArray(result.data)).toBe(true);
       expect(result.data.length).toBeGreaterThanOrEqual(1);
 
-      const soap = result.data.find((s: any) => s.id === soapNoteId);
+      const soap = result.data.find((s) => s.id === soapNoteId);
       expect(soap).toBeDefined();
-      expect(soap.subjective).toContain('headache');
+      expect(soap!.subjective).toContain('headache');
     });
 
     it("should allow nurse with VIEW_SOAPS to get the doctor's linked SOAP by ID", async () => {

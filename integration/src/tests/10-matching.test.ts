@@ -241,17 +241,17 @@ describe('Matching', () => {
       const active = await patientMatching.getActive();
 
       expect(active).toBeDefined();
-      expect(active.id).toBe(acceptFlowMatchId);
-      expect(active.status).toBe('MATCHED');
+      expect(active!.id).toBe(acceptFlowMatchId);
+      expect(active!.status).toBe('MATCHED');
     });
 
     it('REST: getPending returns the pending match for doctor', async () => {
       const pending = await firstDocMatching.getPending();
 
       expect(Array.isArray(pending)).toBe(true);
-      const found = pending.find((m: any) => m.id === acceptFlowMatchId);
+      const found = pending.find((m) => m.id === acceptFlowMatchId);
       expect(found).toBeDefined();
-      expect(found.status).toBe('MATCHED');
+      expect(found!.status).toBe('MATCHED');
     });
 
     it('should accept and emit match:accepted to both parties', async () => {
@@ -607,6 +607,46 @@ describe('Matching', () => {
       expect(patAccepted.matchRequestId).toBe(rejectMatchId);
       expect(patAccepted.consultationId).toBe(docAccepted.consultationId);
       expect(patAccepted.doctor.userId).toBe(secondDocUserId);
+    });
+  });
+
+  // ─── Dynamic SOAP Specialty & Ranking Verification ────────
+
+  describe('SOAP-Driven Dynamic Specialty Matching', () => {
+    it('routes SOAP note with CARDIOLOGY specialty strictly to CARDIOLOGY/GENERAL candidates ranked above GENERAL', async () => {
+      const conv = await getPrisma().aiConversation.create({
+        data: { id: crypto.randomUUID(), userId: patientUserId },
+      });
+      const soap = await getPrisma().patientSOAP.create({
+        data: {
+          userId: patientUserId,
+          conversationId: conv.id,
+          subjective: 'Acute palpitations and chest pain',
+          assessment: 'Arrhythmia evaluation needed',
+          plan: 'Cardiology consultation recommended',
+          rawNote: 'Subjective: palpitations\nAssessment: arrhythmia\nPlan: cardiology consultation',
+          suggestedSpecialty: 'CARDIOLOGY',
+          triageLevel: 'URGENT',
+        },
+      });
+
+      const response = await patientTc.axios.post('/matching/request', { soapId: soap.id });
+      expect(response.status).toBe(201);
+
+      const { matchRequest, doctors } = response.data;
+      expect(matchRequest.specialty).toBe('CARDIOLOGY');
+      expect(matchRequest.triageLevel).toBe('URGENT');
+      expect(doctors.length).toBeGreaterThanOrEqual(2);
+
+      for (const doc of doctors) {
+        expect(['CARDIOLOGY', 'GENERAL']).toContain(doc.specialty);
+      }
+      expect(doctors[0].specialty).toBe('CARDIOLOGY');
+      for (let i = 1; i < doctors.length; i++) {
+        expect(doctors[i - 1].score).toBeGreaterThanOrEqual(doctors[i].score);
+      }
+
+      await patientMatching.cancel(matchRequest.id);
     });
   });
 
