@@ -42,6 +42,8 @@ export const MatchWaitingPage: React.FC = () => {
 
       if (event === 'match:searching') {
         setWsStatus(`Searching among ${data.candidates} doctors...`);
+      } else if (event === 'match:offered') {
+        void refetch();
       } else if (event === 'match:accepted') {
         toast.success('A doctor accepted your request!');
         void refetch();
@@ -54,7 +56,7 @@ export const MatchWaitingPage: React.FC = () => {
       }
     };
 
-    const handlers = ['match:searching', 'match:accepted', 'match:timeout', 'match:cancelled'].map(evt => {
+    const handlers = ['match:searching', 'match:offered', 'match:accepted', 'match:timeout', 'match:cancelled'].map(evt => {
       const handler = makeHandler(evt);
       matchingSocket.on(evt, handler);
       return { evt, handler };
@@ -307,31 +309,47 @@ export const MatchWaitingPage: React.FC = () => {
         )}
 
         {/* Scored doctors list */}
-        {doctors.length > 0 && matchRequest.status === 'SEARCHING' && (
-          <div className="px-6 py-4 border-b border-gray-100">
-            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Top Candidates</div>
-            <div className="space-y-2">
-              {doctors.slice(0, 5).map(doc => (
-                <div key={doc.doctorId} className="flex items-center justify-between text-sm p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                  <div className="flex items-center gap-2.5">
-                    <UserAvatar
-                      avatar={doc.avatar}
-                      firstname={doc.firstname}
-                      lastname={doc.lastname}
-                      alt={`Dr. ${doc.firstname} ${doc.lastname}`}
-                      className="w-7 h-7 bg-brand-50 rounded-lg text-xs font-bold text-brand-600 ring-1 ring-brand-100 flex-shrink-0"
-                    />
-                    <span className="text-gray-700 font-medium">Dr. {doc.firstname} {doc.lastname}</span>
+        {(() => {
+          const queuedDoctors =
+            matchRequest.status === 'MATCHED' && matchRequest.matchedDoctorId
+              ? doctors.filter((d) => d.doctorId !== matchRequest.matchedDoctorId)
+              : doctors;
+          if (
+            queuedDoctors.length === 0 ||
+            (matchRequest.status !== 'SEARCHING' && matchRequest.status !== 'MATCHED')
+          ) {
+            return null;
+          }
+          return (
+            <div className="px-6 py-4 border-b border-gray-100">
+              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                {matchRequest.status === 'MATCHED' ? 'Next in Queue' : 'Top Candidates'}
+              </div>
+              <div className="space-y-2">
+                {queuedDoctors.slice(0, 5).map((doc) => (
+                  <div key={doc.doctorId} className="flex items-center justify-between text-sm p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div className="flex items-center gap-2.5">
+                      <UserAvatar
+                        avatar={doc.avatar}
+                        firstname={doc.firstname}
+                        lastname={doc.lastname}
+                        alt={`Dr. ${doc.firstname} ${doc.lastname}`}
+                        className="w-7 h-7 bg-brand-50 rounded-lg text-xs font-bold text-brand-600 ring-1 ring-brand-100 flex-shrink-0"
+                      />
+                      <span className="text-gray-700 font-medium">Dr. {doc.firstname} {doc.lastname}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-400">{formatSpecialty(doc.specialty)}</span>
+                      <span className="text-xs font-semibold text-brand-600">
+                        {Math.min(100, Math.round(doc.score))}%
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-400">{formatSpecialty(doc.specialty)}</span>
-                    <span className="text-xs font-semibold text-brand-600">{Math.round(doc.score)}%</span>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* Info */}
         <div className="px-6 py-4 text-center">

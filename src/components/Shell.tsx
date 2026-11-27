@@ -64,6 +64,33 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
 
   const { assignments: nurseAssignments } = useNurseAssignments();
 
+  React.useEffect(() => {
+    if (!isAuthenticated || !isDoctor) return;
+
+    matchingSocket.connect();
+    const syncMatchingQueries = () => {
+      void queryClient.invalidateQueries({ queryKey: ['matching', 'pending'] });
+      void queryClient.invalidateQueries({ queryKey: ['doctor-stats'] });
+    };
+
+    const events = [
+      'match:request',
+      'match:cancelled',
+      'match:timeout',
+      'match:offer_expired',
+    ];
+    for (const evt of events) {
+      matchingSocket.on(evt, syncMatchingQueries);
+    }
+
+    return () => {
+      for (const evt of events) {
+        matchingSocket.off(evt, syncMatchingQueries);
+      }
+      matchingSocket.disconnect();
+    };
+  }, [isAuthenticated, isDoctor]);
+
   const handleLogout = async () => {
     try {
       await authApi.logout();

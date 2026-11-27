@@ -27,26 +27,39 @@ const TriageBadge: React.FC<{ level?: TriageLevel }> = ({ level }) => {
   );
 };
 
+const GLOBAL_MATCH_WINDOW_MS = 300_000;
+const DOCTOR_OFFER_WINDOW_MS = 45_000;
+
+function computeOfferRemainingSeconds(request: MatchRequest): number {
+  const now = Date.now();
+  const createdMs = new Date(request.createdAt).getTime();
+  if (isNaN(createdMs)) return 0;
+  const updatedMs = request.updatedAt ? new Date(request.updatedAt).getTime() : createdMs;
+  const offerStartMs = isNaN(updatedMs) ? createdMs : Math.max(createdMs, updatedMs);
+  const deadlineMs = Math.min(
+    createdMs + GLOBAL_MATCH_WINDOW_MS,
+    offerStartMs + DOCTOR_OFFER_WINDOW_MS,
+  );
+  return Math.max(0, Math.floor((deadlineMs - now) / 1000));
+}
+
 const MatchRequestCard: React.FC<{
   request: MatchRequest;
   onAccept: (id: string) => void;
   onReject: (id: string) => void;
   isProcessing: boolean;
 }> = ({ request, onAccept, onReject, isProcessing }) => {
-  const [remaining, setRemaining] = useState(() => {
-    const elapsed = Math.floor((Date.now() - new Date(request.createdAt).getTime()) / 1000);
-    return Math.max(0, 300 - elapsed);
-  });
+  const [remaining, setRemaining] = useState(() => computeOfferRemainingSeconds(request));
 
   useEffect(() => {
+    setRemaining(computeOfferRemainingSeconds(request));
     const interval = setInterval(() => {
-      const elapsed = Math.floor((Date.now() - new Date(request.createdAt).getTime()) / 1000);
-      const r = Math.max(0, 300 - elapsed);
+      const r = computeOfferRemainingSeconds(request);
       setRemaining(r);
       if (r <= 0) clearInterval(interval);
     }, 1000);
     return () => clearInterval(interval);
-  }, [request.createdAt]);
+  }, [request]);
 
   const minutes = Math.floor(remaining / 60);
   const seconds = remaining % 60;
@@ -134,7 +147,6 @@ export const DoctorMatchRequestsPage: React.FC = () => {
       matchingSocket.off('match:cancelled', handleWsEvent);
       matchingSocket.off('match:timeout', handleWsEvent);
       matchingSocket.off('match:offer_expired', handleWsEvent);
-      matchingSocket.disconnect();
     };
   }, [handleWsEvent]);
 

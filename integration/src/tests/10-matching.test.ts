@@ -630,16 +630,27 @@ describe('Matching', () => {
         },
       });
 
+      const offeredPromise = waitForEvent<{ matchRequestId: string; doctorId: number }>(
+        patientSocket,
+        'match:offered',
+        10_000,
+      );
       const response = await patientTc.axios.post('/matching/request', { soapId: soap.id });
       expect(response.status).toBe(201);
 
       const { matchRequest, doctors } = response.data;
+      const offered = await offeredPromise;
+      expect(offered.matchRequestId).toBe(matchRequest.id);
+      expect(offered.doctorId).toBe(doctors[0].doctorId);
+
       expect(matchRequest.specialty).toBe('CARDIOLOGY');
       expect(matchRequest.triageLevel).toBe('URGENT');
       expect(doctors.length).toBeGreaterThanOrEqual(2);
 
       for (const doc of doctors) {
         expect(['CARDIOLOGY', 'GENERAL']).toContain(doc.specialty);
+        expect(doc.score).toBeGreaterThanOrEqual(0);
+        expect(doc.score).toBeLessThanOrEqual(100);
       }
       expect(doctors[0].specialty).toBe('CARDIOLOGY');
       for (let i = 1; i < doctors.length; i++) {

@@ -58,13 +58,31 @@ export const MatchRequestPage: React.FC = () => {
     queryFn: () => patientApi.getSOAPs(1, 50),
   });
 
-  const soaps = soapsData?.soaps || [];
+  const soaps = React.useMemo(() => soapsData?.soaps || [], [soapsData?.soaps]);
 
-  const { data: fallbackSoap } = useQuery({
+  const {
+    data: fallbackSoap,
+    isLoading: loadingFallbackSoap,
+    isError: fallbackSoapError,
+  } = useQuery({
     queryKey: ['soap', selectedSoapId],
     queryFn: () => patientApi.getSOAPDetail(selectedSoapId),
     enabled: !!selectedSoapId && !loadingSoaps && !soaps.some(s => s.id === selectedSoapId),
   });
+
+  useEffect(() => {
+    if (fallbackSoapError && selectedSoapId) {
+      setSelectedSoapId('');
+      toast.error('Selected SOAP note could not be found');
+    }
+  }, [fallbackSoapError, selectedSoapId]);
+
+  const soapOptions = React.useMemo(() => {
+    if (fallbackSoap && !soaps.some(s => s.id === fallbackSoap.id)) {
+      return [fallbackSoap, ...soaps];
+    }
+    return soaps;
+  }, [fallbackSoap, soaps]);
 
   const createMutation = useMutation({
     mutationFn: matchingApi.createRequest,
@@ -151,9 +169,9 @@ export const MatchRequestPage: React.FC = () => {
       {mode === 'soap' && (
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">Select a SOAP Note</label>
-          {loadingSoaps ? (
+          {loadingSoaps || loadingFallbackSoap ? (
             <div className="flex items-center gap-2 text-gray-500 text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Loading...</div>
-          ) : soaps.length === 0 ? (
+          ) : soapOptions.length === 0 ? (
             <div className="card bg-gray-50/80 p-4 text-center">
               <p className="text-gray-600 text-sm mb-2">No SOAP notes found. Start an AI conversation first.</p>
               <button onClick={() => navigate('/ai/new')} className="text-brand-600 hover:text-brand-700 text-sm font-medium">
@@ -162,7 +180,7 @@ export const MatchRequestPage: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-2 max-h-64 overflow-y-auto">
-              {soaps.map(soap => (
+              {soapOptions.map(soap => (
                 <button
                   key={soap.id}
                   onClick={() => setSelectedSoapId(soap.id)}
