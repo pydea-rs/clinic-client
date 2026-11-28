@@ -18,6 +18,7 @@ import { getMessageDirection } from '../../lib/text-direction';
 import { UserAvatar } from '../../components/UserAvatar';
 import { useNurseAssignments } from '../nurse/useNurseAssignments';
 import { getConsultationChatAction, useOpenConsultationChat } from './useConsultationChat';
+import { CollapsibleSection } from '../../components/InfoDisclosure';
 import {
   Loader2,
   ClipboardList,
@@ -331,7 +332,11 @@ export const ConsultationDetailPage: React.FC = () => {
 
     setCompleting(true);
     try {
-      await consultationApi.complete(id, { notes, summary, followUpNeeded: followUp });
+      await consultationApi.complete(id, {
+        notes: notes.trim() || undefined,
+        summary: summary.trim() || undefined,
+        followUpNeeded: followUp,
+      });
       toast.success('Consultation completed successfully');
       setShowCompletionForm(false);
       invalidateConsultationCaches();
@@ -388,21 +393,23 @@ export const ConsultationDetailPage: React.FC = () => {
     );
   }
 
-  const isParticipant =
-    user?.role === 'PATIENT' ||
-    user?.role === 'DOCTOR' ||
-    user?.isAdmin ||
-    user?.isSuperAdmin;
+  const isPatientOwner =
+    user?.role === 'PATIENT' && consultation.patientId === user.id;
+  const isDoctorOwner =
+    user?.role === 'DOCTOR' &&
+    (!consultation.doctor?.userId || consultation.doctor.userId === user.id);
+  const isAdminUser = Boolean(user?.isAdmin || user?.isSuperAdmin);
+  const isParticipant = isPatientOwner || isDoctorOwner || isAdminUser;
   const canDecide =
-    user?.role === 'DOCTOR' && consultation.status === 'PENDING_DOCTOR_REVIEW';
+    isDoctorOwner && consultation.status === 'PENDING_DOCTOR_REVIEW';
   const canAdvancePayment =
-    isParticipant && consultation.status === 'DOCTOR_DECIDED';
+    isPatientOwner && consultation.status === 'DOCTOR_DECIDED';
   const canConfirmPayment =
-    isParticipant && consultation.status === 'PENDING_PAYMENT';
+    isPatientOwner && consultation.status === 'PENDING_PAYMENT';
   const canStart =
-    user?.role === 'DOCTOR' && consultation.status === 'PAYMENT_CONFIRMED';
+    isDoctorOwner && consultation.status === 'PAYMENT_CONFIRMED';
   const canComplete =
-    user?.role === 'DOCTOR' && consultation.status === 'IN_PROGRESS';
+    isDoctorOwner && consultation.status === 'IN_PROGRESS';
   const canCancel =
     isParticipant && CANCELLABLE_STATUSES.includes(consultation.status);
 
@@ -465,57 +472,85 @@ export const ConsultationDetailPage: React.FC = () => {
       </div>
 
       {/* Lifecycle Stepper */}
-      <div className="card p-5 animate-slide-in-up" style={{ animationDelay: '40ms' }}>
+      <div className="card p-5 space-y-4 animate-slide-in-up" style={{ animationDelay: '40ms' }}>
         {consultation.status === 'CANCELLED' ? (
-          <div className="flex items-center gap-3 text-red-700 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+          <div className="flex items-center gap-3 text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-800/50 rounded-xl px-4 py-3">
             <XCircle className="w-5 h-5 flex-shrink-0" />
             <div>
               <p className="font-semibold text-sm">Consultation Cancelled</p>
-              <p className="text-xs text-red-600/80">
+              <p className="text-xs text-red-600/80 dark:text-red-300/80">
                 This consultation has been cancelled and no further actions can be taken.
               </p>
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-between gap-2 overflow-x-auto pb-1">
-            {steps.map((step, idx) => {
-              const reached = idx <= activeStepIndex;
-              const isCurrent = idx === activeStepIndex && consultation.status !== 'COMPLETED';
-              return (
-                <React.Fragment key={step.key}>
-                  <div className="flex flex-col items-center min-w-[76px] text-center">
-                    <div
-                      className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${
-                        reached
-                          ? 'bg-brand-600 text-white shadow-sm'
-                          : 'bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-500'
-                      } ${isCurrent ? 'ring-4 ring-brand-100 dark:ring-brand-900/50 animate-breathe' : ''}`}
-                    >
-                      {idx < activeStepIndex || consultation.status === 'COMPLETED' ? (
-                        <CheckCircle2 className="w-4 h-4" />
-                      ) : (
-                        idx + 1
-                      )}
+          <>
+            <div className="flex items-center justify-between gap-2 overflow-x-auto pb-1">
+              {steps.map((step, idx) => {
+                const reached = idx <= activeStepIndex;
+                const isCurrent = idx === activeStepIndex && consultation.status !== 'COMPLETED';
+                return (
+                  <React.Fragment key={step.key}>
+                    <div className="flex flex-col items-center min-w-[76px] text-center">
+                      <div
+                        className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${
+                          reached
+                            ? 'bg-brand-600 text-white shadow-sm'
+                            : 'bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-500'
+                        } ${isCurrent ? 'ring-4 ring-brand-100 dark:ring-brand-900/50 animate-breathe' : ''}`}
+                      >
+                        {idx < activeStepIndex || consultation.status === 'COMPLETED' ? (
+                          <CheckCircle2 className="w-4 h-4" />
+                        ) : (
+                          idx + 1
+                        )}
+                      </div>
+                      <span
+                        className={`text-[11px] mt-1.5 font-medium whitespace-nowrap ${
+                          reached ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-slate-500'
+                        }`}
+                      >
+                        {step.label}
+                      </span>
                     </div>
-                    <span
-                      className={`text-[11px] mt-1.5 font-medium whitespace-nowrap ${
-                        reached ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-slate-500'
-                      }`}
-                    >
-                      {step.label}
-                    </span>
-                  </div>
-                  {idx < steps.length - 1 && (
-                    <div
-                      className={`flex-1 h-0.5 min-w-[18px] -mt-5 rounded-full transition-colors duration-300 ${
-                        idx < activeStepIndex ? 'bg-brand-500' : 'bg-gray-200 dark:bg-slate-700'
-                      }`}
-                    />
-                  )}
-                </React.Fragment>
-              );
-            })}
-          </div>
+                    {idx < steps.length - 1 && (
+                      <div
+                        className={`flex-1 h-0.5 min-w-[18px] -mt-5 rounded-full transition-colors duration-500 ${
+                          idx < activeStepIndex ? 'bg-brand-500' : 'bg-gray-200 dark:bg-slate-700'
+                        }`}
+                      />
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </div>
+
+            <div className="flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl bg-brand-50/50 dark:bg-brand-950/30 border border-brand-100/80 dark:border-brand-800/40 text-xs text-brand-900 dark:text-brand-200">
+              <span>
+                <strong>Current owner:</strong>{' '}
+                {consultation.status === 'CREATED' || consultation.status === 'PENDING_DOCTOR_REVIEW'
+                  ? 'Doctor reviewing consultation details and deciding visit method.'
+                  : consultation.status === 'DOCTOR_DECIDED' || consultation.status === 'PENDING_PAYMENT'
+                    ? 'Patient — advance and confirm payment to unlock the consultation.'
+                    : consultation.status === 'PAYMENT_CONFIRMED'
+                      ? 'Doctor — ready to start the consultation session.'
+                      : consultation.status === 'IN_PROGRESS'
+                        ? 'Care team & Patient — active consultation in progress.'
+                        : 'Consultation completed.'}
+              </span>
+            </div>
+
+            <CollapsibleSection
+              title="Stage guide & how this workflow progresses"
+              subtitle="What each step means for patient and care team"
+            >
+              <ul className="space-y-1.5 list-disc list-inside">
+                <li><strong>Submitted / Doctor Decision:</strong> The physician chooses either a Direct Diagnosis (completes immediately) or a full Consultation (Chat or On-Site).</li>
+                <li><strong>Payment:</strong> Patient proceeds to payment and confirms it once the visit method is chosen.</li>
+                <li><strong>In Progress / Completed:</strong> For Chat visits, doctor, authorized nurses, and patient collaborate in the shared room until the doctor saves final summary notes.</li>
+              </ul>
+            </CollapsibleSection>
+          </>
         )}
       </div>
 
@@ -671,7 +706,7 @@ export const ConsultationDetailPage: React.FC = () => {
                 )}
                 {canBookOnSite && (
                   <Link
-                    to={`/slots/${consultation.doctorId}`}
+                    to={`/slots/${consultation.doctorId}?consultationId=${consultation.id}`}
                     className="btn-primary px-4 py-2.5 text-sm flex items-center gap-2"
                   >
                     <Calendar className="w-4 h-4" />
@@ -1176,6 +1211,7 @@ export const ConsultationDetailPage: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Notes</label>
                 <textarea
                   name="notes"
+                  defaultValue={consultation.notes ?? ''}
                   className="w-full px-4 py-2.5 border input-focus"
                   rows={3}
                 />
@@ -1185,6 +1221,7 @@ export const ConsultationDetailPage: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Summary</label>
                 <textarea
                   name="summary"
+                  defaultValue={consultation.summary ?? ''}
                   className="w-full px-4 py-2.5 border input-focus"
                   rows={3}
                 />

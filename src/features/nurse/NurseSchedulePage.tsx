@@ -49,20 +49,20 @@ export const NurseSchedulePage: React.FC = () => {
         <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center shadow-soft">
           <CalendarClock className="w-5 h-5 text-white" />
         </div>
-        <h1 className="text-3xl font-bold text-gray-900">Schedule Management</h1>
+        <h1 className="text-3xl font-bold gradient-text">Schedule Management</h1>
       </div>
-      <p className="text-sm text-gray-500 mb-6 ml-[52px]">Managing schedule for {doctorName}</p>
+      <p className="text-sm text-gray-500 dark:text-slate-400 mb-6 ml-[52px]">Managing schedule for {doctorName}</p>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 bg-gray-100 rounded-xl p-1">
+      <div className="flex flex-wrap gap-1 mb-6 bg-gray-100 dark:bg-slate-800 rounded-xl p-1">
         {TABS.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
               activeTab === tab.key
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-white dark:bg-slate-900 text-gray-900 dark:text-white shadow-sm'
+                : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'
             }`}
           >
             {tab.icon}

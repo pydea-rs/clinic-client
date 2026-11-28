@@ -33,7 +33,7 @@ export const NurseProfilePage: React.FC = () => {
     mutationFn: (data: { firstname: string; lastname: string }) =>
       userApi.updateProfile(data),
     onSuccess: (updated) => {
-      setUser({ ...user!, ...updated });
+      if (user) setUser({ ...user, ...updated });
       toast.success('Profile updated');
       setEditing(false);
     },
@@ -43,7 +43,7 @@ export const NurseProfilePage: React.FC = () => {
   const avatarMutation = useMutation({
     mutationFn: (file: File) => userApi.uploadAvatar(file),
     onSuccess: (updated) => {
-      setUser({ ...user!, ...updated });
+      if (user) setUser({ ...user, ...updated });
       queryClient.invalidateQueries({ queryKey: ['user'] });
       toast.success('Avatar updated');
     },

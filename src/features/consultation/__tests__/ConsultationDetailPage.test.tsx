@@ -136,4 +136,45 @@ describe('ConsultationDetailPage workflows', () => {
       });
     });
   });
+
+  it('omits blank notes and summary instead of overwriting existing notes with empty strings', async () => {
+    const consultationId = crypto.randomUUID();
+    const existingNotes = `Existing-${Math.random().toString(36).slice(2, 8)}`;
+
+    useAuthStore.setState({ user: mockDoctorUser, isAuthenticated: true, initializing: false });
+    mockGetConsultationById.mockResolvedValue({
+      id: consultationId,
+      patientId: mockPatientUser.id,
+      doctorId: 10,
+      status: 'IN_PROGRESS',
+      doctorDecision: 'CONSULTATION',
+      visitMethod: 'CHAT',
+      notes: existingNotes,
+      followUpNeeded: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+    mockComplete.mockResolvedValue({});
+
+    const { container } = render(
+      <Routes>
+        <Route path="/consultation/:id" element={<ConsultationDetailPage />} />
+      </Routes>,
+      { initialEntries: [`/consultation/${consultationId}`] },
+    );
+
+    fireEvent.click(await screen.findByRole('button', { name: /complete consultation/i }));
+    const notesField = container.querySelector('textarea[name="notes"]') as HTMLTextAreaElement;
+    expect(notesField.defaultValue).toBe(existingNotes);
+    fireEvent.change(notesField, { target: { value: '   ' } });
+    fireEvent.click(screen.getByRole('button', { name: /complete consultation/i }));
+
+    await waitFor(() => {
+      expect(mockComplete).toHaveBeenCalledWith(consultationId, {
+        notes: undefined,
+        summary: undefined,
+        followUpNeeded: false,
+      });
+    });
+  });
 });

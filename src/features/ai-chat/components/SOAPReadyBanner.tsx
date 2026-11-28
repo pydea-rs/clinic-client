@@ -38,7 +38,7 @@ export const SOAPReadyBanner: React.FC<SOAPReadyBannerProps> = ({
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 flex-1 min-w-0">
             <div className="w-10 h-10 bg-gradient-to-br from-brand-500 to-brand-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm shadow-brand-500/20">
-              <FileText className="w-4.5 h-4.5 text-white" />
+              <FileText className="w-[18px] h-[18px] text-white" />
             </div>
             <div className="min-w-0">
               <h4 className="font-semibold text-gray-900 dark:text-white text-sm">SOAP Note Generated</h4>
@@ -81,7 +81,11 @@ export const SOAPReadyBanner: React.FC<SOAPReadyBannerProps> = ({
               </div>
             </div>
           </div>
-          <button onClick={onDismiss} className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-700/60 rounded-lg flex-shrink-0 transition-all duration-200">
+          <button
+            onClick={onDismiss}
+            aria-label="Dismiss"
+            className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-700/60 rounded-lg flex-shrink-0 transition-all duration-200"
+          >
             <X className="w-4 h-4" />
           </button>
         </div>

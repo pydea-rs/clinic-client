@@ -35,15 +35,18 @@ export const NurseDashboardPage: React.FC = () => {
 
   if (assignments.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh] animate-fade-in">
-        <div className="text-center max-w-md">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gray-100 flex items-center justify-center">
-            <Shield className="w-8 h-8 text-gray-300" />
+      <div className="flex items-center justify-center min-h-[60vh] p-6 animate-fade-in">
+        <div className="card p-8 text-center max-w-md">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center animate-float">
+            <Shield className="w-8 h-8 text-gray-400 dark:text-slate-500" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">No Active Assignments</h2>
-          <p className="text-sm text-gray-500">
-            You don't have any active doctor assignments yet. A doctor needs to assign you as their nurse before you can access patient data.
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No Active Assignments</h2>
+          <p className="text-sm text-gray-500 dark:text-slate-400 leading-relaxed">
+            You don't have any active doctor assignments yet. A doctor needs to assign you as their nurse before you can access patient data. Check Invitations if a request is waiting.
           </p>
+          <Link to="/nurse/invitations" className="btn-primary inline-flex items-center gap-2 px-5 py-2.5 mt-5 text-sm">
+            Check Invitations
+          </Link>
         </div>
       </div>
     );
@@ -157,11 +160,18 @@ export const NurseDashboardPage: React.FC = () => {
               {granted ? (
                 <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0" />
               ) : (
-                <Lock className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                <Lock className="w-5 h-5 text-gray-400 dark:text-slate-500 flex-shrink-0" />
               )}
-              <span className={`text-sm font-medium ${granted ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-slate-500'}`}>
-                {meta.label}
-              </span>
+              <div className="min-w-0">
+                <span className={`text-sm font-medium block ${granted ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-slate-500'}`}>
+                  {meta.label}
+                </span>
+                {!granted && (
+                  <span className="text-[11px] text-gray-400 dark:text-slate-500 block truncate">
+                    Ask an assigned doctor to grant access
+                  </span>
+                )}
+              </div>
             </Link>
           );
         })}

@@ -107,11 +107,11 @@ export const PatientProfilePage: React.FC = () => {
       <div className="card p-8 space-y-8 animate-slide-in-up" style={{ animationDelay: '60ms' }}>
         {/* Avatar Section */}
         <div className="flex flex-col items-center">
-          <div className="w-28 h-28 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden mb-4 ring-4 ring-white shadow-soft-lg">
+          <div className="w-28 h-28 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center overflow-hidden mb-4 ring-4 ring-white dark:ring-slate-800 shadow-soft-lg">
             {avatarPreview ? (
               <img src={resolveFileUrl(avatarPreview)} alt="Avatar" className="w-full h-full object-cover" />
             ) : (
-              <span className="text-gray-400 text-4xl">👤</span>
+              <span className="text-gray-400 dark:text-slate-400 text-4xl">👤</span>
             )}
           </div>
           <label className="btn-secondary flex items-center gap-2 px-4 py-2 cursor-pointer">
@@ -137,9 +137,9 @@ export const PatientProfilePage: React.FC = () => {
 
         {/* Profile Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">First Name</label>
               <input
                 type="text"
                 value={formData.firstname}
@@ -148,7 +148,7 @@ export const PatientProfilePage: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Last Name</label>
               <input
                 type="text"
                 value={formData.lastname}
@@ -159,12 +159,12 @@ export const PatientProfilePage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Email</label>
             <input
               type="email"
               value={user?.email || ''}
               disabled
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl bg-gray-50 text-gray-500 cursor-not-allowed"
+              className="w-full px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800/70 text-gray-500 dark:text-slate-400 cursor-not-allowed"
             />
           </div>
 

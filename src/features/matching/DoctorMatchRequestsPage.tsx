@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { MatchRequest, TriageLevel } from '../../lib/types/api';
 import { formatSpecialty } from '../../lib/format';
 import { getErrorMessage } from '../../lib/api/error.utils';
+import { InfoTip } from '../../components/InfoDisclosure';
 
 const triageConfig: Record<string, { icon: React.ElementType; color: string; ring: string; label: string }> = {
   SELF_CARE: { icon: Check, color: 'bg-emerald-50 text-emerald-700', ring: 'ring-emerald-500/10', label: 'Self Care' },
@@ -79,15 +80,20 @@ const MatchRequestCard: React.FC<{
               </div>
             </div>
           </div>
-          <div
-            className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg transition-colors ${
-              remaining <= 15
-                ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50 animate-pulse'
-                : 'text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-800'
-            }`}
-          >
-            <Clock className="w-3.5 h-3.5" />
-            <span className="font-mono font-medium">{minutes}:{seconds.toString().padStart(2, '0')}</span>
+          <div className="flex items-center gap-1">
+            <div
+              className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg transition-colors ${
+                remaining <= 15
+                  ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50 animate-pulse'
+                  : 'text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-800'
+              }`}
+            >
+              <Clock className="w-3.5 h-3.5" />
+              <span className="font-mono font-medium">{minutes}:{seconds.toString().padStart(2, '0')}</span>
+            </div>
+            <InfoTip label="Match response window">
+              Each offer expires after 45 seconds so the patient is offered to the next available physician if you are busy.
+            </InfoTip>
           </div>
         </div>
 
@@ -99,7 +105,7 @@ const MatchRequestCard: React.FC<{
           )}
           <TriageBadge level={request.triageLevel} />
           {request.soapId && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-50 text-gray-600 rounded-lg text-xs font-medium ring-1 ring-gray-200/50">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-300 rounded-lg text-xs font-medium ring-1 ring-gray-200/50 dark:ring-slate-700">
               <FileText className="w-3 h-3" /> SOAP attached
             </span>
           )}
@@ -204,7 +210,7 @@ export const DoctorMatchRequestsPage: React.FC = () => {
           </div>
           <div>
             <h1 className="text-xl font-bold gradient-text">Match Requests</h1>
-            <p className="text-gray-500 text-sm mt-0.5">Patients looking for your expertise</p>
+            <p className="text-gray-500 dark:text-slate-400 text-sm mt-0.5">Patients looking for your expertise</p>
           </div>
         </div>
         {requests && requests.length > 0 && (
@@ -216,11 +222,11 @@ export const DoctorMatchRequestsPage: React.FC = () => {
 
       {!requests || requests.length === 0 ? (
         <div className="card p-12 text-center animate-fade-in">
-          <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <UserPlus className="w-7 h-7 text-gray-300" />
+          <div className="w-14 h-14 bg-gray-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-float">
+            <UserPlus className="w-7 h-7 text-gray-300 dark:text-slate-500" />
           </div>
-          <h3 className="font-semibold text-gray-900 mb-1">No Pending Requests</h3>
-          <p className="text-gray-500 text-sm">New patient matches will appear here in real time.</p>
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-1">No Pending Requests</h3>
+          <p className="text-gray-500 dark:text-slate-400 text-sm">New patient matches will appear here in real time.</p>
         </div>
       ) : (
         <div className="space-y-4 stagger-children">

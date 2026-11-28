@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import { ScoredDoctor } from '../../lib/types/api';
 import { formatSpecialty } from '../../lib/format';
 import { UserAvatar } from '../../components/UserAvatar';
+import { InfoTip } from '../../components/InfoDisclosure';
 
 const MATCH_TIMEOUT_SECONDS = 300;
 const TERMINAL_STATUSES = ['CONSULTATION_CREATED', 'TIMEOUT', 'MANUAL_BROWSE', 'CANCELLED'];
@@ -25,7 +26,7 @@ export const MatchWaitingPage: React.FC = () => {
 
   const { data: matchRequest, isError, refetch } = useQuery({
     queryKey: ['matching', 'status', id],
-    queryFn: () => matchingApi.getStatus(id!),
+    queryFn: () => matchingApi.getStatus(id ?? ''),
     enabled: !!id,
     refetchInterval: (query) => {
       const status = query.state.data?.status;
@@ -114,11 +115,11 @@ export const MatchWaitingPage: React.FC = () => {
     return (
       <div className="max-w-lg mx-auto p-6 mt-12 animate-scale-in">
         <div className="card p-8 text-center">
-          <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-red-50 dark:bg-red-950/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <XCircle className="w-8 h-8 text-red-500" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Match Request Unavailable</h2>
-          <p className="text-gray-600 mb-4">We could not load the status of this match request.</p>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Match Request Unavailable</h2>
+          <p className="text-gray-600 dark:text-slate-400 mb-4">We could not load the status of this match request.</p>
           <div className="flex gap-3 justify-center">
             <button onClick={() => void refetch()} className="btn-primary px-5 py-2.5">
               Retry
@@ -148,13 +149,13 @@ export const MatchWaitingPage: React.FC = () => {
   if (matchRequest.status === 'CONSULTATION_CREATED' && matchRequest.consultationId) {
     return (
       <div className="max-w-lg mx-auto p-6 mt-12 animate-scale-in">
-        <div className="card p-8 text-center border-emerald-200 bg-emerald-50/50">
+        <div className="card p-8 text-center border-emerald-200 dark:border-emerald-800/50 bg-emerald-50/50 dark:bg-emerald-950/30">
           <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-green-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/20 animate-pop-in">
             <CheckCircle className="w-8 h-8 text-white" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Match Found!</h2>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Match Found!</h2>
           {matchRequest.matchedDoctor && (
-            <p className="text-gray-600 mb-5">
+            <p className="text-gray-600 dark:text-slate-300 mb-5">
               Dr. {matchRequest.matchedDoctor.user.firstname} {matchRequest.matchedDoctor.user.lastname} accepted your request.
             </p>
           )}
@@ -172,13 +173,13 @@ export const MatchWaitingPage: React.FC = () => {
   if (matchRequest.status === 'TIMEOUT') {
     return (
       <div className="max-w-lg mx-auto p-6 mt-12 animate-scale-in">
-        <div className="card p-8 text-center border-amber-200 bg-amber-50/50">
+        <div className="card p-8 text-center border-amber-200 dark:border-amber-800/50 bg-amber-50/50 dark:bg-amber-950/30">
           <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/20">
             <Clock className="w-8 h-8 text-white" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">No Doctors Available Right Now</h2>
-          <p className="text-gray-600 mb-6">Don't worry — you can browse and choose a doctor manually.</p>
-          <div className="flex gap-3 justify-center">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No Doctors Available Right Now</h2>
+          <p className="text-gray-600 dark:text-slate-300 mb-6">Don't worry — you can browse and choose a doctor manually.</p>
+          <div className="flex flex-wrap gap-3 justify-center">
             <button
               onClick={handleBrowse}
               className="btn-primary px-5 py-2.5 inline-flex items-center gap-2"
@@ -201,12 +202,12 @@ export const MatchWaitingPage: React.FC = () => {
     return (
       <div className="max-w-lg mx-auto p-6 mt-12 animate-scale-in">
         <div className="card p-8 text-center">
-          <div className="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Search className="w-8 h-8 text-brand-600" />
+          <div className="w-16 h-16 bg-brand-50 dark:bg-brand-950/50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Search className="w-8 h-8 text-brand-600 dark:text-brand-400" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Switched to Manual Browse</h2>
-          <p className="text-gray-600 mb-6">Browse verified doctors directly to schedule your consultation.</p>
-          <div className="flex gap-3 justify-center">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Switched to Manual Browse</h2>
+          <p className="text-gray-600 dark:text-slate-400 mb-6">Browse verified doctors directly to schedule your consultation.</p>
+          <div className="flex flex-wrap gap-3 justify-center">
             <button
               onClick={() => navigate(`/doctors${matchRequest.specialty ? `?specialty=${matchRequest.specialty}` : ''}`)}
               className="btn-primary px-5 py-2.5 inline-flex items-center gap-2"
@@ -226,11 +227,11 @@ export const MatchWaitingPage: React.FC = () => {
     return (
       <div className="max-w-lg mx-auto p-6 mt-12 animate-scale-in">
         <div className="card p-8 text-center">
-          <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <XCircle className="w-8 h-8 text-gray-400" />
+          <div className="w-16 h-16 bg-gray-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <XCircle className="w-8 h-8 text-gray-400 dark:text-slate-500" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Match Cancelled</h2>
-          <p className="text-gray-600 mb-4">This match request was cancelled.</p>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Match Cancelled</h2>
+          <p className="text-gray-600 dark:text-slate-400 mb-4">This match request was cancelled.</p>
           <button
             onClick={() => navigate('/dashboard')}
             className="btn-primary px-5 py-2.5"
@@ -323,8 +324,15 @@ export const MatchWaitingPage: React.FC = () => {
           }
           return (
             <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800">
-              <div className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-3">
-                {matchRequest.status === 'MATCHED' ? 'Next in Queue' : 'Top Candidates'}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">
+                    {matchRequest.status === 'MATCHED' ? 'Next in Queue' : 'Top Candidates'}
+                  </span>
+                  <InfoTip label="Match score details" align="left">
+                    Match score (%) blends specialty alignment, clinical urgency fit, verified rating, experience, and live doctor availability.
+                  </InfoTip>
+                </div>
               </div>
               <div className="space-y-2">
                 {queuedDoctors.slice(0, 5).map((doc) => (
@@ -354,10 +362,10 @@ export const MatchWaitingPage: React.FC = () => {
 
         {/* Info */}
         <div className="px-6 py-4 text-center">
-          <p className="text-xs text-gray-400 dark:text-slate-500 mb-4">
+          <p className="text-xs text-gray-500 dark:text-slate-400 mb-4 leading-relaxed">
             {matchRequest.status === 'SEARCHING'
-              ? 'We\'re contacting the best-matched doctors for you.'
-              : 'The doctor is reviewing your details.'}
+              ? 'We\'re contacting the best-matched doctors for you (45s response window per doctor).'
+              : 'The offered doctor has 45s to respond before the request cascades to the next match.'}
           </p>
           {!isTerminal && (
             <button

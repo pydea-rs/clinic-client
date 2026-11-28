@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { doctorApi } from '../../api';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -16,10 +16,15 @@ const SPECIALTIES: DoctorSpecialty[] = [
 export const DoctorListPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const soapId = searchParams.get('soapId');
-  const initialSpecialty = searchParams.get('specialty') || '';
+  const specialtyParam = searchParams.get('specialty') || '';
 
   const [page, setPage] = useState(1);
-  const [specialty, setSpecialty] = useState(initialSpecialty);
+  const [specialty, setSpecialty] = useState(specialtyParam);
+
+  useEffect(() => {
+    setSpecialty(specialtyParam);
+    setPage(1);
+  }, [specialtyParam]);
   const [visitMethod, setVisitMethod] = useState('');
   const [location, setLocation] = useState('');
   const [search, setSearch] = useState('');

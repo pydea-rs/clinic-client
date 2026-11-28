@@ -9,7 +9,8 @@ import { useChat } from '../hooks/useChat';
 import { useAuthStore } from '../../../lib/stores/auth.store';
 import { soapApi } from '../../../api';
 import { queryClient } from '../../../lib/queryClient';
-import { Loader2, RefreshCw, Stethoscope, Heart, Brain, Thermometer, Pill, ArrowDown } from 'lucide-react';
+import { Loader2, RefreshCw, Stethoscope, Heart, Brain, Thermometer, Pill, ArrowDown, ShieldAlert } from 'lucide-react';
+import { CollapsibleSection } from '../../../components/InfoDisclosure';
 
 interface ChatInterfaceProps {
   forceNew?: boolean;
@@ -184,9 +185,16 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ forceNew }) => {
                 </div>
               </div>
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">How can I help you today?</h2>
-              <p className="text-sm text-gray-500 dark:text-slate-400 max-w-md mb-8 leading-relaxed">
+              <p className="text-sm text-gray-500 dark:text-slate-400 max-w-md mb-4 leading-relaxed">
                 Describe your symptoms or health concerns. I'll help assess your condition and guide you to the right care.
               </p>
+              <div className="flex flex-wrap items-center justify-center gap-2 mb-6 text-[11px] font-medium text-gray-500 dark:text-slate-400">
+                <span className="badge badge-brand">1. AI Symptom Chat</span>
+                <span>→</span>
+                <span className="badge badge-gray">2. SOAP Summary</span>
+                <span>→</span>
+                <span className="badge badge-gray">3. Match a Doctor</span>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-lg stagger-children">
                 {suggestions.map((s) => (
                   <button
@@ -200,6 +208,19 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ forceNew }) => {
                     <span className="leading-snug">{s.text}</span>
                   </button>
                 ))}
+              </div>
+              <div className="w-full max-w-lg mt-5 text-left">
+                <CollapsibleSection
+                  title="How AI triage works & emergency notice"
+                  subtitle="Privacy, SOAP generation, and when to seek urgent care"
+                  icon={<ShieldAlert className="w-4 h-4" />}
+                >
+                  <ul className="space-y-1.5 list-disc list-inside">
+                    <li>Your conversation stays private and helps generate a structured SOAP note when enough details are gathered.</li>
+                    <li>Once a SOAP note is ready, click <strong>Find a Doctor</strong> to auto-match with a specialist.</li>
+                    <li>If you experience chest pain, severe bleeding, or difficulty breathing, call local emergency services immediately.</li>
+                  </ul>
+                </CollapsibleSection>
               </div>
             </div>
           )}

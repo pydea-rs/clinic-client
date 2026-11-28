@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { patientApi } from '../../api';
 import { Link } from 'react-router-dom';
 import { Loader2, ChevronRight, FileText } from 'lucide-react';
-import { formatSpecialty } from '../../lib/format';
+import { formatSpecialty, formatTriageLevel } from '../../lib/format';
 
 const stripMarkdown = (text: string) =>
   text.replace(/\*\*(.*?)\*\*/g, '$1').replace(/__(.*?)__/g, '$1').replace(/\*(.*?)\*/g, '$1').replace(/_(.*?)_/g, '$1');
@@ -19,7 +19,7 @@ export const PatientSOAPListPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-[60vh]">
         <Loader2 className="w-8 h-8 animate-spin text-brand-600" />
       </div>
     );
@@ -58,13 +58,18 @@ export const PatientSOAPListPage: React.FC = () => {
               <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-brand-500 group-hover:translate-x-0.5 transition-all duration-200" />
             </div>
 
-            {soap.suggestedSpecialty && (
-              <div className="mb-3">
+            <div className="flex flex-wrap gap-2 mb-3">
+              {soap.suggestedSpecialty && (
                 <span className="badge badge-blue">
                   {formatSpecialty(soap.suggestedSpecialty)}
                 </span>
-              </div>
-            )}
+              )}
+              {soap.triageLevel && (
+                <span className={`badge ${soap.triageLevel === 'EMERGENCY' || soap.triageLevel === 'URGENT' ? 'badge-red' : 'badge-gray'}`}>
+                  {formatTriageLevel(soap.triageLevel)}
+                </span>
+              )}
+            </div>
 
             <div className="space-y-2 text-sm">
               {soap.subjective && (
@@ -87,16 +92,22 @@ export const PatientSOAPListPage: React.FC = () => {
       </div>
 
       {data?.soaps.length === 0 && (
-        <div className="text-center py-12 animate-fade-in">
-          <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-600">No SOAP notes yet</p>
+        <div className="card text-center py-12 animate-fade-in">
+          <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4 animate-float">
+            <FileText className="w-8 h-8 text-gray-400 dark:text-slate-500" />
+          </div>
+          <p className="text-gray-600 dark:text-slate-300 font-medium">No SOAP notes yet</p>
+          <p className="text-sm text-gray-400 dark:text-slate-500 mt-1 mb-5">Start an AI symptom consultation to generate a structured clinical summary.</p>
+          <Link to="/ai/new" className="btn-primary inline-flex items-center gap-2 px-5 py-2.5 text-sm">
+            Start AI Chat
+          </Link>
         </div>
       )}
 
       {/* Pagination */}
       {data && data.soaps.length > 0 && (
         <div className="mt-8 flex items-center justify-between">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-slate-400">
             Showing {(page - 1) * limit + 1} to {Math.min(page * limit, data.total)} of {data.total}
           </p>
           <div className="flex gap-2">
@@ -107,7 +118,7 @@ export const PatientSOAPListPage: React.FC = () => {
             >
               Previous
             </button>
-            <span className="px-3 py-1 text-sm text-gray-600">
+            <span className="px-3 py-1 text-sm text-gray-600 dark:text-slate-400">
               Page {page} of {totalPages}
             </span>
             <button

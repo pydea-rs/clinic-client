@@ -14,14 +14,21 @@ export const AdminUsersQuickList: React.FC = () => {
     queryFn: () => adminApi.users.list({ skip: (page - 1) * limit, take: limit }),
   });
 
-  const getRoleBadgeColor = (role: string) => {
+  const getEffectiveRoleLabel = (user: { role: string; isAdmin?: boolean; isSuperAdmin?: boolean }) => {
+    if (user.isSuperAdmin) return 'SUPERADMIN';
+    if (user.isAdmin) return 'ADMIN';
+    return user.role;
+  };
+
+  const getRoleBadgeColor = (roleLabel: string) => {
     const colors: Record<string, string> = {
-      PATIENT: 'bg-blue-100 text-blue-800',
-      DOCTOR: 'bg-green-100 text-green-800',
-      ADMIN: 'bg-purple-100 text-purple-800',
-      SUPERADMIN: 'bg-red-100 text-red-800',
+      PATIENT: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300',
+      DOCTOR: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',
+      NURSE: 'bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-300',
+      ADMIN: 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300',
+      SUPERADMIN: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
     };
-    return colors[role] || 'bg-gray-100 text-gray-800';
+    return colors[roleLabel] || 'bg-gray-100 text-gray-800 dark:bg-slate-700 dark:text-slate-200';
   };
 
   if (isLoading) {
@@ -68,9 +75,14 @@ export const AdminUsersQuickList: React.FC = () => {
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-600">{user.email}</td>
                 <td className="px-6 py-4">
-                  <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${getRoleBadgeColor(user.role)}`}>
-                    {user.role}
-                  </span>
+                  {(() => {
+                    const roleLabel = getEffectiveRoleLabel(user);
+                    return (
+                      <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${getRoleBadgeColor(roleLabel)}`}>
+                        {roleLabel}
+                      </span>
+                    );
+                  })()}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-600">
                   {new Date(user.createdAt).toLocaleDateString()}

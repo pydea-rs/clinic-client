@@ -7,6 +7,7 @@ export interface CreateDoctorProfilePayload {
   startedAt: string;
   specialty: DoctorSpecialty;
   secondarySpecialties?: DoctorSpecialty[];
+  location?: string;
   clinicLocation?: string;
   bio?: string;
   university?: string;

@@ -5,6 +5,8 @@ import toast from 'react-hot-toast';
 import { Appointment } from '../../lib/types/api';
 import { getErrorMessage } from '../../lib/api/error.utils';
 import { formatStatus, formatVisitMethod } from '../../lib/format';
+import { CollapsibleSection } from '../../components/InfoDisclosure';
+import { Calendar } from 'lucide-react';
 
 export const AppointmentDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -63,11 +65,11 @@ export const AppointmentDetailPage: React.FC = () => {
 
   if (!appointment) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 2a10 10 0 100 20 10 10 0 000-20z" /></svg>
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 2a10 10 0 100 20 10 10 0 000-20z" /></svg>
         </div>
-        <p className="text-gray-500 font-medium">Appointment not found</p>
+        <p className="text-gray-500 dark:text-slate-400 font-medium">Appointment not found</p>
       </div>
     );
   }
@@ -85,45 +87,58 @@ export const AppointmentDetailPage: React.FC = () => {
 
       <div className="card p-6 animate-slide-in-up" style={{ animationDelay: '50ms' }}>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold">Details</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Details</h2>
           <span className={getStatusBadge(appointment.status)}>
             {formatStatus(appointment.status)}
           </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div className="p-3 rounded-xl bg-gray-50/80">
-            <span className="text-gray-500 text-xs uppercase tracking-wide">Date & Time</span>
-            <p className="font-medium mt-0.5">{new Date(appointment.dateTime).toLocaleString()}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+          <div className="p-3 rounded-xl bg-gray-50/80 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700/60">
+            <span className="text-gray-500 dark:text-slate-400 text-xs uppercase tracking-wide">Date & Time</span>
+            <p className="font-medium text-gray-900 dark:text-white mt-0.5">{new Date(appointment.dateTime).toLocaleString()}</p>
           </div>
-          <div className="p-3 rounded-xl bg-gray-50/80">
-            <span className="text-gray-500 text-xs uppercase tracking-wide">Duration</span>
-            <p className="font-medium mt-0.5">{appointment.durationMinutes} minutes</p>
+          <div className="p-3 rounded-xl bg-gray-50/80 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700/60">
+            <span className="text-gray-500 dark:text-slate-400 text-xs uppercase tracking-wide">Duration</span>
+            <p className="font-medium text-gray-900 dark:text-white mt-0.5">{appointment.durationMinutes} minutes</p>
           </div>
-          <div className="p-3 rounded-xl bg-gray-50/80">
-            <span className="text-gray-500 text-xs uppercase tracking-wide">Method</span>
-            <p className="font-medium mt-0.5">{formatVisitMethod(appointment.method)}</p>
+          <div className="p-3 rounded-xl bg-gray-50/80 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700/60">
+            <span className="text-gray-500 dark:text-slate-400 text-xs uppercase tracking-wide">Method</span>
+            <p className="font-medium text-gray-900 dark:text-white mt-0.5">{formatVisitMethod(appointment.method)}</p>
           </div>
-          <div className="p-3 rounded-xl bg-gray-50/80">
-            <span className="text-gray-500 text-xs uppercase tracking-wide">Price</span>
-            <p className="font-medium mt-0.5">${appointment.price}</p>
+          <div className="p-3 rounded-xl bg-gray-50/80 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700/60">
+            <span className="text-gray-500 dark:text-slate-400 text-xs uppercase tracking-wide">Price</span>
+            <p className="font-medium text-gray-900 dark:text-white mt-0.5">${appointment.price}</p>
           </div>
-          <div className="p-3 rounded-xl bg-gray-50/80">
-            <span className="text-gray-500 text-xs uppercase tracking-wide">Doctor ID</span>
-            <p className="font-medium mt-0.5">{appointment.doctorId}</p>
+          <div className="p-3 rounded-xl bg-gray-50/80 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700/60">
+            <span className="text-gray-500 dark:text-slate-400 text-xs uppercase tracking-wide">Doctor ID</span>
+            <p className="font-medium text-gray-900 dark:text-white mt-0.5">{appointment.doctorId}</p>
           </div>
-          <div className="p-3 rounded-xl bg-gray-50/80">
-            <span className="text-gray-500 text-xs uppercase tracking-wide">Patient ID</span>
-            <p className="font-medium mt-0.5">{appointment.patientId}</p>
+          <div className="p-3 rounded-xl bg-gray-50/80 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700/60">
+            <span className="text-gray-500 dark:text-slate-400 text-xs uppercase tracking-wide">Patient ID</span>
+            <p className="font-medium text-gray-900 dark:text-white mt-0.5 truncate">{appointment.patientId}</p>
           </div>
         </div>
 
         {appointment.notes && (
-          <div className="mt-5 p-4 rounded-xl bg-gray-50/80 border border-gray-100">
-            <span className="text-gray-500 text-xs uppercase tracking-wide">Notes</span>
-            <p className="font-medium mt-1">{appointment.notes}</p>
+          <div className="mt-5 p-4 rounded-xl bg-gray-50/80 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700/60">
+            <span className="text-gray-500 dark:text-slate-400 text-xs uppercase tracking-wide">Notes</span>
+            <p className="font-medium text-gray-900 dark:text-slate-100 mt-1">{appointment.notes}</p>
           </div>
         )}
+
+        <CollapsibleSection
+          title="Appointment guidelines"
+          subtitle="Rescheduling, cancellations, and preparation"
+          icon={<Calendar className="w-4 h-4" />}
+          className="mt-5"
+        >
+          <ul className="space-y-1.5 list-disc list-inside">
+            <li>Please join or arrive 5 minutes before the scheduled start time.</li>
+            <li>Pending appointments may be cancelled before the doctor confirms.</li>
+            <li>For chat visits, keep an eye on your Notifications and Messages tab.</li>
+          </ul>
+        </CollapsibleSection>
 
         <button
           onClick={() => navigate('/appointments')}

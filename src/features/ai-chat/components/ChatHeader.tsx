@@ -19,7 +19,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
       <div className="px-4 py-2.5 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className={`w-9 h-9 bg-gradient-to-br from-brand-500 to-brand-700 rounded-xl flex items-center justify-center shadow-sm shadow-brand-500/25 transition-transform duration-200 ease-spring hover:scale-105 ${connectionStatus.connected ? 'animate-breathe' : ''}`}>
-            <Bot className="w-4.5 h-4.5 text-white" />
+            <Bot className="w-[18px] h-[18px] text-white" />
           </div>
           <div className="leading-tight">
             <h1 className="font-semibold text-gray-900 dark:text-white text-sm">AI Health Assistant</h1>

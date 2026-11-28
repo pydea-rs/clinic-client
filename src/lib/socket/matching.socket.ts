@@ -100,10 +100,12 @@ class MatchingSocketService {
   }
 
   on(event: string, callback: MatchEventCallback): void {
-    if (!this.listeners.has(event)) {
-      this.listeners.set(event, new Set());
+    let set = this.listeners.get(event);
+    if (!set) {
+      set = new Set();
+      this.listeners.set(event, set);
     }
-    this.listeners.get(event)!.add(callback);
+    set.add(callback);
     if (this.socket) {
       this.socket.on(event, callback as (...args: unknown[]) => void);
     }

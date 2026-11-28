@@ -373,7 +373,7 @@ describe('Concurrent Operations', () => {
       // PSYCHIATRY specialty ensures only our doctor matches
       patientSocket.emit('match:request', { specialty: 'PSYCHIATRY' });
 
-      const [searching, offer] = await Promise.all([
+      const [searching] = await Promise.all([
         searchingPromise,
         offerPromise,
       ]);
@@ -397,11 +397,10 @@ describe('Concurrent Operations', () => {
 
       const cancelPromise = patient1Tc.axios.patch(`/matching/${matchId}/cancel`);
 
-      doctorSocket.emit('match:accept', { matchRequestId: matchId });
-
-      const [acceptResult, cancelResult] = await Promise.all([
+      await Promise.all([
         acceptResultPromise,
         cancelPromise,
+        Promise.resolve(doctorSocket.emit('match:accept', { matchRequestId: matchId })),
       ]);
 
       // One wins; the other gets an error or conflict.

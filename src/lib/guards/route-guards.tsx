@@ -1,14 +1,10 @@
 import React, { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../stores/auth.store';
-import type { User } from '../types/api';
+import { isUserAccountBlocked } from './account-status';
 
 interface GuardProps {
   children: React.ReactNode;
-}
-
-export function isUserAccountBlocked(user: User | null): boolean {
-  return Boolean(user?.isBanned || user?.isActive === false);
 }
 
 const BlockedRedirect: React.FC = () => {

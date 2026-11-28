@@ -48,9 +48,9 @@ export const NurseConsultationsPage: React.FC = () => {
     return (
       <div className="flex items-center justify-center min-h-[60vh] animate-fade-in">
         <div className="text-center">
-          <ClipboardList className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <h2 className="text-lg font-bold text-gray-900">No Permission</h2>
-          <p className="text-sm text-gray-500 mt-1">You don't have the View Consultation Notes permission.</p>
+          <ClipboardList className="w-12 h-12 text-gray-300 dark:text-slate-600 mx-auto mb-3" />
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">No Permission</h2>
+          <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">You don't have the View Consultation Notes permission.</p>
         </div>
       </div>
     );
@@ -60,18 +60,18 @@ export const NurseConsultationsPage: React.FC = () => {
 
   return (
     <div className="max-w-5xl mx-auto p-6 animate-fade-in">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-violet-500 rounded-xl flex items-center justify-center shadow-soft">
             <ClipboardList className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Consultations</h1>
-            <span className="text-sm text-gray-400">(read-only)</span>
+            <h1 className="text-3xl font-bold gradient-text">Consultations</h1>
+            <span className="text-sm text-gray-500 dark:text-slate-400">(read-only)</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-gray-400" />
+          <Filter className="w-4 h-4 text-gray-400 dark:text-slate-400" />
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -85,69 +85,70 @@ export const NurseConsultationsPage: React.FC = () => {
       </div>
 
       {consultations.length === 0 ? (
-        <div className="card p-12 text-center">
-          <ClipboardList className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500">
+        <div className="card p-12 text-center animate-scale-in">
+          <ClipboardList className="w-10 h-10 text-gray-300 dark:text-slate-600 mx-auto mb-3 animate-float" />
+          <p className="text-gray-500 dark:text-slate-400">
             {statusFilter ? 'No consultations match the selected filter.' : 'No consultations found.'}
           </p>
         </div>
       ) : (
         <div className="card overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="text-left px-4 py-3 font-medium text-gray-500">Patient</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-500">Doctor</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-500">Decision</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-500">Method</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-500">Date</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-500">Status</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-500">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {consultations.map((c: Consultation) => {
-                const chatAction = getConsultationChatAction(c, user, assignments);
-                return (
-                  <tr key={c.id} className="hover:bg-gray-50/80 transition-colors">
-                    <td className="px-4 py-3 font-medium text-gray-900">
-                      {c.patient?.firstname || 'Patient'} {c.patient?.lastname || ''}
-                    </td>
-                    <td className="px-4 py-3 text-gray-600">
-                      {c.doctor?.user
-                        ? `Dr. ${c.doctor.user.firstname} ${c.doctor.user.lastname}`
-                        : '—'}
-                    </td>
-                    <td className="px-4 py-3 text-gray-600">
-                      {c.doctorDecision ? formatVisitType(c.doctorDecision) : 'N/A'}
-                    </td>
-                    <td className="px-4 py-3 text-gray-600">
-                      {c.visitMethod ? formatVisitMethod(c.visitMethod) : '—'}
-                    </td>
-                    <td className="px-4 py-3 text-gray-600">
-                      {new Date(c.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`badge text-xs ${
-                        c.status === 'COMPLETED' ? 'badge-green' :
-                        c.status === 'IN_PROGRESS' ? 'badge-blue' :
-                        c.status === 'CANCELLED' ? 'badge-red' : 'badge-yellow'
-                      }`}>
-                        {formatStatus(c.status)}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        {chatAction.canOpen && (
-                          <button
-                            type="button"
-                            onClick={() => openChat(c.id)}
-                            disabled={openingId === c.id}
-                            className="btn-success px-2.5 py-1 text-xs inline-flex items-center gap-1 disabled:opacity-50"
-                          >
-                            <MessageSquare className="w-3.5 h-3.5" />
-                            {openingId === c.id ? 'Opening...' : chatAction.label}
-                          </button>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 dark:bg-slate-800/70 border-b border-gray-200 dark:border-slate-700">
+                <tr>
+                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Patient</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Doctor</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Decision</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Method</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Date</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Status</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-slate-400">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
+                {consultations.map((c: Consultation) => {
+                  const chatAction = getConsultationChatAction(c, user, assignments);
+                  return (
+                    <tr key={c.id} className="table-row-hover transition-colors">
+                      <td className="px-4 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                        {c.patient?.firstname || 'Patient'} {c.patient?.lastname || ''}
+                      </td>
+                      <td className="px-4 py-3 text-gray-600 dark:text-slate-300 whitespace-nowrap">
+                        {c.doctor?.user
+                          ? `Dr. ${c.doctor.user.firstname} ${c.doctor.user.lastname}`
+                          : '—'}
+                      </td>
+                      <td className="px-4 py-3 text-gray-600 dark:text-slate-300 whitespace-nowrap">
+                        {c.doctorDecision ? formatVisitType(c.doctorDecision) : 'N/A'}
+                      </td>
+                      <td className="px-4 py-3 text-gray-600 dark:text-slate-300 whitespace-nowrap">
+                        {c.visitMethod ? formatVisitMethod(c.visitMethod) : '—'}
+                      </td>
+                      <td className="px-4 py-3 text-gray-600 dark:text-slate-300 whitespace-nowrap">
+                        {new Date(c.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`badge text-xs ${
+                          c.status === 'COMPLETED' ? 'badge-green' :
+                          c.status === 'IN_PROGRESS' ? 'badge-blue' :
+                          c.status === 'CANCELLED' ? 'badge-red' : 'badge-yellow'
+                        }`}>
+                          {formatStatus(c.status)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          {chatAction.canOpen && (
+                            <button
+                              type="button"
+                              onClick={() => openChat(c.id)}
+                              disabled={openingId === c.id}
+                              className="btn-success px-2.5 py-1 text-xs inline-flex items-center gap-1 disabled:opacity-50"
+                            >
+                              <MessageSquare className="w-3.5 h-3.5" />
+                              {openingId === c.id ? 'Opening...' : chatAction.label}
+                            </button>
                         )}
                         <Link
                           to={`/consultation/${c.id}`}
@@ -158,11 +159,12 @@ export const NurseConsultationsPage: React.FC = () => {
                         </Link>
                       </div>
                     </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

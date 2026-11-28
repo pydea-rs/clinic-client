@@ -148,7 +148,7 @@ export const NotificationPage: React.FC = () => {
 
   const { data: modalConsultation, isLoading: modalLoading } = useQuery({
     queryKey: ['consultation', modalConsultationId],
-    queryFn: () => consultationApi.getConsultationById(modalConsultationId!),
+    queryFn: () => consultationApi.getConsultationById(modalConsultationId ?? ''),
     enabled: Boolean(modalConsultationId),
   });
 

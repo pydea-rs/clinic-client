@@ -177,9 +177,6 @@ export const DoctorDashboardPage: React.FC = () => {
                 <div className={`w-12 h-12 bg-gradient-to-br ${card.gradient} rounded-xl shadow-soft flex items-center justify-center group-hover:scale-105 transition-transform duration-300 ease-spring`}>
                   <Icon className="w-6 h-6 text-white" />
                 </div>
-                <span className={`badge ${card.badgeClass} text-xs`}>
-                  {card.value}
-                </span>
               </div>
               <h3 className="counter-value text-2xl font-bold text-gray-900 dark:text-white">{card.value}</h3>
               <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">{card.label}</p>

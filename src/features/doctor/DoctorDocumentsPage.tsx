@@ -201,14 +201,14 @@ export const DoctorDocumentsPage: React.FC = () => {
       </div>
 
       {/* Info Box */}
-      <div className="card mt-8 p-6 border-brand-100 bg-brand-50/30 animate-slide-in-up" style={{ animationDelay: '100ms' }}>
-        <h3 className="font-bold text-brand-900 mb-2">Document Requirements</h3>
-        <ul className="text-sm text-brand-800 space-y-1">
-          <li>• Medical license (required)</li>
-          <li>• Educational degree (required)</li>
-          <li>• Professional certifications</li>
-          <li>• Insurance documentation</li>
-          <li>• All documents must be clear and legible</li>
+      <div className="card mt-8 p-6 border-brand-100 dark:border-brand-800/40 bg-brand-50/30 dark:bg-brand-950/20 animate-slide-in-up" style={{ animationDelay: '100ms' }}>
+        <h3 className="font-bold text-brand-900 dark:text-brand-200 mb-2">Document Requirements & Verification</h3>
+        <ul className="text-sm text-brand-800 dark:text-brand-300 space-y-1">
+          <li>• <strong>Medical License</strong> (required): current valid medical license</li>
+          <li>• <strong>Government ID Card</strong> (recommended): identity confirmation</li>
+          <li>• <strong>Board Certifications</strong>: specialty / fellowship credentials</li>
+          <li>• <strong>Profile Photo & Other</strong>: high-resolution headshot or supporting records</li>
+          <li>• Clear PDF or JPG/PNG scan up to 10 MB; admin review usually completes within 24–48 hours</li>
         </ul>
       </div>
     </div>

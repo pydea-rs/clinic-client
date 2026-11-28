@@ -91,7 +91,7 @@ export const AppointmentsPage: React.FC = () => {
           </div>
           <div>
             <h1 className="text-2xl font-bold gradient-text">Appointments</h1>
-            <p className="text-gray-500 text-sm">Manage and track your appointments</p>
+            <p className="text-gray-500 dark:text-slate-400 text-sm">Manage and track your appointments</p>
           </div>
         </div>
       </div>
@@ -99,11 +99,11 @@ export const AppointmentsPage: React.FC = () => {
       {appointments.length === 0 ? (
         <div className="flex-1 flex items-center justify-center animate-scale-in">
           <div className="text-center max-w-sm">
-            <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+            <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4 animate-float">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
             </div>
-            <p className="text-gray-500 font-medium">No appointments found</p>
-            <p className="text-gray-400 text-sm mt-1">Your appointments will appear here once booked</p>
+            <p className="text-gray-500 dark:text-slate-300 font-medium">No appointments found</p>
+            <p className="text-gray-400 dark:text-slate-500 text-sm mt-1">Your appointments will appear here once booked</p>
             <Link to="/doctors" className="btn-primary inline-flex items-center gap-2 px-5 py-2.5 mt-5 text-sm">
               Find a Doctor
             </Link>
@@ -187,7 +187,7 @@ export const AppointmentsPage: React.FC = () => {
               >
                 Previous
               </button>
-              <span className="text-sm text-gray-600 font-medium">
+              <span className="text-sm text-gray-600 dark:text-slate-400 font-medium">
                 Page {page} of {totalPages}
               </span>
               <button

@@ -19,16 +19,16 @@ export const RatingWidget: React.FC<RatingWidgetProps> = ({
 }) => {
   const getStarColor = (star: number) => {
     if (averageRating >= star - 0.25) return 'text-yellow-400';
-    return 'text-gray-300';
+    return 'text-gray-300 dark:text-slate-600';
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-xl font-bold mb-4">Rating & Reviews</h2>
+    <div className="card p-6">
+      <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Rating & Reviews</h2>
       
-      <div className="flex items-center space-x-6 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-6 mb-2">
         <div className="text-center">
-          <div className="text-4xl font-bold text-gray-900">
+          <div className="text-4xl font-bold text-gray-900 dark:text-white">
             {averageRating.toFixed(1)}
           </div>
           <div className="flex justify-center space-x-1 mt-1">
@@ -43,7 +43,7 @@ export const RatingWidget: React.FC<RatingWidgetProps> = ({
               </svg>
             ))}
           </div>
-          <div className="text-sm text-gray-500 mt-1">
+          <div className="text-sm text-gray-500 dark:text-slate-400 mt-1">
             {totalReviews} review{totalReviews !== 1 && 's'}
           </div>
         </div>
@@ -55,14 +55,14 @@ export const RatingWidget: React.FC<RatingWidgetProps> = ({
               const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
               return (
                 <div key={star} className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-600 w-3">{star}</span>
-                  <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <span className="text-sm text-gray-600 dark:text-slate-400 w-3">{star}</span>
+                  <div className="flex-1 h-2 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-yellow-400 rounded-full"
+                      className="h-full bg-yellow-400 rounded-full transition-all duration-500"
                       style={{ width: `${percentage}%` }}
                     />
                   </div>
-                  <span className="text-sm text-gray-500 w-8">{count}</span>
+                  <span className="text-sm text-gray-500 dark:text-slate-400 w-8">{count}</span>
                 </div>
               );
             })}

@@ -3,7 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { ToastProvider } from '../components/Toast';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { useAuth } from '../features/auth/hooks/useAuth';
-import { AuthGuard, PatientGuard, DoctorGuard, NurseGuard, AdminGuard, isUserAccountBlocked } from '../lib/guards/route-guards';
+import { AuthGuard, PatientGuard, DoctorGuard, NurseGuard, AdminGuard } from '../lib/guards/route-guards';
+import { isUserAccountBlocked } from '../lib/guards/account-status';
 import { Shell } from '../components/Shell';
 const AuthForm = React.lazy(() => import('../features/auth/components/AuthForm').then(m => ({ default: m.AuthForm })));
 const ChatInterface = React.lazy(() => import('../features/ai-chat/components/ChatInterface').then(m => ({ default: m.ChatInterface })));

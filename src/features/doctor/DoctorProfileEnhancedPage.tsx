@@ -151,14 +151,14 @@ export const DoctorProfileEnhancedPage: React.FC = () => {
                     className="w-20 h-20 bg-gradient-to-br from-brand-500 to-purple-500 rounded-2xl shadow-soft flex-shrink-0"
                   />
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">{fullName}</h2>
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">{fullName}</h2>
                     {profile?.specialty && (
                       <span className="badge badge-purple mt-1">
                         {formatSpecialty(profile.specialty)}
                       </span>
                     )}
                     {profile?.user?.email && (
-                      <p className="text-sm text-gray-500 mt-1 flex items-center gap-1.5">
+                      <p className="text-sm text-gray-500 dark:text-slate-400 mt-1 flex items-center gap-1.5">
                         <Mail className="w-3.5 h-3.5" />
                         {profile.user.email}
                       </p>
@@ -177,49 +177,49 @@ export const DoctorProfileEnhancedPage: React.FC = () => {
               {/* Bio */}
               {profile?.bio && (
                 <div className="mb-6">
-                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">About</h3>
-                  <p className="text-gray-700 leading-relaxed">{profile.bio}</p>
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-2">About</h3>
+                  <p className="text-gray-700 dark:text-slate-300 leading-relaxed">{profile.bio}</p>
                 </div>
               )}
 
               {/* Details Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {profile?.phoneNumber && (
-                  <div className="flex items-center gap-3 p-3 bg-gray-50/80 rounded-xl">
-                    <Phone className="w-4 h-4 text-gray-400" />
+                  <div className="flex items-center gap-3 p-3 bg-gray-50/80 dark:bg-slate-800/60 rounded-xl">
+                    <Phone className="w-4 h-4 text-gray-400 dark:text-slate-500" />
                     <div>
-                      <p className="text-xs text-gray-500">Phone</p>
-                      <p className="text-sm font-medium text-gray-900">{profile.phoneNumber}</p>
+                      <p className="text-xs text-gray-500 dark:text-slate-400">Phone</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">{profile.phoneNumber}</p>
                     </div>
                   </div>
                 )}
 
                 {profile?.licenseNumber && (
-                  <div className="flex items-center gap-3 p-3 bg-gray-50/80 rounded-xl">
-                    <Award className="w-4 h-4 text-gray-400" />
+                  <div className="flex items-center gap-3 p-3 bg-gray-50/80 dark:bg-slate-800/60 rounded-xl">
+                    <Award className="w-4 h-4 text-gray-400 dark:text-slate-500" />
                     <div>
-                      <p className="text-xs text-gray-500">License Number</p>
-                      <p className="text-sm font-medium text-gray-900">{profile.licenseNumber}</p>
+                      <p className="text-xs text-gray-500 dark:text-slate-400">License Number</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">{profile.licenseNumber}</p>
                     </div>
                   </div>
                 )}
 
                 {profile?.clinicLocation && (
-                  <div className="flex items-center gap-3 p-3 bg-gray-50/80 rounded-xl">
-                    <Globe className="w-4 h-4 text-gray-400" />
+                  <div className="flex items-center gap-3 p-3 bg-gray-50/80 dark:bg-slate-800/60 rounded-xl">
+                    <Globe className="w-4 h-4 text-gray-400 dark:text-slate-500" />
                     <div>
-                      <p className="text-xs text-gray-500">Clinic Location</p>
-                      <p className="text-sm font-medium text-gray-900">{profile.clinicLocation}</p>
+                      <p className="text-xs text-gray-500 dark:text-slate-400">Clinic Location</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">{profile.clinicLocation}</p>
                     </div>
                   </div>
                 )}
 
                 {profile?.startedAt && (
-                  <div className="flex items-center gap-3 p-3 bg-gray-50/80 rounded-xl">
-                    <Clock className="w-4 h-4 text-gray-400" />
+                  <div className="flex items-center gap-3 p-3 bg-gray-50/80 dark:bg-slate-800/60 rounded-xl">
+                    <Clock className="w-4 h-4 text-gray-400 dark:text-slate-500" />
                     <div>
-                      <p className="text-xs text-gray-500">Practicing Since</p>
-                      <p className="text-sm font-medium text-gray-900">
+                      <p className="text-xs text-gray-500 dark:text-slate-400">Practicing Since</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
                         {new Date(profile.startedAt).toLocaleDateString()}
                       </p>
                     </div>
@@ -230,7 +230,7 @@ export const DoctorProfileEnhancedPage: React.FC = () => {
               {/* Languages */}
               {profile?.languages && profile.languages.length > 0 && (
                 <div className="mt-6">
-                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">Languages</h3>
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-2">Languages</h3>
                   <div className="flex flex-wrap gap-2">
                     {profile.languages.map((lang) => (
                       <span key={lang} className="badge badge-blue">
@@ -244,7 +244,7 @@ export const DoctorProfileEnhancedPage: React.FC = () => {
               {/* Secondary Specialties */}
               {profile?.secondarySpecialties && profile.secondarySpecialties.length > 0 && (
                 <div className="mt-6">
-                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">Secondary Specialties</h3>
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-2">Secondary Specialties</h3>
                   <div className="flex flex-wrap gap-2">
                     {profile.secondarySpecialties.map((spec) => (
                       <span key={spec} className="badge badge-purple">
@@ -258,7 +258,7 @@ export const DoctorProfileEnhancedPage: React.FC = () => {
               {/* Visit Methods */}
               {profile?.visitMethods && profile.visitMethods.length > 0 && (
                 <div className="mt-6">
-                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">Visit Methods</h3>
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-2">Visit Methods</h3>
                   <div className="flex flex-wrap gap-2">
                     {profile.visitMethods.map((method) => (
                       <span key={method} className="badge badge-green">
@@ -277,28 +277,28 @@ export const DoctorProfileEnhancedPage: React.FC = () => {
           {/* Verification Status */}
           <div className="card p-6 animate-slide-in-up" style={{ animationDelay: '50ms' }}>
             <div className="flex items-center gap-2 mb-4">
-              <Shield className="w-5 h-5 text-brand-600" />
-              <h3 className="font-bold text-gray-900">Verification Status</h3>
+              <Shield className="w-5 h-5 text-brand-600 dark:text-brand-400" />
+              <h3 className="font-bold text-gray-900 dark:text-white">Verification Status</h3>
             </div>
 
             <div className="space-y-3">
               {getVerificationBadge()}
 
               {profile?.verified && profile.verifiedAt && (
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-slate-400">
                   Verified on {new Date(profile.verifiedAt).toLocaleDateString()}
                 </p>
               )}
 
               {profile?.rejectionReason && (
                 <>
-                  <div className="p-3 bg-red-50 border border-red-100 rounded-xl">
-                    <p className="text-sm text-red-700">
+                  <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-800/50 rounded-xl">
+                    <p className="text-sm text-red-700 dark:text-red-300">
                       <span className="font-medium">Reason: </span>
                       {profile.rejectionReason}
                     </p>
                   </div>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-500 dark:text-slate-400">
                     Update your profile or documents, then re-submit them for review.
                   </p>
                   <button
@@ -312,8 +312,8 @@ export const DoctorProfileEnhancedPage: React.FC = () => {
               )}
 
               {!profile?.verified && !profile?.rejectionReason && (
-                <p className="text-sm text-gray-500">
-                  Your profile is under review. Please ensure all required documents are uploaded.
+                <p className="text-sm text-gray-500 dark:text-slate-400">
+                  Your profile is under review. Please ensure all required documents are uploaded. Admin review typically takes 24–48 hours.
                 </p>
               )}
             </div>
@@ -321,9 +321,9 @@ export const DoctorProfileEnhancedPage: React.FC = () => {
 
           {/* Documents */}
           <div className="card overflow-hidden animate-slide-in-up" style={{ animationDelay: '100ms' }}>
-            <div className="px-6 py-4 border-b flex items-center gap-2">
-              <FileText className="w-5 h-5 text-brand-600" />
-              <h3 className="font-bold text-gray-900">Documents</h3>
+            <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center gap-2">
+              <FileText className="w-5 h-5 text-brand-600 dark:text-brand-400" />
+              <h3 className="font-bold text-gray-900 dark:text-white">Documents</h3>
             </div>
             <DoctorDocumentsPage />
           </div>

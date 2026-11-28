@@ -31,7 +31,7 @@ export const useChat = (options?: UseChatOptions) => {
   const reconnectAttempts = useRef(0);
   const lastUserMessageRef = useRef<string | null>(null);
   const lastUserMessageAtRef = useRef<number>(0);
-  const isInitializingRef = useRef(false);
+  const initSeqRef = useRef(0);
 
   const mountedRef = useRef(true);
   const soapReadyCallbackRef = useRef<SoapReadyCallback | null>(null);
@@ -99,16 +99,6 @@ export const useChat = (options?: UseChatOptions) => {
     },
     []
   );
-
-  const toggleDeliveryMode = useCallback(() => {
-    setDeliveryMode((prev) => {
-      const next = prev === 'sse' ? 'poll' : 'sse';
-      deliveryModeRef.current = next;
-      forcePollModeRef.current = next === 'poll';
-      localStorage.setItem('bp_delivery_mode', next);
-      return next;
-    });
-  }, []);
 
   const startTypewriter = useCallback(
     (id: string, fullText: string, timestamp: Date, choices?: MessageChoice[]) => {
@@ -601,6 +591,29 @@ export const useChat = (options?: UseChatOptions) => {
     [addBotMessage, updateConnectionStatus, extractMessageText, extractChoices, getGreetingStripper, notifySoapReady, stopPolling, stopTypewriter]
   );
 
+  const toggleDeliveryMode = useCallback(() => {
+    const next = deliveryModeRef.current === 'sse' ? 'poll' : 'sse';
+    deliveryModeRef.current = next;
+    forcePollModeRef.current = next === 'poll';
+    localStorage.setItem('bp_delivery_mode', next);
+    setDeliveryMode(next);
+
+    if (next === 'poll') {
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
+      }
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
+      updateConnectionStatus({ connected: true, error: undefined, reconnecting: false });
+    } else if (conversationIdRef.current) {
+      stopPolling();
+      connectSSE(conversationIdRef.current);
+    }
+  }, [connectSSE, stopPolling, updateConnectionStatus]);
+
   // Use refs for values accessed inside sendMessage to avoid stale closures
   const conversationIdRef = useRef<string | null>(null);
   const isSendingRef = useRef(false);
@@ -631,7 +644,7 @@ export const useChat = (options?: UseChatOptions) => {
     getGreetingStripper().reset();
     lastUserMessageRef.current = null;
     lastUserMessageAtRef.current = 0;
-    isInitializingRef.current = false;
+    initSeqRef.current += 1;
     setChatState({
       messages: [],
       conversationId: null,
@@ -726,16 +739,25 @@ export const useChat = (options?: UseChatOptions) => {
   );
 
   const initializeChat = useCallback(async () => {
-    if (isInitializingRef.current) return;
-    isInitializingRef.current = true;
-    updateConnectionStatus({ error: undefined });
-    try {
-      const conversationId = await startConversation();
-      if (conversationId && mountedRef.current) connectSSE(conversationId);
-    } finally {
-      isInitializingRef.current = false;
+    const seq = ++initSeqRef.current;
+    disconnect();
+    seenBotMessageIds.current.clear();
+    notifiedSoapIdsRef.current.clear();
+    getGreetingStripper().reset();
+    lastUserMessageRef.current = null;
+    lastUserMessageAtRef.current = 0;
+    setChatState({
+      messages: [],
+      conversationId: null,
+      connectionStatus: { connected: false },
+      isTyping: false,
+      isSending: false,
+    });
+    const conversationId = await startConversation();
+    if (conversationId && mountedRef.current && initSeqRef.current === seq) {
+      connectSSE(conversationId);
     }
-  }, [startConversation, connectSSE, updateConnectionStatus]);
+  }, [disconnect, getGreetingStripper, startConversation, connectSSE]);
 
   useEffect(() => {
     mountedRef.current = true;

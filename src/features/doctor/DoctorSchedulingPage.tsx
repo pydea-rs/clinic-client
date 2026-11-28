@@ -39,7 +39,7 @@ export const DoctorSchedulingPage: React.FC = () => {
         </div>
         <div>
           <h1 className="text-2xl font-bold gradient-text">Schedule Management</h1>
-          <p className="text-sm text-gray-500">Configure your availability, durations, and exceptions</p>
+          <p className="text-sm text-gray-500 dark:text-slate-400">Configure your availability, durations, and exceptions</p>
         </div>
       </div>
 
@@ -54,23 +54,23 @@ export const DoctorSchedulingPage: React.FC = () => {
               onClick={() => setActiveTab(tab.value)}
               className={`p-4 rounded-xl text-left transition-all duration-200 border-2 ${
                 isActive
-                  ? 'border-brand-500 bg-brand-50/50 shadow-soft'
-                  : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
+                  ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-950/40 shadow-soft'
+                  : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 hover:border-gray-300 dark:hover:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-800'
               }`}
             >
               <div className="flex items-center gap-3">
                 <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${
                   isActive
                     ? 'bg-brand-600 text-white'
-                    : 'bg-gray-100 text-gray-500'
+                    : 'bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-300'
                 }`}>
-                  <Icon className="w-4.5 h-4.5" />
+                  <Icon className="w-[18px] h-[18px]" />
                 </div>
                 <div>
-                  <h3 className={`font-semibold text-sm ${isActive ? 'text-brand-900' : 'text-gray-700'}`}>
+                  <h3 className={`font-semibold text-sm ${isActive ? 'text-brand-900 dark:text-brand-200' : 'text-gray-700 dark:text-slate-200'}`}>
                     {tab.label}
                   </h3>
-                  <p className={`text-xs mt-0.5 ${isActive ? 'text-brand-600' : 'text-gray-400'}`}>
+                  <p className={`text-xs mt-0.5 ${isActive ? 'text-brand-600 dark:text-brand-400' : 'text-gray-400 dark:text-slate-400'}`}>
                     {tab.description}
                   </p>
                 </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { schedulingApi } from '../../api';
 import toast from 'react-hot-toast';
 import { AvailabilityException } from '../../lib/types/api';
@@ -16,20 +16,25 @@ export const ExceptionsPanel: React.FC<{ doctorId?: number }> = ({ doctorId }) =
     reason: '',
   });
 
-  useEffect(() => {
-    loadExceptions();
-  }, [doctorId]);
-
-  const loadExceptions = async () => {
+  const loadExceptions = useCallback(async (isCancelled?: () => boolean) => {
     try {
       const data = await schedulingApi.getExceptions(doctorId);
-      setExceptions(data);
+      if (!isCancelled?.()) setExceptions(data);
     } catch (error: unknown) {
-      toast.error(getErrorMessage(error, 'Failed to load exceptions'));
+      if (!isCancelled?.()) toast.error(getErrorMessage(error, 'Failed to load exceptions'));
     } finally {
-      setLoading(false);
+      if (!isCancelled?.()) setLoading(false);
     }
-  };
+  }, [doctorId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    void loadExceptions(() => cancelled);
+    return () => {
+      cancelled = true;
+    };
+  }, [loadExceptions]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,13 +69,18 @@ export const ExceptionsPanel: React.FC<{ doctorId?: number }> = ({ doctorId }) =
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return (
+      <div className="p-6 max-w-4xl mx-auto space-y-4">
+        <div className="shimmer h-8 w-52" />
+        <div className="shimmer h-24 w-full rounded-xl" />
+      </div>
+    );
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-6 max-w-4xl mx-auto animate-fade-in">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Availability Exceptions</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Availability Exceptions</h1>
         <button
           onClick={() => setShowForm(true)}
           className="px-4 py-2 btn-primary"
@@ -80,22 +90,22 @@ export const ExceptionsPanel: React.FC<{ doctorId?: number }> = ({ doctorId }) =
       </div>
 
       {showForm && (
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-bold mb-4">Create Exception</h2>
+        <div className="card p-6 mb-6 animate-scale-in">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Create Exception</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Date</label>
               <input
                 type="date"
                 value={formData.date}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                className="w-full px-4 py-2 border rounded-lg"
+                className="w-full px-4 py-2 input-focus"
                 required
               />
             </div>
 
-            <div className="flex items-center space-x-4">
-              <label className="flex items-center space-x-2">
+            <div className="flex flex-wrap items-center gap-4">
+              <label className="flex items-center space-x-2 cursor-pointer">
                 <input
                   type="radio"
                   name="exceptionType"
@@ -103,9 +113,9 @@ export const ExceptionsPanel: React.FC<{ doctorId?: number }> = ({ doctorId }) =
                   onChange={() => setFormData({ ...formData, isBlocked: true })}
                   className="rounded"
                 />
-                <span className="text-gray-700">Block entire day</span>
+                <span className="text-gray-700 dark:text-slate-300">Block entire day</span>
               </label>
-              <label className="flex items-center space-x-2">
+              <label className="flex items-center space-x-2 cursor-pointer">
                 <input
                   type="radio"
                   name="exceptionType"
@@ -113,29 +123,29 @@ export const ExceptionsPanel: React.FC<{ doctorId?: number }> = ({ doctorId }) =
                   onChange={() => setFormData({ ...formData, isBlocked: false })}
                   className="rounded"
                 />
-                <span className="text-gray-700">Partial override</span>
+                <span className="text-gray-700 dark:text-slate-300">Partial override</span>
               </label>
             </div>
 
             {!formData.isBlocked && (
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Start Time</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Start Time</label>
                   <input
                     type="time"
                     value={formData.startTime}
                     onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
-                    className="w-full px-4 py-2 border rounded-lg"
+                    className="w-full px-4 py-2 input-focus"
                     required={!formData.isBlocked}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">End Time</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">End Time</label>
                   <input
                     type="time"
                     value={formData.endTime}
                     onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
-                    className="w-full px-4 py-2 border rounded-lg"
+                    className="w-full px-4 py-2 input-focus"
                     required={!formData.isBlocked}
                   />
                 </div>
@@ -143,11 +153,11 @@ export const ExceptionsPanel: React.FC<{ doctorId?: number }> = ({ doctorId }) =
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Reason</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Reason</label>
               <textarea
                 value={formData.reason}
                 onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-                className="w-full px-4 py-2 border rounded-lg"
+                className="w-full px-4 py-2 input-focus"
                 rows={2}
               />
             </div>
@@ -162,7 +172,7 @@ export const ExceptionsPanel: React.FC<{ doctorId?: number }> = ({ doctorId }) =
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                className="btn-secondary px-4 py-2"
               >
                 Cancel
               </button>
@@ -172,24 +182,24 @@ export const ExceptionsPanel: React.FC<{ doctorId?: number }> = ({ doctorId }) =
       )}
 
       {exceptions.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-500">No exceptions set</p>
+        <div className="card p-10 text-center">
+          <p className="text-gray-500 dark:text-slate-400">No exceptions set</p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-4 stagger-children">
           {exceptions.map((item) => (
-            <div key={item.id} className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-center justify-between">
+            <div key={item.id} className="card card-hover p-6 animate-slide-in-up">
+              <div className="flex items-center justify-between gap-4">
                 <div>
-                  <h3 className="font-medium">{item.date.split('T')[0]}</h3>
-                  <p className="text-sm text-gray-500">
-                    {item.isBlocked ? 'Day blocked' : `${item.startTime} - ${item.endTime}`}
+                  <h3 className="font-medium text-gray-900 dark:text-white">{item.date.split('T')[0]}</h3>
+                  <p className="text-sm text-gray-500 dark:text-slate-400">
+                    {item.isBlocked ? 'Day blocked' : `${item.startTime} - ${item.endTime} UTC`}
                   </p>
-                  {item.reason && <p className="text-sm text-gray-400 mt-1">{item.reason}</p>}
+                  {item.reason && <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">{item.reason}</p>}
                 </div>
                 <button
                   onClick={() => handleDelete(item.id)}
-                  className="px-3 py-1 text-red-600 hover:underline"
+                  className="px-3 py-1 text-sm text-red-600 dark:text-red-400 hover:underline"
                 >
                   Delete
                 </button>

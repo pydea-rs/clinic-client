@@ -56,11 +56,10 @@ export const AdminConsultationsPage: React.FC = () => {
     queryFn: () => consultationApi.getConsultations(page, limit, statusParam),
   });
 
-  const consultations = data?.consultations || [];
   const total = data?.total || 0;
 
   const filteredConsultations = useMemo(() => {
-    let result = consultations;
+    let result = data?.consultations ?? [];
 
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
@@ -82,7 +81,7 @@ export const AdminConsultationsPage: React.FC = () => {
     }
 
     return result;
-  }, [consultations, searchTerm, dateFrom, dateTo]);
+  }, [data?.consultations, searchTerm, dateFrom, dateTo]);
 
   const totalPages = Math.ceil(total / limit);
   const hasActiveFilters = statusFilter || searchTerm || dateFrom || dateTo;

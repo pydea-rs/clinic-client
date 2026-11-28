@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { matchingApi, patientApi } from '../../api';
-import { Loader2, Search, Zap, FileText, ArrowRight, Stethoscope } from 'lucide-react';
+import { Loader2, Search, Zap, FileText, ArrowRight, Stethoscope, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { DoctorSpecialty, TriageLevel } from '../../lib/types/api';
 import { formatSpecialty } from '../../lib/format';
 import { getErrorMessage } from '../../lib/api/error.utils';
 import { queryClient } from '../../lib/queryClient';
+import { CollapsibleSection } from '../../components/InfoDisclosure';
 
 function stripMarkdown(text: string): string {
   return text.replace(/\*\*/g, '').replace(/^[\s-]+/, '').trim();
@@ -135,11 +136,31 @@ export const MatchRequestPage: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto w-full p-6 animate-fade-in">
-      <div className="mb-8 animate-slide-in-up">
+      <div className="mb-6 animate-slide-in-up">
         <div className="w-10 h-10 bg-gradient-to-br from-brand-600 to-purple-500 rounded-xl flex items-center justify-center shadow-soft mb-4"><Stethoscope className="w-5 h-5 text-white" /></div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Find a Doctor</h1>
         <p className="text-gray-600 dark:text-slate-400">We'll match you with the best available doctor based on your needs.</p>
+        <div className="flex flex-wrap items-center gap-2 mt-3 text-[11px] font-medium text-gray-500 dark:text-slate-400">
+          <span className="badge badge-brand">1. Describe Needs</span>
+          <span>→</span>
+          <span className="badge badge-gray">2. Contacting Top Matches</span>
+          <span>→</span>
+          <span className="badge badge-gray">3. Consultation Ready</span>
+        </div>
       </div>
+
+      <CollapsibleSection
+        title="How auto-matching works"
+        subtitle="Queue priority, 45-second doctor window, and manual browse option"
+        icon={<Clock className="w-4 h-4" />}
+        className="mb-6 animate-slide-in-up"
+      >
+        <ul className="space-y-1.5 list-disc list-inside">
+          <li>We rank verified doctors by specialty fit, urgency, live online status, and patient rating.</li>
+          <li>Each candidate gets <strong>45 seconds</strong> to accept before the offer automatically cascades to the next match (5-minute total window).</li>
+          <li>You can cancel the search or browse all doctors manually at any moment.</li>
+        </ul>
+      </CollapsibleSection>
 
       {/* Mode selector */}
       <div className="flex gap-3 mb-6">

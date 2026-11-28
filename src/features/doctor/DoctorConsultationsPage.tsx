@@ -89,7 +89,7 @@ export const DoctorConsultationsPage: React.FC = () => {
         </div>
         <div>
           <h1 className="text-2xl font-bold gradient-text">Consultations</h1>
-          <p className="text-sm text-gray-500">Review and manage patient consultations</p>
+          <p className="text-sm text-gray-500 dark:text-slate-400">Review and manage patient consultations</p>
         </div>
       </div>
 
@@ -99,10 +99,10 @@ export const DoctorConsultationsPage: React.FC = () => {
           <button
             key={tab.value}
             onClick={() => { setActiveTab(tab.value); setPage(1); }}
-            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 btn-press ${
               activeTab === tab.value
                 ? 'bg-brand-600 text-white shadow-soft'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700'
             }`}
           >
             {tab.label}
@@ -112,12 +112,12 @@ export const DoctorConsultationsPage: React.FC = () => {
 
       {/* Consultations List */}
       {filtered.length === 0 ? (
-        <div className="text-center py-16 animate-slide-in-up">
-          <div className="w-16 h-16 bg-orange-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <div className="card text-center py-16 animate-scale-in">
+          <div className="w-16 h-16 bg-orange-50 dark:bg-orange-950/40 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-float">
             <ClipboardList className="w-8 h-8 text-orange-400" />
           </div>
-          <p className="text-gray-700 font-medium mb-1">No consultations found</p>
-          <p className="text-sm text-gray-500">
+          <p className="text-gray-700 dark:text-slate-200 font-medium mb-1">No consultations found</p>
+          <p className="text-sm text-gray-500 dark:text-slate-400">
             {activeTab !== 'ALL'
               ? `No ${formatStatus(activeTab).toLowerCase()} consultations.`
               : 'Consultations will appear here as patients connect.'}
@@ -134,16 +134,16 @@ export const DoctorConsultationsPage: React.FC = () => {
             return (
               <div
                 key={consultation.id}
-                className="card p-5 animate-slide-in-up hover:shadow-md transition-shadow duration-200"
+                className="card card-hover p-5 animate-slide-in-up transition-all duration-200"
                 style={{ animationDelay: `${index * 40}ms` }}
               >
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-wrap items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     {/* Patient & Status */}
                     <div className="flex items-center gap-3 mb-2">
                       <div className="flex items-center gap-2">
-                        <User className="w-4 h-4 text-gray-400" />
-                        <h3 className="font-semibold text-gray-900">{patientName}</h3>
+                        <User className="w-4 h-4 text-gray-400 dark:text-slate-500" />
+                        <h3 className="font-semibold text-gray-900 dark:text-white">{patientName}</h3>
                       </div>
                       <span className={`badge ${statusBadgeClass(consultation.status)}`}>
                         {formatStatus(consultation.status)}
@@ -151,7 +151,7 @@ export const DoctorConsultationsPage: React.FC = () => {
                     </div>
 
                     {/* Details */}
-                    <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
+                    <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 dark:text-slate-400">
                       <span className="flex items-center gap-1.5">
                         <Calendar className="w-3.5 h-3.5" />
                         {new Date(consultation.createdAt).toLocaleDateString()}
@@ -167,7 +167,7 @@ export const DoctorConsultationsPage: React.FC = () => {
                         </span>
                       )}
                       {consultation.soapId && (
-                        <span className="flex items-center gap-1 text-emerald-600">
+                        <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
                           <FileText className="w-3.5 h-3.5" />
                           SOAP
                         </span>
@@ -176,7 +176,7 @@ export const DoctorConsultationsPage: React.FC = () => {
 
                     {/* Notes preview */}
                     {consultation.notes && (
-                      <p className="text-sm text-gray-400 mt-2 truncate">{consultation.notes}</p>
+                      <p className="text-sm text-gray-500 dark:text-slate-400 mt-2 truncate">{consultation.notes}</p>
                     )}
                   </div>
 

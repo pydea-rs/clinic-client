@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { schedulingApi } from '../../api';
 import toast from 'react-hot-toast';
 import { SlotDuration } from '../../lib/types/api';
@@ -15,20 +15,25 @@ export const SlotDurationsPanel: React.FC<{ doctorId?: number }> = ({ doctorId }
     isActive: true,
   });
 
-  useEffect(() => {
-    loadDurations();
-  }, [doctorId]);
-
-  const loadDurations = async () => {
+  const loadDurations = useCallback(async (isCancelled?: () => boolean) => {
     try {
       const data = await schedulingApi.getSlotDurations(doctorId);
-      setDurations(data);
+      if (!isCancelled?.()) setDurations(data);
     } catch (error: unknown) {
-      toast.error(getErrorMessage(error, 'Failed to load durations'));
+      if (!isCancelled?.()) toast.error(getErrorMessage(error, 'Failed to load durations'));
     } finally {
-      setLoading(false);
+      if (!isCancelled?.()) setLoading(false);
     }
-  };
+  }, [doctorId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    void loadDurations(() => cancelled);
+    return () => {
+      cancelled = true;
+    };
+  }, [loadDurations]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,13 +54,18 @@ export const SlotDurationsPanel: React.FC<{ doctorId?: number }> = ({ doctorId }
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return (
+      <div className="p-6 max-w-4xl mx-auto space-y-4">
+        <div className="shimmer h-8 w-44" />
+        <div className="shimmer h-24 w-full rounded-xl" />
+      </div>
+    );
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-6 max-w-4xl mx-auto animate-fade-in">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Slot Durations</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Slot Durations</h1>
         <button
           onClick={() => setShowForm(true)}
           className="px-4 py-2 btn-primary"
@@ -65,16 +75,16 @@ export const SlotDurationsPanel: React.FC<{ doctorId?: number }> = ({ doctorId }
       </div>
 
       {showForm && (
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-bold mb-4">Create Duration</h2>
+        <div className="card p-6 mb-6 animate-scale-in">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Create Duration</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Minutes</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Minutes</label>
               <input
                 type="number"
                 value={formData.minutes}
                 onChange={(e) => setFormData({ ...formData, minutes: Number(e.target.value) })}
-                className="w-full px-4 py-2 border rounded-lg"
+                className="w-full px-4 py-2 input-focus"
                 min={15}
                 step={15}
                 required
@@ -82,12 +92,12 @@ export const SlotDurationsPanel: React.FC<{ doctorId?: number }> = ({ doctorId }
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Price ($)</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Price ($)</label>
               <input
                 type="number"
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                className="w-full px-4 py-2 border rounded-lg"
+                className="w-full px-4 py-2 input-focus"
                 min={0}
                 step={0.01}
                 required
@@ -95,25 +105,25 @@ export const SlotDurationsPanel: React.FC<{ doctorId?: number }> = ({ doctorId }
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Label (Optional)</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Label (Optional)</label>
               <input
                 type="text"
                 value={formData.label}
                 onChange={(e) => setFormData({ ...formData, label: e.target.value })}
-                className="w-full px-4 py-2 border rounded-lg"
+                className="w-full px-4 py-2 input-focus"
                 placeholder="e.g., 30-min standard"
               />
             </div>
 
-            <div className="flex items-center space-x-2">
+            <label className="flex items-center space-x-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={formData.isActive}
                 onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                 className="rounded"
               />
-              <span className="text-gray-700">Active</span>
-            </div>
+              <span className="text-gray-700 dark:text-slate-300">Active</span>
+            </label>
 
             <div className="flex space-x-2">
               <button
@@ -125,7 +135,7 @@ export const SlotDurationsPanel: React.FC<{ doctorId?: number }> = ({ doctorId }
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                className="btn-secondary px-4 py-2"
               >
                 Cancel
               </button>
@@ -135,21 +145,21 @@ export const SlotDurationsPanel: React.FC<{ doctorId?: number }> = ({ doctorId }
       )}
 
       {durations.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-500">No durations set</p>
+        <div className="card p-10 text-center">
+          <p className="text-gray-500 dark:text-slate-400">No durations set</p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-4 stagger-children">
           {durations.map((item) => (
-            <div key={item.id} className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-center justify-between">
+            <div key={item.id} className="card card-hover p-6 animate-slide-in-up">
+              <div className="flex items-center justify-between gap-4">
                 <div>
-                  <h3 className="font-medium">{item.minutes} minutes</h3>
-                  <p className="text-sm text-gray-500">${item.price}</p>
-                  {item.label && <p className="text-sm text-gray-400">{item.label}</p>}
+                  <h3 className="font-medium text-gray-900 dark:text-white">{item.minutes} minutes</h3>
+                  <p className="text-sm text-gray-500 dark:text-slate-400">${item.price}</p>
+                  {item.label && <p className="text-sm text-gray-500 dark:text-slate-400">{item.label}</p>}
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${item.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                  <span className={`badge ${item.isActive ? 'badge-green' : 'badge-gray'}`}>
                     {item.isActive ? 'Active' : 'Inactive'}
                   </span>
                 </div>

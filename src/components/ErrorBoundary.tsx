@@ -40,7 +40,7 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-brand-50 px-4">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-brand-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-900 px-4">
           <div className="max-w-md w-full card p-8 text-center shadow-soft-xl animate-scale-in">
             <div className="flex justify-center mb-5">
               <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-rose-500 rounded-2xl flex items-center justify-center shadow-lg shadow-red-500/20 animate-breathe">
@@ -48,21 +48,21 @@ export class ErrorBoundary extends Component<Props, State> {
               </div>
             </div>
 
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
               Something went wrong
             </h1>
 
-            <p className="text-gray-500 mb-6">
+            <p className="text-gray-500 dark:text-slate-400 mb-6">
               We're sorry, but something unexpected happened. Please try refreshing the page.
             </p>
 
             {import.meta.env.DEV && this.state.error && (
-              <div className="mb-6 p-4 bg-red-50 rounded-xl text-left border border-red-100">
-                <p className="text-sm font-mono text-red-800 mb-2">
+              <div className="mb-6 p-4 bg-red-50 dark:bg-red-950/40 rounded-xl text-left border border-red-100 dark:border-red-800/50">
+                <p className="text-sm font-mono text-red-800 dark:text-red-300 mb-2">
                   {this.state.error.toString()}
                 </p>
                 {this.state.errorInfo && (
-                  <details className="text-xs text-red-700">
+                  <details className="text-xs text-red-700 dark:text-red-400">
                     <summary className="cursor-pointer font-semibold mb-2">
                       Stack trace
                     </summary>

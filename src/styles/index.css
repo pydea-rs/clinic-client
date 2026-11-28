@@ -714,8 +714,26 @@ body {
          pointer-events-none opacity-0 transition-opacity duration-200;
 }
 .group:hover .tooltip,
-.peer:hover ~ .tooltip {
+.group:focus-within .tooltip,
+.peer:hover ~ .tooltip,
+.peer:focus-visible ~ .tooltip {
   @apply opacity-100;
+}
+
+/* Smooth height + opacity accordion */
+.accordion-grid {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 220ms cubic-bezier(0.22, 1, 0.36, 1), opacity 180ms ease;
+}
+.accordion-grid.accordion-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.accordion-inner {
+  overflow: hidden;
+  min-height: 0;
 }
 
 /* ═══════════════════════════════════
@@ -1042,10 +1060,17 @@ body {
   .animate-spin-slow,
   .animate-notification-pulse,
   .animate-pulse-ring,
-  .animate-thinking-icon {
+  .animate-thinking-icon,
+  .animate-gradient,
+  .shimmer,
+  .shimmer-brand,
+  .typing-dot {
     animation: none !important;
   }
   .page-enter,
+  .animate-fade-in,
+  .animate-expand-in,
+  .animate-modal-in,
   .animate-slide-in-up,
   .animate-slide-in-down,
   .animate-slide-in-right,
@@ -1053,7 +1078,11 @@ body {
   .animate-slide-up-spring,
   .animate-scale-in,
   .animate-pop-in,
-  .animate-msg-in {
+  .animate-msg-in,
+  .progress-bar-fill {
     animation-duration: 0.01ms !important;
+  }
+  .accordion-grid {
+    transition-duration: 0.01ms !important;
   }
 }

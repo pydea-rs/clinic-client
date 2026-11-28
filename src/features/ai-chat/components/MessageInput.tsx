@@ -71,6 +71,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
             />
             <button
               type="submit"
+              aria-label="Send message"
               disabled={!canSend}
               className={`absolute right-2.5 bottom-2.5 w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-200 ease-spring btn-press ${
                 canSend
@@ -81,17 +82,22 @@ export const MessageInput: React.FC<MessageInputProps> = ({
               <ArrowUp className="w-4 h-4" />
             </button>
           </div>
-          <div className="flex items-center justify-between mt-2.5">
-            <p className="text-[11px] text-gray-400 dark:text-slate-500 text-center flex-1">
+          <div className="flex flex-wrap items-center justify-between gap-2 mt-2.5">
+            <p className="text-[11px] text-gray-400 dark:text-slate-500">
               AI may make mistakes. Always consult a real doctor for medical advice.
             </p>
-            {showCharCounter && (
-              <span className={`text-[10px] ml-2 flex-shrink-0 transition-colors duration-200 ${
-                input.length > 1800 ? 'text-amber-500' : 'text-gray-400 dark:text-slate-500'
-              }`}>
-                {input.length}/2000
+            <div className="flex items-center gap-3 ml-auto">
+              <span className="hidden sm:inline text-[10px] text-gray-400 dark:text-slate-500">
+                Enter to send · Shift+Enter for new line
               </span>
-            )}
+              {showCharCounter && (
+                <span className={`text-[10px] flex-shrink-0 transition-colors duration-200 ${
+                  input.length > 1800 ? 'text-amber-500' : 'text-gray-400 dark:text-slate-500'
+                }`}>
+                  {input.length}/2000
+                </span>
+              )}
+            </div>
           </div>
         </form>
       </div>

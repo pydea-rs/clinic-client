@@ -48,14 +48,16 @@ export const DashboardPage: React.FC = () => {
             <p className="text-base text-white/70 mt-1.5">
               {isPatient
                 ? 'Chat with AI about your symptoms or connect with a doctor.'
-                : 'Manage your consultations and schedule.'}
+                : user?.isAdmin || user?.isSuperAdmin
+                  ? 'Browse platform activity or switch to Admin Tools from the sidebar.'
+                  : 'Browse specialists or start an AI health conversation.'}
             </p>
           </div>
         </div>
       </div>
 
       <div className="animate-slide-up-spring" style={{ animationDelay: '50ms' }}>
-        <QuickActions />
+        <QuickActions isPatient={isPatient} />
       </div>
 
       {isPatient && (
@@ -65,11 +67,13 @@ export const DashboardPage: React.FC = () => {
         </div>
       )}
 
-      <div className="animate-slide-up-spring" style={{ animationDelay: '150ms' }}>
-        <ActiveConsultations />
-      </div>
-
       {isPatient && (
+        <div className="animate-slide-up-spring" style={{ animationDelay: '150ms' }}>
+          <ActiveConsultations />
+        </div>
+      )}
+
+      {(isPatient || user?.role === 'NONE') && (
         <div className="animate-slide-up-spring" style={{ animationDelay: '200ms' }}>
           <FeaturedDoctors />
         </div>

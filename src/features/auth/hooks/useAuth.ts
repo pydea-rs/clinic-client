@@ -71,6 +71,8 @@ export const useAuth = (): {
   const logout = async () => {
     try {
       await authApi.logout();
+    } catch {
+      // Clear local session state even if server session already expired.
     } finally {
       socketService.disconnect();
       matchingSocket.disconnect();

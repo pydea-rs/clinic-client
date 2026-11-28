@@ -91,10 +91,11 @@ describe('NurseInvitationsPage', () => {
 
   it('should list each invitation with the doctor, specialty and offered permissions', async () => {
     const card = await renderPage([buildInvitation()]);
+    if (!card) throw new Error('Expected card');
 
-    expect(card!.getByText('Cardiology')).toBeInTheDocument();
-    expect(card!.getByText('View Patients')).toBeInTheDocument();
-    expect(card!.getByText('Chat With Patients')).toBeInTheDocument();
+    expect(card.getByText('Cardiology')).toBeInTheDocument();
+    expect(card.getByText('View Patients')).toBeInTheDocument();
+    expect(card.getByText('Chat With Patients')).toBeInTheDocument();
   });
 
   it('should say so when there are no invitations', async () => {
@@ -110,8 +111,9 @@ describe('NurseInvitationsPage', () => {
     mockAccept.mockResolvedValue({ ...invitation, status: 'ACCEPTED', isActive: true });
     mockMe.mockResolvedValue(asNurse);
     const card = await renderPage([invitation], patient);
+    if (!card) throw new Error('Expected card');
 
-    fireEvent.click(card!.getByRole('button', { name: 'Accept' }));
+    fireEvent.click(card.getByRole('button', { name: 'Accept' }));
 
     expect(confirmSpy).toHaveBeenCalledWith(expect.stringContaining(doctorName(invitation)));
     expect(confirmSpy).toHaveBeenCalledWith(expect.stringContaining('no longer use it as a patient'));
@@ -126,8 +128,9 @@ describe('NurseInvitationsPage', () => {
     mockAccept.mockResolvedValue({ ...invitation, status: 'ACCEPTED', isActive: true });
     mockMe.mockRejectedValue(new Error('Network Error'));
     const card = await renderPage([invitation]);
+    if (!card) throw new Error('Expected card');
 
-    fireEvent.click(card!.getByRole('button', { name: 'Accept' }));
+    fireEvent.click(card.getByRole('button', { name: 'Accept' }));
 
     await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Reload the page to see your nurse dashboard'));
     expect(mockToast.success).toHaveBeenCalledWith(`You joined ${doctorName(invitation)}'s team`);
@@ -139,8 +142,9 @@ describe('NurseInvitationsPage', () => {
   it('should do nothing when the patient does not confirm', async () => {
     confirmSpy.mockReturnValue(false);
     const card = await renderPage([buildInvitation()]);
+    if (!card) throw new Error('Expected card');
 
-    fireEvent.click(card!.getByRole('button', { name: 'Accept' }));
+    fireEvent.click(card.getByRole('button', { name: 'Accept' }));
 
     expect(mockAccept).not.toHaveBeenCalled();
   });
@@ -151,8 +155,9 @@ describe('NurseInvitationsPage', () => {
     mockAccept.mockResolvedValue({ ...invitation, status: 'ACCEPTED' });
     mockMe.mockResolvedValue(nurse);
     const card = await renderPage([invitation], nurse);
+    if (!card) throw new Error('Expected card');
 
-    fireEvent.click(card!.getByRole('button', { name: 'Accept' }));
+    fireEvent.click(card.getByRole('button', { name: 'Accept' }));
 
     await waitFor(() => expect(mockAccept).toHaveBeenCalledWith(invitation.id));
     expect(confirmSpy).not.toHaveBeenCalled();
@@ -165,8 +170,9 @@ describe('NurseInvitationsPage', () => {
     const message = 'This invitation has already been answered.';
     mock.mockRejectedValue({ status: 409, message });
     const card = await renderPage([buildInvitation()]);
+    if (!card) throw new Error('Expected card');
 
-    fireEvent.click(card!.getByRole('button', { name: button }));
+    fireEvent.click(card.getByRole('button', { name: button }));
 
     await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith(message));
     expect(mockNavigate).not.toHaveBeenCalled();
@@ -177,8 +183,9 @@ describe('NurseInvitationsPage', () => {
     const invitation = buildInvitation();
     mockDecline.mockResolvedValue({ ...invitation, status: 'DECLINED' });
     const card = await renderPage([invitation]);
+    if (!card) throw new Error('Expected card');
 
-    fireEvent.click(card!.getByRole('button', { name: 'Decline' }));
+    fireEvent.click(card.getByRole('button', { name: 'Decline' }));
 
     await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('Invitation declined'));
     expect(mockDecline).toHaveBeenCalledWith(invitation.id);

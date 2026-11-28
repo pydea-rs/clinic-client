@@ -468,8 +468,11 @@ describe('Matching', () => {
 
     it('should reject WebSocket connection without auth', async () => {
       const { io } = await import('socket.io-client');
+      const { socketTarget } = await import('@client/lib/socket/socket-url');
       const { getServerUrl } = await import('../helpers/server.js');
-      const unauthSocket = io(`${getServerUrl()}/matching`, {
+      const { url, path } = socketTarget('/matching', getServerUrl());
+      const unauthSocket = io(url, {
+        path,
         transports: ['websocket'],
         autoConnect: false,
       });

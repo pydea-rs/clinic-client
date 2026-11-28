@@ -52,20 +52,21 @@ export const ReviewCreatePage: React.FC = () => {
   const stars = [1, 2, 3, 4, 5];
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Write a Review</h1>
+    <div className="p-6 max-w-3xl mx-auto animate-fade-in">
+      <h1 className="text-2xl font-bold gradient-text mb-6">Write a Review</h1>
       
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6">
+      <form onSubmit={handleSubmit} className="card p-6 space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Rating</label>
           <div className="flex space-x-2">
             {stars.map((star) => (
               <button
                 key={star}
                 type="button"
+                aria-label={`Rate ${star} stars`}
                 onClick={() => setFormData({ ...formData, rating: star })}
-                className={`text-3xl ${
-                  formData.rating >= star ? 'text-yellow-400' : 'text-gray-300'
+                className={`text-3xl transition-transform hover:scale-110 ${
+                  formData.rating >= star ? 'text-yellow-400' : 'text-gray-300 dark:text-slate-600'
                 }`}
               >
                 ★
@@ -75,22 +76,22 @@ export const ReviewCreatePage: React.FC = () => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Title (Optional)</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Title (Optional)</label>
           <input
             type="text"
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            className="w-full px-4 py-2 border rounded-lg"
+            className="w-full px-4 py-2 input-focus"
             placeholder="Brief summary of your review"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Overview</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Overview</label>
           <textarea
             value={formData.overview}
             onChange={(e) => setFormData({ ...formData, overview: e.target.value })}
-            className="w-full px-4 py-2 border rounded-lg"
+            className="w-full px-4 py-2 input-focus"
             rows={5}
             placeholder="Share your experience..."
             required
@@ -100,7 +101,7 @@ export const ReviewCreatePage: React.FC = () => {
         <button
           type="submit"
           disabled={loading}
-          className="w-full btn-primary py-2 disabled:opacity-50"
+          className="w-full btn-primary py-2.5 disabled:opacity-50"
         >
           {loading ? 'Submitting...' : 'Submit Review'}
         </button>
@@ -108,7 +109,7 @@ export const ReviewCreatePage: React.FC = () => {
 
       <button
         onClick={() => navigate(-1)}
-        className="mt-4 w-full px-4 py-2 border rounded-lg hover:bg-gray-50"
+        className="btn-secondary mt-4 w-full px-4 py-2.5"
       >
         Cancel
       </button>

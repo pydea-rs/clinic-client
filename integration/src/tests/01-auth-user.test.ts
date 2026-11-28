@@ -97,7 +97,7 @@ describe('Auth & User Management', () => {
 
       const cookies = await patientTc.jar.getCookies(response.config.baseURL!);
       const sessionCookie = cookies.find(
-        c => c.key === (process.env.SESSION_COOKIE_NAME || 'test-sid'),
+        c => c.key === (process.env.SESSION_COOKIE_NAME || 'sid'),
       );
       expect(sessionCookie).toBeDefined();
     });
@@ -404,7 +404,7 @@ describe('Auth & User Management', () => {
         patientTc.axios.defaults.baseURL!,
       );
       const sessionCookie = cookies.find(
-        c => c.key === (process.env.SESSION_COOKIE_NAME || 'test-sid'),
+        c => c.key === (process.env.SESSION_COOKIE_NAME || 'sid'),
       );
 
       expect(sessionCookie).toBeDefined();

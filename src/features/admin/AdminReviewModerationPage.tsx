@@ -35,7 +35,7 @@ export const AdminReviewModerationPage: React.FC = () => {
     try {
       await reviewApi.deleteReview(reviewId);
       setReviews(prev => prev.filter(r => r.id !== reviewId));
-      setTotal(prev => prev - 1);
+      setTotal(prev => Math.max(0, prev - 1));
       toast.success('Review deleted successfully');
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Failed to delete review'));

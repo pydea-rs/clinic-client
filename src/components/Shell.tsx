@@ -94,6 +94,8 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
   const handleLogout = async () => {
     try {
       await authApi.logout();
+    } catch {
+      // Clear local session state even if server session already expired.
     } finally {
       socketService.disconnect();
       matchingSocket.disconnect();
@@ -155,7 +157,7 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
 
     if (isNurse) {
       const perms = nurseAssignments.flatMap((a) => a.permissions);
-      const has = (p: string) => perms.includes(p as any);
+      const has = (p: (typeof perms)[number]) => perms.includes(p);
 
       const practiceItems: NavItem[] = [];
       if (has('CHAT_WITH_PATIENTS'))
@@ -273,12 +275,15 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
             {isAuthenticated && <NotificationBell />}
             <button
               onClick={() => setShowCustomizer(true)}
+              aria-label="Open theme customizer"
               className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all duration-200"
             >
               <Palette className="w-5 h-5 text-gray-500 dark:text-slate-400" />
             </button>
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-expanded={isMenuOpen}
               className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all duration-200"
             >
               {isMenuOpen ? <X className="w-5 h-5 text-gray-700 dark:text-slate-300" /> : <Menu className="w-5 h-5 text-gray-700 dark:text-slate-300" />}

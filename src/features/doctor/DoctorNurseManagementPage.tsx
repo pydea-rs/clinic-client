@@ -7,6 +7,7 @@ import { UserAvatar } from '../../components/UserAvatar';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../lib/api/error.utils';
 import { UserPlus, Users, Shield, Loader2, X, Search, CheckCircle, ToggleLeft, ToggleRight } from 'lucide-react';
+import { CollapsibleSection } from '../../components/InfoDisclosure';
 
 const ALL_PERMISSIONS: NursePermission[] = [
   'VIEW_PATIENTS',
@@ -66,7 +67,10 @@ export const DoctorNurseManagementPage: React.FC = () => {
   }, []);
 
   const assignMutation = useMutation({
-    mutationFn: () => nurseApi.assign(selectedUser!.id, selectedPermissions.length > 0 ? selectedPermissions : undefined),
+    mutationFn: () => {
+      if (!selectedUser) throw new Error('Select a user first');
+      return nurseApi.assign(selectedUser.id, selectedPermissions.length > 0 ? selectedPermissions : undefined);
+    },
     onSuccess: () => {
       toast.success('Invitation sent');
       setSelectedUser(null);
@@ -158,22 +162,22 @@ export const DoctorNurseManagementPage: React.FC = () => {
         </div>
         <div>
           <h1 className="text-2xl font-bold gradient-text">Nurse Management</h1>
-          <p className="text-sm text-gray-500">Invite nurses and manage their permissions</p>
+          <p className="text-sm text-gray-500 dark:text-slate-400">Invite nurses and manage their permissions</p>
         </div>
       </div>
 
       {/* Invite Section */}
       <div className="card p-6 mb-8 animate-slide-in-up">
         <div className="flex items-center gap-2 mb-5">
-          <UserPlus className="w-5 h-5 text-brand-600" />
-          <h2 className="text-lg font-bold text-gray-900">Invite a Nurse</h2>
+          <UserPlus className="w-5 h-5 text-brand-600 dark:text-brand-400" />
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">Invite a Nurse</h2>
         </div>
 
         <form onSubmit={handleAssign} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Find User</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Find User</label>
             {selectedUser ? (
-              <div className="flex items-center gap-3 px-4 py-3 border border-brand-200 bg-brand-50/30 rounded-xl">
+              <div className="flex items-center gap-3 px-4 py-3 border border-brand-200 dark:border-brand-700/50 bg-brand-50/30 dark:bg-brand-950/30 rounded-xl">
                 <UserAvatar
                   avatar={selectedUser.avatar}
                   firstname={selectedUser.firstname}
@@ -182,13 +186,14 @@ export const DoctorNurseManagementPage: React.FC = () => {
                   className="w-9 h-9 rounded-full bg-gradient-to-br from-brand-500 to-brand-600 text-xs font-bold text-white flex-shrink-0"
                 />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">{selectedUser.firstname} {selectedUser.lastname}</p>
-                  <p className="text-xs text-gray-500">{selectedUser.email} &middot; {selectedUser.role || 'NONE'}</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">{selectedUser.firstname} {selectedUser.lastname}</p>
+                  <p className="text-xs text-gray-500 dark:text-slate-400">{selectedUser.email} &middot; {selectedUser.role || 'NONE'}</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setSelectedUser(null)}
-                  className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                  aria-label="Clear selected user"
+                  className="p-1 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                 >
                   <X className="w-4 h-4 text-gray-400" />
                 </button>
@@ -201,36 +206,36 @@ export const DoctorNurseManagementPage: React.FC = () => {
                   value={userSearch}
                   onChange={(e) => { setUserSearch(e.target.value); setShowDropdown(true); }}
                   onFocus={() => setShowDropdown(true)}
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-gray-50/50 text-sm input-focus"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl bg-gray-50/50 dark:bg-slate-800 text-sm input-focus"
                   placeholder="Search by name or email..."
                 />
                 {showDropdown && searchResults.length > 0 && (
-                  <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                  <div className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg max-h-60 overflow-y-auto">
                     {searchResults.map((u) => (
                       <button
                         key={u.id}
                         type="button"
                         onClick={() => handleSelectUser(u)}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-left transition-colors"
+                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-slate-700/60 text-left transition-colors"
                       >
                         <UserAvatar
                           avatar={u.avatar}
                           firstname={u.firstname}
                           lastname={u.lastname}
                           alt={`${u.firstname} ${u.lastname}`}
-                          className="w-8 h-8 rounded-full bg-gray-200 text-xs font-medium text-gray-600 flex-shrink-0"
+                          className="w-8 h-8 rounded-full bg-gray-200 dark:bg-slate-700 text-xs font-medium text-gray-600 dark:text-slate-300 flex-shrink-0"
                         />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">{u.firstname} {u.lastname}</p>
-                          <p className="text-xs text-gray-500 truncate">{u.email}</p>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{u.firstname} {u.lastname}</p>
+                          <p className="text-xs text-gray-500 dark:text-slate-400 truncate">{u.email}</p>
                         </div>
-                        <span className="text-xs text-gray-400 flex-shrink-0">{u.role || 'NONE'}</span>
+                        <span className="text-xs text-gray-400 dark:text-slate-500 flex-shrink-0">{u.role || 'NONE'}</span>
                       </button>
                     ))}
                   </div>
                 )}
                 {showDropdown && userSearch.trim().length >= 2 && searchResults.length === 0 && (
-                  <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg px-4 py-3 text-sm text-gray-500">
+                  <div className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg px-4 py-3 text-sm text-gray-500 dark:text-slate-400">
                     No users found
                   </div>
                 )}
@@ -239,9 +244,9 @@ export const DoctorNurseManagementPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
+            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-3">
               <span className="flex items-center gap-1.5">
-                <Shield className="w-4 h-4 text-gray-400" />
+                <Shield className="w-4 h-4 text-gray-400 dark:text-slate-500" />
                 Permissions
               </span>
             </label>
@@ -255,27 +260,39 @@ export const DoctorNurseManagementPage: React.FC = () => {
                     onClick={() => toggleNewPermission(permission)}
                     className={`p-3 rounded-xl text-left transition-all duration-200 border ${
                       isSelected
-                        ? 'border-brand-500 bg-brand-50/50'
-                        : 'border-gray-200 bg-white hover:border-gray-300'
+                        ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-950/40'
+                        : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 hover:border-gray-300 dark:hover:border-slate-600'
                     }`}
                   >
                     <div className="flex items-center gap-2">
                       <div className={`w-5 h-5 rounded-md flex items-center justify-center transition-colors duration-200 ${
-                        isSelected ? 'bg-brand-600' : 'bg-gray-200'
+                        isSelected ? 'bg-brand-600' : 'bg-gray-200 dark:bg-slate-700'
                       }`}>
                         {isSelected && <CheckCircle className="w-3.5 h-3.5 text-white" />}
                       </div>
                       <div>
-                        <p className={`text-sm font-medium ${isSelected ? 'text-brand-900' : 'text-gray-700'}`}>
+                        <p className={`text-sm font-medium ${isSelected ? 'text-brand-900 dark:text-brand-200' : 'text-gray-700 dark:text-slate-200'}`}>
                           {formatEnum(permission)}
                         </p>
-                        <p className="text-xs text-gray-400">{permissionDescription[permission]}</p>
+                        <p className="text-xs text-gray-500 dark:text-slate-400">{permissionDescription[permission]}</p>
                       </div>
                     </div>
                   </button>
                 );
               })}
             </div>
+            <CollapsibleSection
+              title="Permission boundaries & security guide"
+              subtitle="What each delegated capability lets a nurse view or update"
+              icon={<Shield className="w-4 h-4" />}
+              className="mt-3"
+            >
+              <ul className="space-y-1.5 list-disc list-inside">
+                <li><strong>View Patients & Consultation Notes:</strong> Read-only access to assigned patients and clinical notes.</li>
+                <li><strong>Chat With Patients:</strong> Enables joining your CHAT consultation rooms; revoking immediately removes live room access.</li>
+                <li><strong>Manage Schedule & Appointments:</strong> Lets nurses maintain weekly availability windows, exceptions, and clinic appointments.</li>
+              </ul>
+            </CollapsibleSection>
           </div>
 
           <button
@@ -295,7 +312,7 @@ export const DoctorNurseManagementPage: React.FC = () => {
               </>
             )}
           </button>
-          <p className="text-xs text-gray-500 text-center">
+          <p className="text-xs text-gray-500 dark:text-slate-400 text-center">
             Nothing changes for them until they accept. A patient who accepts becomes a nurse.
           </p>
         </form>
@@ -304,8 +321,8 @@ export const DoctorNurseManagementPage: React.FC = () => {
       {/* Current Nurses */}
       <div className="animate-slide-in-up" style={{ animationDelay: '50ms' }}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-            <Users className="w-5 h-5 text-gray-400" />
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <Users className="w-5 h-5 text-gray-400 dark:text-slate-500" />
             Your Nurses
           </h2>
           {(assignments || []).length > 0 && (
@@ -322,7 +339,7 @@ export const DoctorNurseManagementPage: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search nurses..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl bg-gray-50/50 text-sm input-focus"
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-slate-600 rounded-xl bg-gray-50/50 dark:bg-slate-800 text-sm input-focus"
             />
           </div>
         )}
@@ -332,14 +349,14 @@ export const DoctorNurseManagementPage: React.FC = () => {
             <Loader2 className="w-8 h-8 animate-spin text-brand-600" />
           </div>
         ) : filteredAssignments.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="card text-center py-12">
+            <div className="w-16 h-16 bg-indigo-50 dark:bg-indigo-950/40 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-float">
               <Users className="w-8 h-8 text-indigo-400" />
             </div>
-            <p className="text-gray-700 font-medium mb-1">
+            <p className="text-gray-700 dark:text-slate-200 font-medium mb-1">
               {searchQuery ? 'No nurses match your search' : 'No nurses yet'}
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-slate-400">
               {searchQuery ? 'Try a different search term.' : 'Use the form above to invite a nurse.'}
             </p>
           </div>
@@ -373,8 +390,8 @@ export const DoctorNurseManagementPage: React.FC = () => {
                         className="w-11 h-11 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex-shrink-0"
                       />
                       <div>
-                        <h3 className="font-semibold text-gray-900">{nurseName}</h3>
-                        <p className="text-sm text-gray-500">{nurseEmail}</p>
+                        <h3 className="font-semibold text-gray-900 dark:text-white">{nurseName}</h3>
+                        <p className="text-sm text-gray-500 dark:text-slate-400">{nurseEmail}</p>
                       </div>
                     </div>
 
@@ -387,7 +404,7 @@ export const DoctorNurseManagementPage: React.FC = () => {
                         <button
                           onClick={() => revokeAllPermissions(assignment)}
                           disabled={updatePermissionsMutation.isPending || (assignment.permissions || []).length === 0}
-                          className="px-2 py-1 text-xs text-amber-600 hover:bg-amber-50 rounded-lg transition-all duration-200 disabled:opacity-30 font-medium"
+                          className="px-2 py-1 text-xs text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-lg transition-all duration-200 disabled:opacity-30 font-medium"
                           title="Revoke all permissions"
                         >
                           Revoke All
@@ -403,7 +420,7 @@ export const DoctorNurseManagementPage: React.FC = () => {
                           }
                         }}
                         disabled={removeMutation.isPending}
-                        className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 disabled:opacity-50 hover:scale-105"
+                        className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl transition-all duration-200 disabled:opacity-50 hover:scale-105"
                         title={isInvited ? 'Cancel invitation' : 'Remove nurse'}
                         aria-label={isInvited ? 'Cancel invitation' : 'Remove nurse'}
                       >
@@ -414,7 +431,7 @@ export const DoctorNurseManagementPage: React.FC = () => {
 
                   {/* Permissions */}
                   <div>
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+                    <p className="text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-2">
                       {isInvited ? 'Permissions offered' : 'Permissions'}
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -428,14 +445,14 @@ export const DoctorNurseManagementPage: React.FC = () => {
                             disabled={isInvited || updatePermissionsMutation.isPending}
                             className={`flex items-center gap-2 p-2 rounded-lg text-left transition-all duration-200 ${
                               hasPermission
-                                ? 'bg-brand-50/70 text-brand-800'
-                                : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
+                                ? 'bg-brand-50/70 dark:bg-brand-950/40 text-brand-800 dark:text-brand-200'
+                                : 'bg-gray-50 dark:bg-slate-800/60 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'
                             } disabled:opacity-50`}
                           >
                             {hasPermission ? (
-                              <ToggleRight className="w-5 h-5 text-brand-600 flex-shrink-0" />
+                              <ToggleRight className="w-5 h-5 text-brand-600 dark:text-brand-400 flex-shrink-0" />
                             ) : (
-                              <ToggleLeft className="w-5 h-5 text-gray-300 flex-shrink-0" />
+                              <ToggleLeft className="w-5 h-5 text-gray-300 dark:text-slate-600 flex-shrink-0" />
                             )}
                             <span className="text-sm">{formatEnum(permission)}</span>
                           </button>

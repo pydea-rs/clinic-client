@@ -195,6 +195,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose }) => 
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Account Settings"
           className="pointer-events-auto w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200/60 dark:border-slate-700/60 animate-scale-in overflow-hidden flex flex-col max-h-[90vh]"
           onClick={(e) => e.stopPropagation()}
         >
@@ -202,10 +205,12 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose }) => 
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex-shrink-0">
             <h2 className="font-bold text-lg text-gray-900 dark:text-gray-100">Account Settings</h2>
             <button
+              type="button"
               onClick={onClose}
+              aria-label="Close"
               className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
             >
-              <X className="w-4.5 h-4.5 text-gray-400" />
+              <X className="w-[18px] h-[18px] text-gray-400" />
             </button>
           </div>
 

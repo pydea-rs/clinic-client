@@ -81,7 +81,7 @@ export const RecentSOAPs: React.FC = () => {
                 </div>
                 {soap.assessment && (
                   <div className="text-xs text-gray-500 dark:text-slate-300 line-clamp-2 mb-2.5 leading-relaxed [&_p]:mb-0 [&_strong]:font-semibold">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ p: ({ children }: any) => <span>{children}</span> }}>{soap.assessment}</ReactMarkdown>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ p: ({ children }) => <span>{children}</span> }}>{soap.assessment}</ReactMarkdown>
                   </div>
                 )}
                 <div className="flex gap-3">

@@ -49,27 +49,27 @@ export const NurseSOAPNotesPage: React.FC = () => {
           <FileText className="w-5 h-5 text-white" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">SOAP Notes</h1>
-          <span className="text-sm text-gray-400">(read-only)</span>
+          <h1 className="text-3xl font-bold gradient-text">SOAP Notes</h1>
+          <span className="text-sm text-gray-500 dark:text-slate-400">(read-only)</span>
         </div>
       </div>
 
       {soaps.length === 0 ? (
-        <div className="card p-12 text-center">
-          <FileText className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500">No SOAP notes found.</p>
+        <div className="card p-12 text-center animate-scale-in">
+          <FileText className="w-10 h-10 text-gray-300 dark:text-slate-600 mx-auto mb-3 animate-float" />
+          <p className="text-gray-500 dark:text-slate-400">No SOAP notes found.</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3 stagger-children">
           {soaps.map((soap: PatientSOAP) => (
             <Link
               key={soap.id}
               to={`/soap/${soap.id}`}
-              className="card p-4 flex items-center justify-between hover:shadow-md transition-all duration-200"
+              className="card card-hover p-4 flex items-center justify-between transition-all duration-200 animate-slide-in-up"
             >
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-900">
+                  <span className="font-medium text-gray-900 dark:text-white">
                     {soap.suggestedSpecialty ? formatSpecialty(soap.suggestedSpecialty) : 'General'}
                   </span>
                   {soap.triageLevel && (
@@ -81,14 +81,14 @@ export const NurseSOAPNotesPage: React.FC = () => {
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-gray-500 mt-0.5 line-clamp-1">
+                <p className="text-sm text-gray-500 dark:text-slate-300 mt-0.5 line-clamp-1">
                   {soap.subjective || 'No subjective data'}
                 </p>
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">
                   {new Date(soap.createdAt).toLocaleDateString()}
                 </p>
               </div>
-              <Eye className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              <Eye className="w-4 h-4 text-gray-400 dark:text-slate-500 flex-shrink-0" />
             </Link>
           ))}
         </div>

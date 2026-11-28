@@ -166,7 +166,10 @@ export const AdminDoctorVerificationPage: React.FC = () => {
                     {verifyingDoctorId === doctor.id ? 'Verifying...' : 'Approve'}
                   </button>
                   <button
-                    onClick={() => setSelectedDoctor(doctor)}
+                    onClick={() => {
+                      setRejectReason('');
+                      setSelectedDoctor(doctor);
+                    }}
                     className="flex-1 bg-gradient-to-r from-red-600 to-rose-500 text-white py-2.5 rounded-xl hover:from-red-500 hover:to-rose-400 font-medium shadow-sm btn-press"
                   >
                     Reject
@@ -182,7 +185,10 @@ export const AdminDoctorVerificationPage: React.FC = () => {
         <RejectModal
           reason={rejectReason}
           onReasonChange={setRejectReason}
-          onClose={() => setSelectedDoctor(null)}
+          onClose={() => {
+            setRejectReason('');
+            setSelectedDoctor(null);
+          }}
           onReject={() => handleVerify(selectedDoctor.id, false)}
           loading={verifyingDoctorId === selectedDoctor.id}
         />

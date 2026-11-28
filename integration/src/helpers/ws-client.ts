@@ -29,20 +29,26 @@ export function createMatchingSocket(jar: CookieJar): Promise<Socket> {
 
 export function connectSocket(socket: Socket): Promise<void> {
   return new Promise((resolve, reject) => {
+    const onConnect = () => {
+      cleanup();
+      resolve();
+    };
+    const onConnectError = (err: Error) => {
+      cleanup();
+      reject(err);
+    };
+    const cleanup = () => {
+      clearTimeout(timeout);
+      socket.off('connect', onConnect);
+      socket.off('connect_error', onConnectError);
+    };
     const timeout = setTimeout(() => {
+      cleanup();
       reject(new Error('Socket connection timed out'));
     }, 10_000);
 
-    socket.on('connect', () => {
-      clearTimeout(timeout);
-      resolve();
-    });
-
-    socket.on('connect_error', (err: Error) => {
-      clearTimeout(timeout);
-      reject(err);
-    });
-
+    socket.once('connect', onConnect);
+    socket.once('connect_error', onConnectError);
     socket.connect();
   });
 }

@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Bot, Search, Calendar, ArrowRight } from 'lucide-react';
+import { Bot, Search, Calendar, MessageSquare, ArrowRight } from 'lucide-react';
 
-export const QuickActions: React.FC = () => {
+export const QuickActions: React.FC<{ isPatient?: boolean }> = ({ isPatient = true }) => {
   const actions = [
     {
       label: 'New AI Chat',
@@ -22,15 +22,25 @@ export const QuickActions: React.FC = () => {
       glow: 'hover:shadow-emerald-500/25',
       floatDelay: '0.5s',
     },
-    {
-      label: 'Appointments',
-      description: 'View your schedule',
-      icon: Calendar,
-      to: '/appointments',
-      gradient: 'from-violet-600 to-purple-600',
-      glow: 'hover:shadow-violet-500/25',
-      floatDelay: '1s',
-    },
+    isPatient
+      ? {
+          label: 'Appointments',
+          description: 'View your schedule',
+          icon: Calendar,
+          to: '/appointments',
+          gradient: 'from-violet-600 to-purple-600',
+          glow: 'hover:shadow-violet-500/25',
+          floatDelay: '1s',
+        }
+      : {
+          label: 'Messages',
+          description: 'View conversations',
+          icon: MessageSquare,
+          to: '/chat',
+          gradient: 'from-violet-600 to-purple-600',
+          glow: 'hover:shadow-violet-500/25',
+          floatDelay: '1s',
+        },
   ];
 
   return (

@@ -24,6 +24,7 @@ import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../lib/api/error.utils';
 import { getMessageDirection } from '../../lib/text-direction';
 import { UserAvatar } from '../../components/UserAvatar';
+import { InfoTip } from '../../components/InfoDisclosure';
 
 interface TypingUser {
   userId: string;
@@ -225,6 +226,10 @@ export const ChatRoomPage: React.FC = () => {
     const deliveryTimeouts = deliveryTimeoutsRef.current;
     return () => {
       cancelled = true;
+      if (lastTypingStateRef.current) {
+        socketService.sendTyping(id, false);
+        lastTypingStateRef.current = false;
+      }
       socketService.leaveRoom(id);
       unsubStatus();
 
@@ -521,13 +526,18 @@ export const ChatRoomPage: React.FC = () => {
                 </span>
               )}
               {chatInfo?.consultationId && (
-                <Link
-                  to={`/consultation/${chatInfo.consultationId}`}
-                  className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-brand-50 dark:bg-brand-950/50 text-xs font-medium text-brand-600 dark:text-brand-300 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors"
-                >
-                  View Consultation
-                  <ExternalLink className="w-3 h-3" />
-                </Link>
+                <div className="inline-flex items-center gap-1">
+                  <Link
+                    to={`/consultation/${chatInfo.consultationId}`}
+                    className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-brand-50 dark:bg-brand-950/50 text-xs font-medium text-brand-600 dark:text-brand-300 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors"
+                  >
+                    View Consultation
+                    <ExternalLink className="w-3 h-3" />
+                  </Link>
+                  <InfoTip label="Care team room info" align="left">
+                    Shared consultation room for the patient, assigned doctor, and nurses permitted to assist this doctor.
+                  </InfoTip>
+                </div>
               )}
             </div>
             {isOnline && (
@@ -690,7 +700,7 @@ export const ChatRoomPage: React.FC = () => {
                           )}
 
                           {isOwn && !isDeleted && (
-                            <div className={`flex items-center gap-1.5 transition-opacity duration-200 ${isConfirmingDelete ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus-within:opacity-100'}`}>
+                            <div className={`flex items-center gap-1.5 transition-opacity duration-200 ${isConfirmingDelete ? 'opacity-100' : 'opacity-70 sm:opacity-0 sm:group-hover:opacity-100 focus-within:opacity-100'}`}>
                               {isConfirmingDelete ? (
                                 <>
                                   <button

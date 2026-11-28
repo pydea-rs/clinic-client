@@ -44,6 +44,7 @@ export const ThemeCustomizer: React.FC<ThemeCustomizerProps> = ({ open, onClose 
           </div>
           <button
             onClick={onClose}
+            aria-label="Close theme customizer"
             className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
           >
             <X className="w-4 h-4 text-gray-400" />

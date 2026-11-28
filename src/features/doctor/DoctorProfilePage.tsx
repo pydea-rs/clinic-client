@@ -5,7 +5,7 @@ import { doctorApi, reviewApi } from '../../api';
 import { Loader2, MapPin, CheckCircle, MessageSquare, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { RatingWidget } from '../review/RatingWidget';
-import { formatSpecialty } from '../../lib/format';
+import { formatSpecialty, formatVisitMethod, formatVisitType } from '../../lib/format';
 import { UserAvatar } from '../../components/UserAvatar';
 
 export const DoctorProfilePage: React.FC = () => {
@@ -211,7 +211,7 @@ export const DoctorProfilePage: React.FC = () => {
                     <div className="flex flex-wrap gap-2">
                       {doctor.visitMethods.map((method) => (
                         <span key={method} className="badge badge-green">
-                          {method}
+                          {formatVisitMethod(method)}
                         </span>
                       ))}
                     </div>
@@ -223,7 +223,7 @@ export const DoctorProfilePage: React.FC = () => {
                     <div className="flex flex-wrap gap-2">
                       {doctor.visitTypes.map((type) => (
                         <span key={type} className="badge badge-purple">
-                          {type}
+                          {formatVisitType(type)}
                         </span>
                       ))}
                     </div>

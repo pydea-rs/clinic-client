@@ -478,8 +478,11 @@ describe('Chat', () => {
 
     it('should reject WebSocket connection without auth', async () => {
       const { io } = await import('socket.io-client');
+      const { socketTarget } = await import('@client/lib/socket/socket-url');
       const { getServerUrl } = await import('../helpers/server.js');
-      const unauthSocket = io(`${getServerUrl()}/chat`, {
+      const { url, path } = socketTarget('/chat', getServerUrl());
+      const unauthSocket = io(url, {
+        path,
         transports: ['websocket'],
         autoConnect: false,
       });

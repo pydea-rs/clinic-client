@@ -99,7 +99,7 @@ export const DoctorAppointmentsPage: React.FC = () => {
         </div>
         <div>
           <h1 className="text-2xl font-bold gradient-text">Appointments</h1>
-          <p className="text-sm text-gray-500">Manage your scheduled appointments</p>
+          <p className="text-sm text-gray-500 dark:text-slate-400">Manage your scheduled appointments</p>
         </div>
       </div>
 
@@ -107,40 +107,40 @@ export const DoctorAppointmentsPage: React.FC = () => {
       <div className="card p-4 mb-6 animate-slide-in-up">
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-gray-400" />
-            <span className="text-sm font-medium text-gray-700">Filters:</span>
+            <Filter className="w-4 h-4 text-gray-400 dark:text-slate-500" />
+            <span className="text-sm font-medium text-gray-700 dark:text-slate-300">Filters:</span>
           </div>
           <select
             value={statusFilter}
             onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-            className="px-3 py-2 border border-gray-200 rounded-xl bg-gray-50/50 text-sm input-focus"
+            className="px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-xl bg-gray-50/50 dark:bg-slate-800 text-sm input-focus"
           >
             {STATUS_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
           </select>
           <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-600">From:</label>
+            <label className="text-sm text-gray-600 dark:text-slate-400">From:</label>
             <input
               type="date"
               value={dateFrom}
               onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
-              className="px-3 py-2 border border-gray-200 rounded-xl bg-gray-50/50 text-sm input-focus"
+              className="px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-xl bg-gray-50/50 dark:bg-slate-800 text-sm input-focus"
             />
           </div>
           <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-600">To:</label>
+            <label className="text-sm text-gray-600 dark:text-slate-400">To:</label>
             <input
               type="date"
               value={dateTo}
               onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
-              className="px-3 py-2 border border-gray-200 rounded-xl bg-gray-50/50 text-sm input-focus"
+              className="px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-xl bg-gray-50/50 dark:bg-slate-800 text-sm input-focus"
             />
           </div>
           {(statusFilter !== 'ALL' || dateFrom || dateTo) && (
             <button
               onClick={() => { setStatusFilter('ALL'); setDateFrom(''); setDateTo(''); setPage(1); }}
-              className="text-sm text-brand-600 hover:text-brand-700 font-medium"
+              className="text-sm text-brand-600 dark:text-brand-400 hover:text-brand-700 font-medium"
             >
               Clear filters
             </button>
@@ -150,12 +150,12 @@ export const DoctorAppointmentsPage: React.FC = () => {
 
       {/* Appointments List */}
       {filtered.length === 0 ? (
-        <div className="text-center py-16 animate-slide-in-up">
-          <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <div className="card text-center py-16 animate-scale-in">
+          <div className="w-16 h-16 bg-blue-50 dark:bg-blue-950/40 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-float">
             <Calendar className="w-8 h-8 text-blue-400" />
           </div>
-          <p className="text-gray-700 font-medium mb-1">No appointments found</p>
-          <p className="text-sm text-gray-500">
+          <p className="text-gray-700 dark:text-slate-200 font-medium mb-1">No appointments found</p>
+          <p className="text-sm text-gray-500 dark:text-slate-400">
             {statusFilter !== 'ALL' ? 'Try adjusting your filters.' : 'You have no appointments yet.'}
           </p>
         </div>
@@ -170,8 +170,8 @@ export const DoctorAppointmentsPage: React.FC = () => {
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="font-semibold text-gray-900 truncate">
+                  <div className="flex flex-wrap items-center gap-3 mb-2">
+                    <h3 className="font-semibold text-gray-900 dark:text-white truncate">
                       {apt.patient
                         ? `${apt.patient.firstname} ${apt.patient.lastname}`
                         : 'Patient'}
@@ -183,7 +183,7 @@ export const DoctorAppointmentsPage: React.FC = () => {
                       {formatVisitMethod(apt.method)}
                     </span>
                   </div>
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-slate-400">
                     <span className="flex items-center gap-1.5">
                       <Calendar className="w-3.5 h-3.5" />
                       {new Date(apt.dateTime).toLocaleDateString()}
@@ -198,7 +198,7 @@ export const DoctorAppointmentsPage: React.FC = () => {
                     </span>
                   </div>
                   {apt.notes && (
-                    <p className="text-sm text-gray-400 mt-1 truncate">{apt.notes}</p>
+                    <p className="text-sm text-gray-400 dark:text-slate-500 mt-1 truncate">{apt.notes}</p>
                   )}
                 </div>
                 <ChevronRight className="w-5 h-5 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0 ml-3" />
